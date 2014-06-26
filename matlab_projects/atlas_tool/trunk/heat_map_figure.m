@@ -525,16 +525,16 @@ heat_map.vertices = [x y z];
 heat_map.faces = data2.F_matrix{1};
 heat_map.color = color1;
 
-% % set up results folder
-% dir_orig = pwd;
-% dir_new = PATHNAME; cd(dir_new); cd('..')
-% dir_new = pwd;
-% mkdir('results_heatmap')
-% dir_new = strcat(dir_new,'\results_heatmap');
-% 
-% % save results in results folder
-% save(strcat(dir_new,'\heat_map'),'heat_map')
-% savefig(f2,strcat(dir_new,'\heat_map'))
-% print(f2,'-zbuffer', '-djpeg','-r600',strcat(dir_new,'\heat_map.jpg'));
-% cd(dir_orig)
+% set up results folder
+dir_orig = pwd;
+dir_new = PATHNAME; cd(dir_new); cd('..')
+dir_new = pwd;
+mkdir('results_heatmap')
+dir_new = strcat(dir_new,'\results_heatmap');
+
+% save results in results folder
+save(strcat(dir_new,'\heat_map'),'heat_map')
+savefig(f2,strcat(dir_new,'\heat_map'))
+print(f2,'-zbuffer', '-djpeg','-r600',strcat(dir_new,'\heat_map.jpg'));
+cd(dir_orig)
 end
