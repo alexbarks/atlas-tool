@@ -1,5 +1,7 @@
 function heat_map_figure
 
+calculate_interpolation_errorFlag = 0;
+
 global data1
 global data2
 
@@ -59,8 +61,6 @@ L2 = (data2.PC_unaliased(:,:,:,1,1) ~= 0);
     (1:size(data2.PC_unaliased,1)).* data2.vox(1),(1:size(data2.PC_unaliased,3)).* data2.vox(3));
 data2.x_coor_vel = x(L2);data2.y_coor_vel = y(L2);data2.z_coor_vel = z(L2);
 clear x, clear y, clear z
-
-data2.vox(3)
 
 % figure('Name','mean_min_2SD_atlas ')
 % patch('Faces',data2.F_matrix{1},'Vertices',[data2.V_matrix{1}(:,1)./data2.vox(1),data2.V_matrix{1}(:,2)./data2.vox(1),data2.V_matrix{1}(:,3)./data2.vox(1)],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',1);
@@ -310,6 +310,75 @@ disp(['Difference between aorta and atlas = ' num2str(diff_percentage)])
 % legend('remains the same','transformed')
 % axis equal; axis off
 
+figure('Name','Mean atlas')
+patch('Faces',atlas_SD.F,'Vertices',atlas_SD.V,'EdgeColor','none', 'FaceVertexCData',atlas_SD.wssmean,'FaceColor','interp','FaceAlpha',1);colorbar;
+axis equal;axis off; axis ij;
+caxis([0 1.5])
+view([180 -90])
+
+if calculate_interpolation_errorFlag == 1;
+    if ~exist(strcat(PATHNAME_probability_mask,'\mask6.mat'),'file')
+        for i = 1:6
+            %Polygon and mask for AAo
+            polyAAo = impoly;
+            wait(polyAAo);
+            region = getPosition(polyAAo);
+            %mask = inpolygon(x, y, AAo(:,1), AAo(:,2));
+            
+            disp('saving, pausing')
+            save(strcat([PATHNAME_probability_mask '\mask' num2str(i)]),'region');
+            pause
+        end
+    end
+    load(strcat(PATHNAME_probability_mask,'\mask1'));
+    geo_mask_AAo_inner = inpolygon(data1.x_coor_wss, data1.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_asc_inner = mean(atlas_SD.wssmean(geo_mask_AAo_inner));
+    load(strcat(PATHNAME_probability_mask,'\mask2'));
+    geo_mask_AAo_outer = inpolygon(data1.x_coor_wss, data1.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_asc_outer = mean(atlas_SD.wssmean(geo_mask_AAo_outer));
+    load(strcat(PATHNAME_probability_mask,'\mask3'));
+    geo_mask_arch_inner = inpolygon(data1.x_coor_wss, data1.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_arch_inner = mean(atlas_SD.wssmean(geo_mask_arch_inner));
+    load(strcat(PATHNAME_probability_mask,'\mask4'));
+    geo_mask_arch_outer = inpolygon(data1.x_coor_wss, data1.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_arch_outer = mean(atlas_SD.wssmean(geo_mask_arch_outer));
+    load(strcat(PATHNAME_probability_mask,'\mask5'));
+    geo_mask_DAo_inner = inpolygon(data1.x_coor_wss, data1.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_DAo_inner = mean(atlas_SD.wssmean(geo_mask_DAo_inner));
+    load(strcat(PATHNAME_probability_mask,'\mask6'));
+    geo_mask_DAo_outer = inpolygon(data1.x_coor_wss, data1.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_DAo_outer = mean(atlas_SD.wssmean(geo_mask_DAo_outer));
+    
+    figure(101)
+    scatter3(data1.x_coor_wss(geo_mask_AAo_inner),data1.y_coor_wss(geo_mask_AAo_inner),data1.z_coor_wss(geo_mask_AAo_inner),20,atlas_SD.wssmean(geo_mask_AAo_inner),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(102)
+    scatter3(data1.x_coor_wss(geo_mask_AAo_outer),data1.y_coor_wss(geo_mask_AAo_outer),data1.z_coor_wss(geo_mask_AAo_outer),20,atlas_SD.wssmean(geo_mask_AAo_outer),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(103)
+    scatter3(data1.x_coor_wss(geo_mask_arch_inner),data1.y_coor_wss(geo_mask_arch_inner),data1.z_coor_wss(geo_mask_arch_inner),20,atlas_SD.wssmean(geo_mask_arch_inner),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(104)
+    scatter3(data1.x_coor_wss(geo_mask_arch_outer),data1.y_coor_wss(geo_mask_arch_outer),data1.z_coor_wss(geo_mask_arch_outer),20,atlas_SD.wssmean(geo_mask_arch_outer),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(105)
+    scatter3(data1.x_coor_wss(geo_mask_DAo_inner),data1.y_coor_wss(geo_mask_DAo_inner),data1.z_coor_wss(geo_mask_DAo_inner),20,atlas_SD.wssmean(geo_mask_DAo_inner),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(106)
+    scatter3(data1.x_coor_wss(geo_mask_DAo_outer),data1.y_coor_wss(geo_mask_DAo_outer),data1.z_coor_wss(geo_mask_DAo_outer),20,atlas_SD.wssmean(geo_mask_DAo_outer),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    
+    mean_wss_before_interpolation(1,:) = mean_wss_asc_inner;
+    mean_wss_before_interpolation(2,:) = mean_wss_asc_outer;
+    mean_wss_before_interpolation(3,:) = mean_wss_arch_inner;
+    mean_wss_before_interpolation(4,:) = mean_wss_arch_outer;
+    mean_wss_before_interpolation(5,:) = mean_wss_DAo_inner;
+    mean_wss_before_interpolation(6,:) = mean_wss_DAo_outer;
+    
+    pause(1)
+    close all
+end
+
 interpolation_function = TriScatteredInterp([data1.x_coor_wss data1.y_coor_wss data1.z_coor_wss],atlas_SD.wssmean,'nearest');
 atlas_mean2 = interpolation_function([data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new]);
 atlas_mean2(isnan(atlas_mean2)) = 0;
@@ -320,19 +389,90 @@ atlas_SD2 = interpolation_function([data2.x_coor_wss_new data2.y_coor_wss_new da
 atlas_SD2(isnan(atlas_SD2)) = 0;
 atlas_SD = atlas_SD2;
 
-% figure('Name','Mean')
-% patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_mean,'FaceColor','interp','FaceAlpha',1);colorbar;
-% axis equal;axis off
-% caxis([0 1.5])
-% view([90 45])
-% zoom(3)
-%
-% figure('Name','SD')
-% patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_SD,'FaceColor','interp','FaceAlpha',1);colorbar;
-% axis equal;axis off
-% caxis([0 1.5])
-% view([90 45])
-% zoom(3)
+figure('Name','Mean')
+patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_mean,'FaceColor','interp','FaceAlpha',1);colorbar;
+axis equal;axis off; axis ij;
+caxis([0 1.5])
+view([180 -90])
+
+if calculate_interpolation_errorFlag == 1;
+    if ~exist(strcat(PATHNAME,'\mask6.mat'),'file')
+        for i = 1:6
+            %Polygon and mask for AAo
+            polyAAo = impoly;
+            wait(polyAAo);
+            region = getPosition(polyAAo);
+            %mask = inpolygon(x, y, AAo(:,1), AAo(:,2));
+            
+            disp('saving, pausing')
+            save(strcat([PATHNAME '\mask' num2str(i)]),'region');
+            pause
+        end
+    end
+    load(strcat(PATHNAME,'\mask1'));
+    geo_mask_AAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_asc_inner = mean(atlas_mean(geo_mask_AAo_inner));
+    load(strcat(PATHNAME,'\mask2'));
+    geo_mask_AAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_asc_outer = mean(atlas_mean(geo_mask_AAo_outer));
+    load(strcat(PATHNAME,'\mask3'));
+    geo_mask_arch_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_arch_inner = mean(atlas_mean(geo_mask_arch_inner));
+    load(strcat(PATHNAME,'\mask4'));
+    geo_mask_arch_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_arch_outer = mean(atlas_mean(geo_mask_arch_outer));
+    load(strcat(PATHNAME,'\mask5'));
+    geo_mask_DAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_DAo_inner = mean(atlas_mean(geo_mask_DAo_inner));
+    load(strcat(PATHNAME,'\mask6'));
+    geo_mask_DAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+    mean_wss_DAo_outer = mean(atlas_mean(geo_mask_DAo_outer));
+    
+    figure(101)
+    scatter3(data2.x_coor_wss(geo_mask_AAo_inner),data2.y_coor_wss(geo_mask_AAo_inner),data2.z_coor_wss(geo_mask_AAo_inner),20,atlas_mean(geo_mask_AAo_inner),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(102)
+    scatter3(data2.x_coor_wss(geo_mask_AAo_outer),data2.y_coor_wss(geo_mask_AAo_outer),data2.z_coor_wss(geo_mask_AAo_outer),20,atlas_mean(geo_mask_AAo_outer),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(103)
+    scatter3(data2.x_coor_wss(geo_mask_arch_inner),data2.y_coor_wss(geo_mask_arch_inner),data2.z_coor_wss(geo_mask_arch_inner),20,atlas_mean(geo_mask_arch_inner),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(104)
+    scatter3(data2.x_coor_wss(geo_mask_arch_outer),data2.y_coor_wss(geo_mask_arch_outer),data2.z_coor_wss(geo_mask_arch_outer),20,atlas_mean(geo_mask_arch_outer),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(105)
+    scatter3(data2.x_coor_wss(geo_mask_DAo_inner),data2.y_coor_wss(geo_mask_DAo_inner),data2.z_coor_wss(geo_mask_DAo_inner),20,atlas_mean(geo_mask_DAo_inner),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    figure(106)
+    scatter3(data2.x_coor_wss(geo_mask_DAo_outer),data2.y_coor_wss(geo_mask_DAo_outer),data2.z_coor_wss(geo_mask_DAo_outer),20,atlas_mean(geo_mask_DAo_outer),'filled');axis equal;caxis([0 1.5])
+    xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+    
+    mean_wss_after_interpolation(1,:) = mean_wss_asc_inner;
+    mean_wss_after_interpolation(2,:) = mean_wss_asc_outer;
+    mean_wss_after_interpolation(3,:) = mean_wss_arch_inner;
+    mean_wss_after_interpolation(4,:) = mean_wss_arch_outer;
+    mean_wss_after_interpolation(5,:) = mean_wss_DAo_inner;
+    mean_wss_after_interpolation(6,:) = mean_wss_DAo_outer;
+    
+    error_matrix = abs(mean_wss_before_interpolation-mean_wss_after_interpolation) ./ ...
+        ((mean_wss_before_interpolation+mean_wss_after_interpolation)./2);
+    
+    disp(['Mean interpolation error inner AAo = ' num2str(mean(error_matrix(1,:))*100) ' +/- ' num2str(std(error_matrix(1,:))*100) '%'])
+    disp(['Mean interpolation error outer AAo = ' num2str(mean(error_matrix(2,:))*100) ' +/- ' num2str(std(error_matrix(2,:))*100) '%'])
+    disp(['Mean interpolation error inner arch = ' num2str(mean(error_matrix(3,:))*100) ' +/- ' num2str(std(error_matrix(3,:))*100) '%'])
+    disp(['Mean interpolation error outer arch = ' num2str(mean(error_matrix(4,:))*100) ' +/- ' num2str(std(error_matrix(4,:))*100) '%'])
+    disp(['Mean interpolation error inner DAo = ' num2str(mean(error_matrix(5,:))*100) ' +/- ' num2str(std(error_matrix(5,:))*100) '%'])
+    disp(['Mean interpolation error outer DAo = ' num2str(mean(error_matrix(6,:))*100) ' +/- ' num2str(std(error_matrix(6,: ))*100) '%'])
+    
+    pause(1)
+    close all
+end
+
+figure('Name','SD')
+patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_SD,'FaceColor','interp','FaceAlpha',1);colorbar;
+axis equal;axis off; axis ij
+caxis([0 1.5])
+view([180 -90])
 
 mean_plus_2SD_atlas = atlas_mean + 1.96.*atlas_SD;
 mean_minus_2SD_atlas = atlas_mean - 1.96.*atlas_SD;
@@ -399,17 +539,6 @@ color1(43:63,1) = color1(43:63,1).*0.5;%0;%color(33,1);
 color1(43:63,2) = color1(43:63,2).*0.5;%1;%color(33,2);
 color1(43:63,3) = color1(43:63,3).*0.5;%0;%color(33,3);
 
-f2 = figure('Name','Higher/Lower than 1.96*SD')
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
-%colormap(jet)
-colormap(color1);
-%c1 = colorbar;
-caxis([0 2]);
-%set(c1,'YTick',[0.375 1.125 1.875 2.625]);
-%set(c1,'YTickLabel',{'p>0.05, control<dilated' 'p>0.05, control>dilated' 'p<0.05, control<dilated' 'p<0.05, control>dilated' })
-axis equal;axis ij; axis off
-view([-180 -90])  
-
 figure('Name','before/after registration')
 plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'r.')
 hold on
@@ -426,18 +555,18 @@ x_coor_wss = yxz_coor_wss_new(2,:)';% - min(YXZ_mask2_new(1,:));
 y_coor_wss = yxz_coor_wss_new(1,:)';% - min(YXZ_mask2_new(2,:));
 z_coor_wss = yxz_coor_wss_new(3,:)';% - min(YXZ_mask2_new(3,:));
 
-% figure('Name','before/after registration')
-% plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'r.')
-% hold on
-% plot3(x_coor_wss,y_coor_wss,z_coor_wss,'b.')
-% axis equal
-
-gray_colormap = colormap(gray);
-color1(1,:) = [0 0 1];
-color1(2,:) = [1 0 0];
-color1(3,:) = [0.5 0.5 0.5];
-color1(4:64,:) = gray_colormap(4:64,:);
-
+f2 = figure('Name','Higher/Lower than 1.96*SD')
+patch('Faces',data2.F_matrix{1},'Vertices',[x_coor_wss y_coor_wss z_coor_wss],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
+%colormap(jet)
+colormap(color1);
+%c1 = colorbar;
+caxis([0 2]);
+%set(c1,'YTick',[0.375 1.125 1.875 2.625]);
+%set(c1,'YTickLabel',{'p>0.05, control<dilated' 'p>0.05, control>dilated' 'p<0.05, control<dilated' 'p<0.05, control>dilated' })
+axis equal;axis ij; axis off
+view([-180 -90])
+aspectRatio = 1./data2.vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
 
 count = 0;
 angles(1) = 0;
@@ -446,6 +575,11 @@ x = x_coor_wss./data2.vox(1);
 y = y_coor_wss./data2.vox(2);
 z = z_coor_wss./data2.vox(3);
 p=patch('Faces',data2.F_matrix{1},'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
+gray_colormap = colormap(gray);
+color1(1,:) = [0 0 1];
+color1(2,:) = [1 0 0];
+color1(3,:) = [0.5 0.5 0.5];
+color1(4:64,:) = gray_colormap(4:64,:);
 colormap(color1);
 caxis([0 64]);
 axis equal; axis ij; axis off;
@@ -527,9 +661,10 @@ heat_map.color = color1;
 
 % set up results folder
 dir_orig = pwd;
-dir_new = PATHNAME; cd(dir_new); cd('..')
+dir_new = PATHNAME; cd(dir_new); %cd('..')
 dir_new = pwd;
 mkdir('results_heatmap')
+dir_new
 dir_new = strcat(dir_new,'\results_heatmap');
 
 % save results in results folder
