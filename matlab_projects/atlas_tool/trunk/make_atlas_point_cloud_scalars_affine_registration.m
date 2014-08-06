@@ -11,7 +11,7 @@ function [atlas] = make_atlas_point_cloud_scalars_affine_registration(offset,plo
 % Magn Reson Med. 2014 Feb 25, doi: 10.1002/mrm.25224. [Epub ahead of print]
 %
 % First, each aorta (you can probably use this for carotids and intracranial vessels as well, but I haven't tried yet) is co-registered
-% (affine registration) to the idealized aorta geometry cerated with the function 'make_geometry_point_cloud.m'. The velocity and WSS magnitude
+% (affine registration) to the idealized aorta geometry created with the function 'make_geometry_point_cloud.m'. The velocity and WSS magnitude
 % values are subsequently interpolated (nearest neighbour interpolation) to the velocity and WSS coordinates of the idealized geometry. Finally,
 % an average and standard deviation (SD) of the input aortas is calculted resulting in the mean and SD velocity atlas and mean and SD WSS atlas
 % that are saed to the directory of choice for further use.
@@ -46,7 +46,7 @@ function [atlas] = make_atlas_point_cloud_scalars_affine_registration(offset,plo
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clc, clear, close all % I hate functions that don't close the stuff you ran before
+clc, clear, close all % I hate functions that don't close the stuff that was running before
 
 if nargin < 1 || isempty(offset)
     offset = 40;
@@ -343,7 +343,7 @@ for n = 1:size(PATHNAME,2)
     end
     
     if plotFlag == 1
-        figure('Name',strcat('To be registered',num2str(n)))
+        figure('Name',strcat('To be registered aorta ',num2str(n)))
         plot3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,'r.')
         hold on
         % plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
@@ -364,8 +364,8 @@ for n = 1:size(PATHNAME,2)
     disp('...Busy registering...Affine registration (dof = 12)! So only scalars used (Affine registration doesnt work for vectors)')
     disp(' ')
     disp('...This can take up to 5 minutes...')
-    tic
-        
+   
+    tic 
     % directory with flirt.exe and cygwin1.dll (use cygwin convention)
     fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
  
