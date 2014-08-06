@@ -20,7 +20,7 @@ function [atlas] = make_atlas_point_cloud_scalars_affine_registration(offset,plo
 %
 % Input
 % 1)offset          : To be able to calculate the registration error (RE, see paper mentioned above), the registered aorta needs to be
-%                     transformed back to a matrix. Thsi can only be done when all x, y and z coordinates after registration are > 0.
+%                     transformed back to a matrix. This can only be done when all x, y and z coordinates after registration are > 0.
 %                     Otherwise Matlab will return an error and all will be for nothing. We therefore need to put in an offset to prevent
 %                     this from happening.
 % 2)plotFlag        : If plotFlag switched, Matlab will output any possible image to the screen to check if everything happens correctly.
@@ -126,7 +126,6 @@ for n = 1:size(PATHNAME,2)
     disp('...Done loading data...')
     toc
     
-    % create coordinates
     if ~isfield(data2,'PC_unaliased')
         data2.PC_unaliased = data2.PC_zeros;
     end
@@ -180,9 +179,7 @@ for n = 1:size(PATHNAME,2)
     data2.x_coor_wss = data2.V_matrix{1}(:,1) + (offset*data2.vox(1));
     data2.y_coor_wss = data2.V_matrix{1}(:,2) + (offset*data2.vox(2));
     data2.z_coor_wss = data2.V_matrix{1}(:,3) + (offset*data2.vox(3));
-    
-    % velocity averaged for systolic timesteps
-    
+       
     if peak_systolicFlag == 1
         % Peak systolic velocity
         data2.x_value_vel = data2.PC_unaliased(:,:,:,1,time);
@@ -240,6 +237,8 @@ for n = 1:size(PATHNAME,2)
     if calculateIE_Flag == 1;
         if ~exist(strcat(PATHNAME{n},'interpolation_error_ROI\mask1.mat'),'file')
             
+            mkdir(PATHNAME{n},'interpolation_error_ROI')
+            
             F1=figure('Name','Aorta shape: Paused after finishing a region so press space when finished!');
             patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',0.25);
             view([-180 -90]);axis ij;axis equal;axis off
@@ -251,7 +250,6 @@ for n = 1:size(PATHNAME,2)
                 region = getPosition(polyAAo);
                 
       %          disp('saving, pausing')
-                mkdir(PATHNAME{n},'interpolation_error_ROI')
                 save(strcat([PATHNAME{n} 'interpolation_error_ROI\mask' num2str(i)]),'region');
                 pause
             end
@@ -528,7 +526,7 @@ for n = 1:size(PATHNAME,2)
     z_value_vel = interpolation_function([geo.x_coor_vel geo.y_coor_vel geo.z_coor_vel]);
     z_value_vel(isnan(z_value_vel)) = 0;
     
-    vel_m_new = sqrt(x_value_vel.^2 + y_value_vel.^2 + z_value_vel.^2);
+    data2.vel_m = sqrt(x_value_vel.^2+y_value_vel.^2+z_value_vel.^2);
     
     %%% Interpolate WSS to co-registered coordinates
     interpolation_function = TriScatteredInterp([x_coor_wss y_coor_wss z_coor_wss],data2.x_value_wss,'nearest');
@@ -543,7 +541,7 @@ for n = 1:size(PATHNAME,2)
     z_value_wss = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
     z_value_wss(isnan(z_value_wss)) = 0;
     
-    wss_m_new = sqrt(x_value_wss.^2 + y_value_wss.^2 + z_value_wss.^2);
+    data2.wss_m = sqrt(x_value_wss.^2+y_value_wss.^2+z_value_wss.^2);
     
     if plotFlag == 1
         figure('Name','interpolated to atlas velocity')
@@ -556,8 +554,6 @@ for n = 1:size(PATHNAME,2)
     end
     
     if calculateIE_Flag == 1;
-        data2.vel_m = sqrt(x_value_vel.^2+y_value_vel.^2+z_value_vel.^2);
-        data2.wss_m = sqrt(x_value_wss.^2+y_value_wss.^2+z_value_wss.^2);
                        
         if ~exist(strcat(PATHNAME_probability_mask,'interpolation_error_ROI\mask1.mat'),'file')
             
