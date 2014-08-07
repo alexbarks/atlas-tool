@@ -1,3 +1,16 @@
 This is the atlas_tool instruction manual:
 
-You need the following tools for this to work... to be updated later...
+1. Need to compute WSS with 'Pims_postprocessing_tool'
+   - SVN location: https://fsm1mqfns1/svn/main/matlab_projects/Pims_postprocessing_tool)
+   - AJB Location: d:\research\matlabCode 
+   - output is data_done (which will be used to compute the atlas, or heatmap)
+
+2. The atlas_tool is used to create a probablity mask, geometry, and atlas from a number of patients
+	- SVN location: https://fsm1mqfns1/svn/main/matlab_projects/atlas_tool/trunk
+	- AJB location: d:\research\matlabCode 
+	a. run make_geometry_point_cloud.m (make sure to select subject paths and set flirt folder location)
+	   * when run make_geometry... make sure to change path when hit f5 (in order to have filrt work)
+	   * AJB computer: flirt folder location is /cygdrive/d/research/matlabcode/matlab_registration/flirt/ (line 132, make sure to have file separation at the end)
+	   * AJB computer: make sure line 159 has cygwin64 ('c:\cygwin64\bin\bash runflirt.sh')
+	   * Also need to change lines: 369, 396 in a similar fashion as above
+	   

@@ -52,20 +52,16 @@ end
 
 % %%% masks to load
 %
-PATHNAME{1} = 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\1_CAMRI-JEHAM\20140307_084523_Aera_NMH\3dpc\';
-PATHNAME{2} = 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\2_CAMRI-LAJAM\20140313_102146_Aera_NMH\3dpc_nav80\';
-PATHNAME{3} = 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\3_CAMRI-KIMCO\20140313_115319_Aera_NMH\3dpc_nav80\';
-PATHNAME{4} = 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\4_CAMRI-THZUM\20140314_073534_Aera_NMH\3dpc_nav80\';
-PATHNAME{5} = 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\5_CAMRI-MAGIM2\20140314_090452_Aera_NMH\3dpc_nav80\';
-PATHNAME{6} = 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\6_CAMRI-WIANM\20140317_095816_Aera_NMH\3dpc_nav80\';
-PATHNAME{7} = 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\7_CAMRI_ARNIF\20140404_082635_Aera_NMH\';
-PATHNAME{8}= 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\8_CAMRI-FREPAM\20140404_094040_Aera_NMH\3dpc_nav80\';
-PATHNAME{9}= 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\9_CAMRI_JUVIF\20140408_083611_Aera_NMH\3dpc_nav80\';
-PATHNAME{10}= 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\10_CAMRI_JAKIM\20140414_085925_Aera_NMH\';
-PATHNAME{11}= 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\11_CAMRI_VIVIM\20140416_081355_Aera_NMH\';
-PATHNAME{12}= 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\12_CAMRI_RIJO\20140429_080804_Aera_NMH\';
-PATHNAME{13}= 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\13_CAMRI_MASNF\20140502_075511_Aera_NMH\';
-PATHNAME{14}= 'C:\1_Chicago\Data\MIMICS\18_Test-Retest\14_CAMRI_ANMAM\20140506_081402_Aera_NMH\';
+PATHNAME{1} = 'c:\_ensightCases\bav_tissue\Controls\1_20120420_132106\';
+PATHNAME{2} = 'c:\_ensightCases\bav_tissue\Controls\2_20120426_132244\';
+PATHNAME{3} = 'c:\_ensightCases\bav_tissue\Controls\3_20121206_115454\';
+PATHNAME{4} = 'c:\_ensightCases\bav_tissue\Controls\4_20120522_170003\';
+PATHNAME{5} = 'c:\_ensightCases\bav_tissue\Controls\5_20120502_134311\';
+PATHNAME{6} = 'c:\_ensightCases\bav_tissue\Controls\6_20120627_093614\';
+PATHNAME{7} = 'c:\_ensightCases\bav_tissue\Controls\7_20120702_092347\';
+PATHNAME{8}= 'c:\_ensightCases\bav_tissue\Controls\8_20120831_101148\';
+PATHNAME{9}= 'c:\_ensightCases\bav_tissue\Controls\9_20121109_080007\';
+PATHNAME{10}= 'c:\_ensightCases\bav_tissue\Controls\10_20130621_122315\';
 FILENAME = 'data_done';
 
 disp(['...Busy loading data_done aorta ' num2str(1)])
@@ -133,7 +129,7 @@ for n = 2:size(PATHNAME,2)
     
     tic
     % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-    fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
+    fsldir = '/cygdrive/d/research/matlabCode/matlab_registration/flirt/';
     
     % save as nifti
     cnii=make_nii(mask1_to_register,[data1.vox(1) data1.vox(2) data1.vox(3)]);
@@ -160,7 +156,7 @@ for n = 2:size(PATHNAME,2)
     fclose(f);
     
     % and go! takes 4-5 mins.
-    system('c:\cygwin\bin\bash runflirt.sh');
+    system('c:\cygwin64\bin\bash runflirt.sh');
     
     % load transformation mask
     load Rotation_Translation -ascii
@@ -370,7 +366,7 @@ for n = 1:size(PATHNAME,2)
         disp('...This can take up to 5 minutes...')
         
         % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-        fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
+        fsldir = '/cygdrive/d/research/matlabCode/matlab_registration/flirt/';
         
         % save as nifti
         cnii=make_nii(mask1_to_register,[data1.vox(1) data1.vox(2) data1.vox(3)]);
@@ -397,7 +393,7 @@ for n = 1:size(PATHNAME,2)
         fclose(f);
         
         % and go! takes 4-5 mins.
-        system('c:\cygwin\bin\bash runflirt.sh');
+        system('c:\cygwin64\bin\bash runflirt.sh');
         
         % load transformation mask
         load Rotation_Translation -ascii
