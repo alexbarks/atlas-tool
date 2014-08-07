@@ -1,4 +1,4 @@
-function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_traffic_light_volumeFlag,calculate_area_of_significanceFlag,peak_systolicFlag)
+function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_traffic_light_volumeFlag,calculate_area_of_higherlowerFlag,peak_systolicFlag)
 
 %%% [heat_map,traffic_light]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_area_of_significanceFlag,peak_systolicFlag)
 %
@@ -81,11 +81,11 @@ if nargin < 4 || isempty(calculateIE_Flag)
 end
 
 if nargin < 6 || isempty(calculate_traffic_light_volumeFlag)
-    calculate_traffic_light_volumeFlag = 0;
+    calculate_traffic_light_volumeFlag = 1;
 end
 
-if nargin < 7 || isempty(calculate_area_of_significanceFlag)
-    calculate_area_of_significanceFlag = 0;
+if nargin < 7 || isempty(calculate_area_of_higherlowerFlag)
+    calculate_area_of_higherlowerFlag = 1;
 end
 
 if nargin < 8 || isempty(peak_systolicFlag)
@@ -483,12 +483,6 @@ if calculateRE_Flag == 1
     disp(' ')
 end
 
-% figure('Name','SD atlas')
-% patch('Faces',atlas_SD.F,'Vertices',atlas_SD.V,'EdgeColor','none', 'FaceVertexCData',atlas_SD.wssSD,'FaceColor','interp','FaceAlpha',1);colorbar;
-% axis equal;axis off
-% caxis([0 1.5])
-% view([0 -90])
-
 % Interpolate Velocity
 interpolation_function = TriScatteredInterp([atlas.x_coor_vel atlas.y_coor_vel atlas.z_coor_vel],atlas.mean_vel,'nearest');
 atlas_mean2 = interpolation_function([data2.x_coor_vel_new data2.y_coor_vel_new data2.z_coor_vel_new]);
@@ -513,14 +507,14 @@ atlas_std_wss = atlas_SD2;
 
 if calculateIE_Flag == 1;
     
-    if ~exist(strcat(PATHNAME_atlas,'interpolation_error_ROI_after_transformation\mask1.mat'),'file')
+    if ~exist(strcat(PATHNAME,'atlas_interpolation_error_ROI_after_transformation\mask1.mat'),'file')
         
         F2=figure('Name','Atlas shape: Paused after finishing a region so press space when finished!');
         plot3(data2.x_coor_wss_new,data2.y_coor_wss_new,data2.z_coor_wss_new,'r.');
         %  patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',0.25);
         view([-180 -90]);axis ij;axis equal;axis off
         
-        mkdir(PATHNAME_atlas,'interpolation_error_ROI_after_transformation')
+        mkdir(PATHNAME,'atlas_interpolation_error_ROI_after_transformation')
         
         for i = 1:6
             %Polygon and mask for AAo
@@ -529,38 +523,38 @@ if calculateIE_Flag == 1;
             region = getPosition(polyAAo);
             
             %          disp('saving, pausing')
-            save(strcat([PATHNAME_atlas 'interpolation_error_ROI_after_transformation\mask' num2str(i)]),'region');
+            save(strcat([PATHNAME 'atlas_interpolation_error_ROI_after_transformation\mask' num2str(i)]),'region');
             pause
         end
         
         close(F2)
     end
-    load(strcat(PATHNAME_atlas,'interpolation_error_ROI_after_transformation\mask1'))
+    load(strcat(PATHNAME,'atlas_interpolation_error_ROI_after_transformation\mask1'))
     transformed_atlas_mask_AAo_inner_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
     transformed_mean_vel_asc_inner = mean(atlas_mean_vel(transformed_atlas_mask_AAo_inner_vel));
     transformed_atlas_mask_AAo_inner_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
     transformed_mean_wss_asc_inner = mean(atlas_mean_wss(transformed_atlas_mask_AAo_inner_wss));
-    load(strcat(PATHNAME_atlas,'interpolation_error_ROI_after_transformation\mask2'))
+    load(strcat(PATHNAME,'atlas_interpolation_error_ROI_after_transformation\mask2'))
     transformed_atlas_mask_AAo_outer_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
     transformed_mean_vel_asc_outer = mean(atlas_mean_vel(transformed_atlas_mask_AAo_outer_vel));
     transformed_atlas_mask_AAo_outer_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
     transformed_mean_wss_asc_outer = mean(atlas_mean_wss(transformed_atlas_mask_AAo_outer_wss));
-    load(strcat(PATHNAME_atlas,'interpolation_error_ROI_after_transformation\mask3'))
+    load(strcat(PATHNAME,'atlas_interpolation_error_ROI_after_transformation\mask3'))
     transformed_atlas_mask_arch_inner_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
     transformed_mean_vel_arch_inner = mean(atlas_mean_vel(transformed_atlas_mask_arch_inner_vel));
     transformed_atlas_mask_arch_inner_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
     transformed_mean_wss_arch_inner = mean(atlas_mean_wss(transformed_atlas_mask_arch_inner_wss));
-    load(strcat(PATHNAME_atlas,'interpolation_error_ROI_after_transformation\mask4'))
+    load(strcat(PATHNAME,'atlas_interpolation_error_ROI_after_transformation\mask4'))
     transformed_atlas_mask_arch_outer_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
     transformed_mean_vel_arch_outer = mean(atlas_mean_vel(transformed_atlas_mask_arch_outer_vel));
     transformed_atlas_mask_arch_outer_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
     transformed_mean_wss_arch_outer = mean(atlas_mean_wss(transformed_atlas_mask_arch_outer_wss));
-    load(strcat(PATHNAME_atlas,'interpolation_error_ROI_after_transformation\mask5'))
+    load(strcat(PATHNAME,'atlas_interpolation_error_ROI_after_transformation\mask5'))
     transformed_atlas_mask_DAo_inner_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
     transformed_mean_vel_DAo_inner = mean(atlas_mean_vel(transformed_atlas_mask_DAo_inner_vel));
     transformed_atlas_mask_DAo_inner_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
     transformed_mean_wss_DAo_inner = mean(atlas_mean_wss(transformed_atlas_mask_DAo_inner_wss));
-    load(strcat(PATHNAME_atlas,'interpolation_error_ROI_after_transformation\mask6'))
+    load(strcat(PATHNAME,'atlas_interpolation_error_ROI_after_transformation\mask6'))
     transformed_atlas_mask_DAo_outer_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
     transformed_mean_vel_DAo_outer = mean(atlas_mean_vel(transformed_atlas_mask_DAo_outer_vel));
     transformed_atlas_mask_DAo_outer_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
@@ -644,6 +638,7 @@ if calculateIE_Flag == 1;
     disp(['IE wall shear stress outer asc = ' num2str(IE_outer_asc_wss) ' %'])
     disp(['IE wall shear stress inner DAo = ' num2str(IE_inner_DAo_wss) ' %'])
     disp(['IE wall shear stress outer DAo = ' num2str(IE_outer_DAo_wss) ' %'])
+    disp(' ')
 end
 
 if plotFlag == 1
@@ -695,6 +690,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% TRAFFIC LIGHT MAP FOR ABNORMAL VELOCITY %%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+new_mask_red_ = zeros(size(data2.vel_m));
+new_mask_yellow_ = zeros(size(data2.vel_m));
+new_mask_green_ = zeros(size(data2.vel_m));
 for i=1:size(data2.vel_m,1)
     if data2.vel_m(i) > mean_plus_2SD_atlas_vel(i)
         new_mask_red_(i,1) = 1;
@@ -776,8 +774,14 @@ color1(43:63,1) = color1(43:63,1).*0.5;%0;%color(33,1);
 color1(43:63,2) = color1(43:63,2).*0.5;%1;%color(33,2);
 color1(43:63,3) = color1(43:63,3).*0.5;%0;%color(33,3);
 
-if calculate_area_of_significanceFlag == 1;
-    if ~exist(strcat(PATHNAME,'\mask6.mat'),'file')
+if calculate_area_of_higherlowerFlag == 1;
+    if ~exist(strcat(PATHNAME,'heat_map_higher_lower_masks\mask1.mat'),'file')      
+      
+        patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);        
+        view([-180 -90]);axis ij;axis equal;axis off   
+        
+        mkdir(PATHNAME,'heat_map_higher_lower_masks')
+        
         for i = 1:6
             %Polygon and mask for AAo
             polyAAo = impoly;
@@ -786,21 +790,21 @@ if calculate_area_of_significanceFlag == 1;
             %mask = inpolygon(x, y, AAo(:,1), AAo(:,2));
             
             disp('saving, pausing')
-            save(strcat([PATHNAME '\mask' num2str(i)]),'region');
+            save(strcat([PATHNAME 'heat_map_higher_lower_masks\mask' num2str(i)]),'region');
             pause
         end
     end
-    load(strcat(PATHNAME,'\mask1'));
+    load(strcat(PATHNAME,'heat_map_higher_lower_masks\mask1'));
     atlas_mask_AAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\mask2'));
+    load(strcat(PATHNAME,'heat_map_higher_lower_masks\mask2'));
     atlas_mask_AAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\mask3'));
+    load(strcat(PATHNAME,'heat_map_higher_lower_masks\mask3'));
     atlas_mask_arch_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\mask4'));
+    load(strcat(PATHNAME,'heat_map_higher_lower_masks\mask4'));
     atlas_mask_arch_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\mask5'));
+    load(strcat(PATHNAME,'heat_map_higher_lower_masks\mask5'));
     atlas_mask_DAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\mask6'));
+    load(strcat(PATHNAME,'heat_map_higher_lower_masks\mask6'));
     atlas_mask_DAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
     
     heat_asc1 = heat_mapp(atlas_mask_AAo_inner);
@@ -857,43 +861,40 @@ if calculate_area_of_significanceFlag == 1;
     disp(['Percentage higher than controls outer DAo = ' num2str(percentage_significant_higher_than_controls) '%'])
     disp(['Percentage lower than controls outer DAo = ' num2str(percentage_significant_lower_than_controls) '%'])
     
-    figure(101)
+    if plotFlag == 1
+    figure('Name','higher/lower: inner AAo')
     scatter3(data2.x_coor_wss(atlas_mask_AAo_inner),data2.y_coor_wss(atlas_mask_AAo_inner),data2.z_coor_wss(atlas_mask_AAo_inner),20,heat_asc1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
     xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-    
-    figure(102)
+    ffigure('Name','higher/lower: outer AAo')
     scatter3(data2.x_coor_wss(atlas_mask_AAo_outer),data2.y_coor_wss(atlas_mask_AAo_outer),data2.z_coor_wss(atlas_mask_AAo_outer),20,heat_asc2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
     xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-    
-    figure(103)
+    figure('Name','higher/lower: inner arch')
     scatter3(data2.x_coor_wss(atlas_mask_arch_inner),data2.y_coor_wss(atlas_mask_arch_inner),data2.z_coor_wss(atlas_mask_arch_inner),20,heat_arch1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
     xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-    
-    figure(104)
+    figure('Name','higher/lower: outer arch')
     scatter3(data2.x_coor_wss(atlas_mask_arch_outer),data2.y_coor_wss(atlas_mask_arch_outer),data2.z_coor_wss(atlas_mask_arch_outer),20,heat_arch2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
     xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-    
-    figure(105)
+    figure('Name','higher/lower: inner DAo')
     scatter3(data2.x_coor_wss(atlas_mask_DAo_inner),data2.y_coor_wss(atlas_mask_DAo_inner),data2.z_coor_wss(atlas_mask_DAo_inner),20,heat_desc1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
     xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-    
-    figure(106)
+    figure('Name','higher/lower: outer DAo')
     scatter3(data2.x_coor_wss(atlas_mask_DAo_outer),data2.y_coor_wss(atlas_mask_DAo_outer),data2.z_coor_wss(atlas_mask_DAo_outer),20,heat_desc2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
     xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-    
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%  TRAFFIC LIGHT MAP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 count1 = 0;
 angles(1) = 0;
 f1 = figure('Name','Traffic Light Map');
 contours = zeros(size(L2b));
 contours(L2b==0) = -1;
 contours(L2b==1) = 1;
-[atlas.F,V] = isosurface(smooth3(contours),0); % make a surface from the detected contours
-patch('Faces',atlas.F,'Vertices',[V(:,1)-offset V(:,2)-offset V(:,3)-offset],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
+[F,V] = isosurface(smooth3(contours),0); % make a surface from the detected contours
+patch('Faces',F,'Vertices',[V(:,1)-offset V(:,2)-offset V(:,3)-offset],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
 hold on
 [F1,V1] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask_red),0);
 [F2,V2] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask_yellow),0);
@@ -915,6 +916,14 @@ caxis([0 64]);
 aspectRatio = 1./data2.vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight headlight;camlight(180,0); lighting phong
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% PvO: Images for the Brief Report for NEJM were created with:
+%%% 1. NO axis ij: I couldn't get the lighting right with axis ij on
+%%%    The images therefore had to be flipped horizontly for the paper.
+%%% 2. view([0 -90])
+%%% 3. camlight(-90,0)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 uicontrol('Style','text',...
     'Position',[10 375 120 20],...
@@ -1055,15 +1064,32 @@ uicontrol('Style', 'slider',...
         clear c
         dthetas = get(hObj,'Value');
         dphi = 0;
-        
-        dthetas / 360;
-        
-        %c=camlight(dthetas,dphi);
-        c = light('Position',[0,dthetas,0],'Style','infinite')
+              
+        c=camlight(dthetas,dphi);
         lighting phong        
     end
 
 set(f1,'toolbar','figure');
+
+traffic_light.red = new_mask_red;
+traffic_light.yellow = new_mask_yellow;
+traffic_light.green = new_mask_green;
+traffic_light.vertices = [V(:,1)-offset V(:,2)-offset V(:,3)-offset];
+traffic_light.faces = F;
+
+% set up results folder
+dir_orig = pwd;
+dir_new = PATHNAME; cd(dir_new); %cd('..')
+%dir_new = pwd;
+mkdir('results_traffic_light_map')
+dir_new
+dir_new = strcat(dir_new,'results_traffic_light_map');
+
+% save results in results folder
+save(strcat(dir_new,'\results_trafficlight_map'),'traffic_light');
+%savefig(f2,strcat(dir_new,'\heat_map'))
+print(f1,'-zbuffer', '-djpeg','-r600',strcat(dir_new,'\traffic_light_map.jpg'));
+cd(dir_orig)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Heat map (WSS)
@@ -1128,10 +1154,10 @@ uicontrol('Style','text',...
 uicontrol('Style','checkbox',...
     'Value',0, 'Position', [10 225 20 20], ...
     'Callback', {@show_anatomy2,gca});
-
+ 
 uicontrol('Style','text',...
     'Position',[15 300 120 20],...
-    'String','Show Red Map')
+    'String','Show Heat Map')
 uicontrol('Style','checkbox',...
     'Value',1, 'Position', [15 300 20 20], ...
     'Callback', {@show_heat_mapp,gca});
@@ -1192,17 +1218,17 @@ heat_map.vertices = [x y z];
 heat_map.faces = data2.F_matrix{1};
 heat_map.color = color1;
 
-% % set up results folder
-% dir_orig = pwd;
-% dir_new = PATHNAME; cd(dir_new); %cd('..')
-% %dir_new = pwd;
-% mkdir('results_heatmap')
-% dir_new
-% dir_new = strcat(dir_new,'results_heatmap');
-%
-% % save results in results folder
-% save(strcat(dir_new,'\heat_map'),'heat_map')
-% %savefig(f2,strcat(dir_new,'\heat_map'))
-% print(f2,'-zbuffer', '-djpeg','-r600',strcat(dir_new,'\heat_map.jpg'));
-% cd(dir_orig)
+% set up results folder
+dir_orig = pwd;
+dir_new = PATHNAME; cd(dir_new); %cd('..')
+%dir_new = pwd;
+mkdir('results_heatmap')
+dir_new
+dir_new = strcat(dir_new,'results_heatmap');
+
+% save results in results folder
+save(strcat(dir_new,'\heat_map'),'heat_map')
+%savefig(f2,strcat(dir_new,'\heat_map'))
+print(f2,'-zbuffer', '-djpeg','-r600',strcat(dir_new,'\heat_map.jpg'));
+cd(dir_orig)
 end
