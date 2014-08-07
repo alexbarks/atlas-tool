@@ -1,4 +1,4 @@
-function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_area_of_significanceFlag,peak_systolicFlag)
+function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_traffic_light_volumeFlag,calculate_area_of_significanceFlag,peak_systolicFlag)
 
 %%% [heat_map,traffic_light]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_area_of_significanceFlag,peak_systolicFlag)
 %
@@ -69,29 +69,33 @@ if nargin < 1 || isempty(offset)
 end
 
 if nargin < 2 || isempty(plotFlag)
-    plotFlag = 1;
+    plotFlag = 0;
 end
 
 if nargin < 3 || isempty(calculateRE_Flag)
-    calculateRE_Flag = 1;
+    calculateRE_Flag = 0;
 end
 
 if nargin < 4 || isempty(calculateIE_Flag)
-    calculateIE_Flag = 1;
+    calculateIE_Flag = 0;
 end
 
-if nargin < 5 || isempty(calculate_area_of_significanceFlag)
+if nargin < 6 || isempty(calculate_traffic_light_volumeFlag)
+    calculate_traffic_light_volumeFlag = 0;
+end
+
+if nargin < 7 || isempty(calculate_area_of_significanceFlag)
     calculate_area_of_significanceFlag = 0;
 end
 
-if nargin < 6 || isempty(peak_systolicFlag)
+if nargin < 8 || isempty(peak_systolicFlag)
     peak_systolicFlag = 1;
 end
 
-global data2
+global data
 global atlas
-
-data = [];
+%
+%data = [];
 Rotation_Translation = [];
 
 %[FILENAME, PATHNAME_atlas] = uigetfile('C:\1_Chicago\Data\MIMICS','Load atlas')
@@ -223,13 +227,12 @@ if calculateIE_Flag == 1;
         figure('Name','WSS before interpolation: outer DAo')
         scatter3(atlas.x_coor_wss(atlas_mask_DAo_outer_wss),atlas.y_coor_wss(atlas_mask_DAo_outer_wss),atlas.z_coor_wss(atlas_mask_DAo_outer_wss),20,atlas.mean_wss(atlas_mask_DAo_outer_wss),'filled');axis equal;caxis([0 1.5])
         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-        
     end
 end
 
-%[FILENAME, PATHNAME] = uigetfile('C:\1_Chicago\Data\MIMICS\traffic_light\','Load aorta data')
-PATHNAME = 'C:\1_Chicago\Data\MIMICS\traffic_light\1_RL\PT49-AH\'
-FILENAME = 'data_done'
+[FILENAME, PATHNAME] = uigetfile('C:\1_Chicago\Data\MIMICS\traffic_light\','Load aorta data')
+%PATHNAME = 'C:\1_Chicago\Data\MIMICS\traffic_light\2_RN\PT256-MW\'
+%FILENAME = 'data_done'
 load(strcat(PATHNAME,FILENAME))
 data2 = data; clear data
 
@@ -358,6 +361,7 @@ mask2 = imfilter(mask2,PSF,'conv');
 disp(' ')
 disp('affine registration (dof = 12)! So only scalars used (Affine registration doesnt work for vectors)...Busy registering...')
 disp(' ')
+tic
 disp('...This can take up to 5 minutes...')
 
 % directory with flirt.exe and cygwin1.dll (use cygwin convention)
@@ -414,6 +418,7 @@ yxz_coor_wss_new = inv(worldmat)*yxz_coor_wss'; clear yxz_coor_wss
 data2.x_coor_wss_new = yxz_coor_wss_new(2,:)';
 data2.y_coor_wss_new = yxz_coor_wss_new(1,:)';
 data2.z_coor_wss_new = yxz_coor_wss_new(3,:)'; clear yxz_coor_wss_new
+toc
 
 if plotFlag == 1
     figure('Name','Registered')
@@ -474,7 +479,8 @@ if calculateRE_Flag == 1
     [I_diff,J] = find(difference~=0);
     diff_voxels = size(I_diff,1);
     diff_percentage = ((diff_voxels / mean_I) * 100)/2;
-    disp(['Difference between aorta and atlas = ' num2str(diff_percentage)])
+    disp(['RE: Difference between aorta and atlas = ' num2str(diff_percentage)])
+    disp(' ')
 end
 
 % figure('Name','SD atlas')
@@ -640,26 +646,25 @@ if calculateIE_Flag == 1;
     disp(['IE wall shear stress outer DAo = ' num2str(IE_outer_DAo_wss) ' %'])
 end
 
-[I,J] = find(L2b~=0);
-total_volume = data2.vox(1)*data2.vox(2)*data2.vox(3)*size(I,1);
-
-figure('Name','Mean atlas velocity')
-scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_mean_vel.*50,atlas_mean_vel,'filled')
-axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
-
-figure('Name','std atlas velocity')
-scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_std_vel.*50,atlas_std_vel,'filled')
-axis equal;axis off; axis ij;
-caxis([0 1.5])
-view([180 -90])
-
-figure('Name','Mean atlas WSS')
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none', 'FaceVertexCData',atlas_mean_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
-axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
-
-figure('Name','std atlas WSS')
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none', 'FaceVertexCData',atlas_std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
-axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+if plotFlag == 1
+    figure('Name','Mean atlas velocity')
+    scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_mean_vel.*50,atlas_mean_vel,'filled')
+    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
+    
+    figure('Name','std atlas velocity')
+    scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_std_vel.*50,atlas_std_vel,'filled')
+    axis equal;axis off; axis ij;
+    caxis([0 1.5])
+    view([180 -90])
+    
+    figure('Name','Mean atlas WSS')
+    patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none', 'FaceVertexCData',atlas_mean_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
+    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+    
+    figure('Name','std atlas WSS')
+    patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none', 'FaceVertexCData',atlas_std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
+    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+end
 
 % Determine thresholds
 mean_plus_2SD_atlas_vel = atlas_mean_vel + 1.96.*atlas_std_vel;
@@ -667,148 +672,92 @@ mean_plus_1SD_atlas_vel = atlas_mean_vel + 0.98.*atlas_std_vel;
 mean_plus_2SD_atlas_wss = atlas_mean_wss + 1.96.*atlas_std_wss;
 mean_min_2SD_atlas_wss = atlas_mean_wss - 1.96.*atlas_std_wss;
 
-% Velocity
-figure('Name','mean_plus_2SD_atlas velocity')
-scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,atlas_mean_vel.*50,mean_plus_2SD_atlas_vel,'filled')
-colorbar;axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
-
-figure('Name','mean_plus_1SD_atlas velocity')
-scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,atlas_mean_vel.*50,mean_plus_1SD_atlas_vel,'filled')
-colorbar;axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
-
-% WSS
-figure('Name','mean_plus_2SD_atlas WSS')
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',mean_plus_2SD_atlas_wss,'FaceColor','interp','FaceAlpha',1);
-colorbar;axis equal;axis off; axis ij;caxis([0 3]);view([180 -90]);
-
-figure('Name','mean_min_2SD_atlas WSS')
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',mean_min_2SD_atlas_wss,'FaceColor','interp','FaceAlpha',1);
-colorbar;axis equal;axis off; axis ij;caxis([0 3]);view([180 -90]);
+if plotFlag == 1
+    % Velocity
+    figure('Name','mean_plus_2SD_atlas velocity')
+    scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,atlas_mean_vel.*50,mean_plus_2SD_atlas_vel,'filled')
+    colorbar;axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
+    
+    figure('Name','mean_plus_1SD_atlas velocity')
+    scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,atlas_mean_vel.*50,mean_plus_1SD_atlas_vel,'filled')
+    colorbar;axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
+    
+    % WSS
+    figure('Name','mean_plus_2SD_atlas WSS')
+    patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',mean_plus_2SD_atlas_wss,'FaceColor','interp','FaceAlpha',1);
+    colorbar;axis equal;axis off; axis ij;caxis([0 3]);view([180 -90]);
+    
+    figure('Name','mean_min_2SD_atlas WSS')
+    patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',mean_min_2SD_atlas_wss,'FaceColor','interp','FaceAlpha',1);
+    colorbar;axis equal;axis off; axis ij;caxis([0 3]);view([180 -90]);
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% TRAFFIC LIGHT MAP FOR ABNORMAL VELOCITY %%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i=1:size(data2.vel_m,1)
     if data2.vel_m(i) > mean_plus_2SD_atlas_vel(i)
-        new_mask1(i,1) = 1;
+        new_mask_red_(i,1) = 1;
+        new_mask_yellow_(i,1) = -1;
+        new_mask_green_(i,1) = -1;
     elseif data2.vel_m(i) > mean_plus_1SD_atlas_vel(i)
-        new_mask1(i,1) = -1;
+        new_mask_red_(i,1) = -1;
+        new_mask_yellow_(i,1) = 1;
+        new_mask_green_(i,1) = -1;
     else
-        new_mask1(i,1) = -1;
+        new_mask_red_(i,1) = -1;
+        new_mask_yellow_(i,1) = -1;
+        new_mask_green_(i,1) = 1;
     end
 end
 
-figure(101)
-new_mask11 = zeros(size(L2b));
-new_mask11(L2b) = new_mask1;
-new_mask11(~L2b) = -1;
+% translate point cloud into matrix
+new_mask_red = zeros(size(L2b));
+new_mask_red(L2b) = new_mask_red_;
+new_mask_red(~L2b) = -1;
+new_mask_yellow = zeros(size(L2b));
+new_mask_yellow(L2b) = new_mask_yellow_;
+new_mask_yellow(~L2b) = -1;
+new_mask_green = zeros(size(L2b));
+new_mask_green(L2b) = new_mask_green_;
+new_mask_green(~L2b) = -1;
 
-new_mask11_smoothed = smooth3(new_mask11);
-new_mask12 = new_mask11_smoothed;
-new_mask12(new_mask12 < 0) = 0; % The <0 was tricky to figure out
-L3 = logical(new_mask12);
-
-figure(31)
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.25);
-hold on
-[F1,V1] = isosurface(x,y,z,smooth3(new_mask11),0);
-%[F1,V1] = isosurface(x,y,z,new_mask11,0);
-patch('Faces',F1,'Vertices',V1,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
-axis equal; view([-180 -90]); axis off; axis ij
-xlabel('x'), ylabel('y'), zlabel('z')
-camlight headlight;camlight(180,0); lighting phong
-
-% figure(32)
-% patch('Faces',data2.F,'Vertices',data2.V,'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.25);
-% hold on
-% a = [8 20];
-% c = [ ];
-% [F2,V2,C2]=quiver3Dpatch(x(L3),y(L3),z(L3),x_value_vel(L3),y_value_vel(L3),z_value_vel(L3),c,a);
-% patch('Faces',F2,'Vertices',V2,'CData',C2,'FaceColor','flat','EdgeColor','none','FaceAlpha',1);
-% c2=colorbar;caxis([0 1.5])
-% axis equal; view([-180 -90]); axis off
-% xlabel('x'), ylabel('y'), zlabel('z')
-% camlight headlight;camlight(180,0); lighting phong
-% axis ij
-
-[I,J] = find(new_mask11==1);
-red_volume = data2.vox(1)*data2.vox(2)*data2.vox(3)*size(I,1);
-percentage_red_volume = red_volume / total_volume * 100
-
-for i=1:size(data2.vel_m,1)
-    if data2.vel_m(i) > mean_plus_2SD_atlas_vel(i)
-        new_mask2(i,1) = -1;
-    elseif data2.vel_m(i) > mean_plus_1SD_atlas_vel(i)
-        new_mask2(i,1) = 1;
-    else
-        new_mask2(i,1) = -1;
-    end
+if calculate_traffic_light_volumeFlag == 1
+    
+    [I,J] = find(L2b~=0);
+    total_volume = data2.vox(1)*data2.vox(2)*data2.vox(3)*size(I,1);
+    
+    [I,J] = find(new_mask_red==1);
+    red_volume = data2.vox(1)*data2.vox(2)*data2.vox(3)*size(I,1);
+    percentage_red_volume = red_volume / total_volume * 100;
+    [I,J] = find(new_mask_yellow==1);
+    yellow_volume = data2.vox(1)*data2.vox(2)*data2.vox(3)*size(I,1);
+    percentage_yellow_volume = yellow_volume / total_volume * 100;
+    [I,J] = find(new_mask_green==1);
+    green_volume = data2.vox(1)*data2.vox(2)*data2.vox(3)*size(I,1);
+    percentage_green_volume = green_volume / total_volume * 100;
+    total_percentage = percentage_red_volume + percentage_yellow_volume + percentage_green_volume;
+    
+    disp(['Red volume percentage of total aorta = ' num2str(percentage_red_volume) ' %'])
+    disp(['Yellow volume percentage of total aorta = ' num2str(percentage_yellow_volume) ' %'])
+    disp(['Green volume percentage of total aorta = ' num2str(percentage_green_volume) ' %'])
+    disp(['Total percentage of total aorta = ' num2str(total_percentage) ' %'])
+    disp(' ')
 end
-
-figure(102)
-new_mask21 = zeros(size(L2b));
-new_mask21(L2b) = new_mask2;
-new_mask21(~L2b) = -1;
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.25);
-hold on
-[F2,V2] = isosurface(x,y,z,smooth3(new_mask21),0);
-patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[1 0.9 0],'FaceAlpha',1);
-axis equal; view([0 -90]); axis off
-camlight headlight;camlight(180,0); lighting phong
-
-[I,J] = find(new_mask21==1);
-orange_volume = data2.vox(1)*data2.vox(2)*data2.vox(3)*size(I,1);
-percentage_orange_volume = orange_volume / total_volume * 100
-
-for i=1:size(data2.vel_m,1)
-    if data2.vel_m(i) > mean_plus_2SD_atlas_vel(i)
-        new_mask3(i,1) = -1;
-    elseif data2.vel_m(i) > mean_plus_1SD_atlas_vel(i)
-        new_mask3(i,1) = -1;
-    else
-        new_mask3(i,1) = 1;
-    end
-end
-figure(103)
-new_mask31 = zeros(size(L2b));
-new_mask31(L2b) = new_mask3;
-new_mask31(~L2b) = -1;
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.25);
-hold on
-[F3,V3] = isosurface(x,y,z,smooth3(new_mask31),0);
-patch('Faces',F3,'Vertices',V3,'EdgeColor','none','FaceColor',[0 1 0],'FaceAlpha',1);
-axis equal; view([0 -90]); axis off
-camlight headlight;camlight(180,0); lighting phong
-
-[I,J] = find(new_mask31==1);
-green_volume = data2.vox(1)*data2.vox(2)*data2.vox(3)*size(I,1);
-percentage_green_volume = green_volume / total_volume * 100
-
-total_percentage = percentage_red_volume + percentage_orange_volume + percentage_green_volume
-
-figure('Name','Traffic Light Map')
-patch('Faces',F1,'Vertices',V1,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
-hold on
-patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[1 0.9 0],'FaceAlpha',1);
-patch('Faces',F3,'Vertices',V3,'EdgeColor','none','FaceColor',[0 1 0],'FaceAlpha',1);
-axis equal; view([-180 -90]); axis off;axis ij
-camlight headlight;camlight(180,0); lighting phong
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% HEAT MAP FOR ABNORMAL WSS %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-heat_map = zeros(size(data2.wss_m,1),1);
+heat_mapp = zeros(size(data2.wss_m,1),1);
 for i=1:size(data2.wss_m,1)
     if data2.wss_m(i) < mean_min_2SD_atlas_wss(i)
-        heat_map(i,1) = 0;
+        heat_mapp(i,1) = 0;
     elseif data2.wss_m(i) > mean_plus_2SD_atlas_wss(i)
-        heat_map(i,1) = 1;
+        heat_mapp(i,1) = 1;
     else
-        heat_map(i,1) = 2;
+        heat_mapp(i,1) = 2;
     end
 end
-
-disp('done')
 
 color1 = ones([63 3]);
 
@@ -826,12 +775,6 @@ color1(22:42,3) = color1(22:42,3).*0;%color(17,3);
 color1(43:63,1) = color1(43:63,1).*0.5;%0;%color(33,1);
 color1(43:63,2) = color1(43:63,2).*0.5;%1;%color(33,2);
 color1(43:63,3) = color1(43:63,3).*0.5;%0;%color(33,3);
-
-f2 = figure('Name','Heat Map');
-patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',heat_map,'FaceColor','interp','FaceAlpha',1);
-colormap(color1);caxis([0 2]);axis equal;axis ij; axis off;view([-180 -90])
-aspectRatio = 1./data2.vox;
-set(gca,'dataaspectRatio',aspectRatio(1:3))
 
 if calculate_area_of_significanceFlag == 1;
     if ~exist(strcat(PATHNAME,'\mask6.mat'),'file')
@@ -943,7 +886,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%  TRAFFIC LIGHT MAP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-count = 0;
+count1 = 0;
 angles(1) = 0;
 f1 = figure('Name','Traffic Light Map');
 contours = zeros(size(L2b));
@@ -952,14 +895,14 @@ contours(L2b==1) = 1;
 [atlas.F,V] = isosurface(smooth3(contours),0); % make a surface from the detected contours
 patch('Faces',atlas.F,'Vertices',[V(:,1)-offset V(:,2)-offset V(:,3)-offset],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
 hold on
-[F1,V1] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask11),0);
-[F2,V2] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask21),0);
-[F3,V3] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask31),0);
+[F1,V1] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask_red),0);
+[F2,V2] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask_yellow),0);
+[F3,V3] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask_green),0);
 p11=patch('Faces',F1,'Vertices',V1,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
 p12=patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[1 0.9 0],'FaceAlpha',1);
 p13=patch('Faces',F3,'Vertices',V3,'EdgeColor','none','FaceColor',[0 1 0],'FaceAlpha',1);
 axis equal; axis off;axis ij
-magnitude = flipdim(double(data2.mag_struct.dataAy(:,:,:,5)),3);
+magnitude = flipdim(double(data2.mag_struct.dataAy(:,:,:,time)),3);
 magnitude(magnitude == 0) = 3;
 magnitude(magnitude == 1) = 3;
 magnitude(magnitude == 2) = 3;
@@ -972,9 +915,6 @@ caxis([0 64]);
 aspectRatio = 1./data2.vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight headlight;camlight(180,0); lighting phong
-%camlight headlight;camlight(-90,0); lighting phong
-% light('Position',[0,0,-90],'Style','local')
-%lighting flat
 
 uicontrol('Style','text',...
     'Position',[10 375 120 20],...
@@ -986,31 +926,40 @@ uicontrol('Style', 'slider',...
     'Callback', {@rotater1,gca});
 
 uicontrol('Style','text',...
-    'Position',[15 300 120 20],...
-    'String','Show Red Map')
-uicontrol('Style','checkbox',...
-    'Value',1, 'Position', [15 300 20 20], ...
-    'Callback', {@show_red_region,gca});
+    'Position',[10 325 120 20],...
+    'String','Rotate Light')
+uicontrol('Style', 'slider',...
+    'Min',-180,'Max',180,'Value',0,...
+    'Position', [10 300 120 20],...
+    'SliderStep',[1/360 120/360],...
+    'Callback', {@rotate_light,gca});
 
 uicontrol('Style','text',...
     'Position',[15 275 120 20],...
-    'String','Show Yellow Map')
+    'String','Show Red Map')
 uicontrol('Style','checkbox',...
-    'Value',1, 'Position', [10 275 20 20], ...
-    'Callback', {@show_yellow_region,gca});
+    'Value',1, 'Position', [15 275 20 20], ...
+    'Callback', {@show_red_region,gca});
 
 uicontrol('Style','text',...
     'Position',[15 250 120 20],...
-    'String','Show Green Map')
+    'String','Show Yellow Map')
 uicontrol('Style','checkbox',...
     'Value',1, 'Position', [10 250 20 20], ...
-    'Callback', {@show_green_region,gca});
+    'Callback', {@show_yellow_region,gca});
 
 uicontrol('Style','text',...
     'Position',[15 225 120 20],...
+    'String','Show Green Map')
+uicontrol('Style','checkbox',...
+    'Value',1, 'Position', [10 225 20 20], ...
+    'Callback', {@show_green_region,gca});
+
+uicontrol('Style','text',...
+    'Position',[15 200 120 20],...
     'String','Show Anatomy')
 uicontrol('Style','checkbox',...
-    'Value',0, 'Position', [10 225 20 20], ...
+    'Value',0, 'Position', [10 200 20 20], ...
     'Callback', {@show_anatomy1,gca});
 
 uicontrol('Style','text',...
@@ -1088,34 +1037,44 @@ uicontrol('Style', 'slider',...
     end
 
     function rotater1(hObj,event,ax)
-        count = count + 1;
+        count1 = count1 + 1;
         dtheta = get(hObj,'Value');
         dphi = 0;
         
-        if count == 1;
+        if count1 == 1;
             dtheta2 = dtheta*3;
         else
-            dtheta2 = (dtheta - angles(count-1))*3;
+            dtheta2 = (dtheta - angles(count1-1))*3;
         end
         
         camorbit(dtheta2,dphi,'data',[0 1 0])
-        angles(count) = dtheta;
+        angles(count1) = dtheta;
     end
-%
-% %camlight headlight%(180,0)
+
+    function rotate_light(hObj,event,ax)
+        clear c
+        dthetas = get(hObj,'Value');
+        dphi = 0;
+        
+        dthetas / 360;
+        
+        %c=camlight(dthetas,dphi);
+        c = light('Position',[0,dthetas,0],'Style','infinite')
+        lighting phong        
+    end
+
 set(f1,'toolbar','figure');
-axis vis3d
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Heat map (WSS)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-count = 0;
+count3 = 0;
 angles(1) = 0;
 f2 = figure('Name','Heat map');
 x = data2.x_coor_wss./data2.vox(1) - offset;
 y = data2.y_coor_wss./data2.vox(2) - offset;
 z = data2.z_coor_wss./data2.vox(3) - offset;
-p2=patch('Faces',data2.F_matrix{1},'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_map,'FaceColor','interp','FaceAlpha',1);
+p2=patch('Faces',data2.F_matrix{1},'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
 gray_colormap = colormap(gray);
 color2(1,:) = [0 0 1];
 color2(2,:) = [1 0 0];
@@ -1124,7 +1083,7 @@ color2(4:64,:) = gray_colormap(4:64,:);
 colormap(color2);
 caxis([0 64]);
 axis equal; axis ij; axis off;
-magnitude = flipdim(double(data2.mag_struct.dataAy(:,:,:,5)),3);
+magnitude = flipdim(double(data2.mag_struct.dataAy(:,:,:,time)),3);
 magnitude(magnitude == 0) = 3;
 magnitude(magnitude == 1) = 3;
 magnitude(magnitude == 2) = 3;
@@ -1212,23 +1171,23 @@ uicontrol('Style','checkbox',...
     end
 
     function rotater2(hObj,event,ax)
-        count = count + 1;
-        dtheta = get(hObj,'Value');
+        count3 = count3 + 1;
+        dtheta3 = get(hObj,'Value');
         dphi = 0;
         
-        if count == 1;
-            dtheta2 = dtheta*3;
+        if count3 == 1;
+            dtheta4 = dtheta3*3;
         else
-            dtheta2 = (dtheta - angles(count-1))*3;
+            dtheta4 = (dtheta3 - angles(count3-1))*3;
         end
         
-        camorbit(dtheta2,dphi,'data',[0 1 0])
-        angles(count) = dtheta;
+        camorbit(dtheta4,dphi,'data',[0 1 0])
+        angles(count3) = dtheta3;
     end
 
 set(f2,'toolbar','figure');
 
-heat_map.heat_map = heat_map;
+heat_map.heat_map = heat_mapp;
 heat_map.vertices = [x y z];
 heat_map.faces = data2.F_matrix{1};
 heat_map.color = color1;
