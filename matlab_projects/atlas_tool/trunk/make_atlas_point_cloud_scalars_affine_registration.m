@@ -61,29 +61,29 @@ if nargin < 3 || isempty(calculateRE_Flag)
 end
 
 if nargin < 4 || isempty(calculateIE_Flag)
-    calculateIE_Flag = 1;
+    calculateIE_Flag = 0;
 end
 
 if nargin < 5 || isempty(peak_systolicFlag)
     peak_systolicFlag = 0;
 end
 
-PATHNAME_probability_mask = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\';
+PATHNAME_probability_mask = 'c:\_ensightCases\bav_tissue\Controls\';
 probability_mask = 'probability_mask.mat';
 load(strcat(PATHNAME_probability_mask,probability_mask));
 
 %%%% datasets to load
 %%%% Copy paste the folders of choice here, add more or discard if needed
-PATHNAME{1} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\1_20140508_100742_Skyra_NMH\';
-PATHNAME{2} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\2_20140421_090435_Skyra_NMH\';
-PATHNAME{3} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\3_20140508_084846_Skyra_NMH\';
-PATHNAME{4} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\4_20140425_073703_Skyra_NMH\';
-PATHNAME{5} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\5_20140430_080819_Aera_NMH\';
-PATHNAME{6} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\6_20140318_084120_Aera_NMH\';
-PATHNAME{7} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\7_20121206_115454_Avanto_NMH\';
-PATHNAME{8} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\8_20121109_080007_Skyra_NMH\';
-PATHNAME{9} = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\9_20121130_124948_Skyra_NMH\';
-PATHNAME{10}= 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\10_20130118_131920_Aera_NMH\';
+PATHNAME{1} = 'c:\_ensightCases\bav_tissue\Controls\1_20120420_132106\';
+PATHNAME{2} = 'c:\_ensightCases\bav_tissue\Controls\2_20120426_132244\';
+PATHNAME{3} = 'c:\_ensightCases\bav_tissue\Controls\3_20121206_115454\';
+PATHNAME{4} = 'c:\_ensightCases\bav_tissue\Controls\4_20120522_170003\';
+PATHNAME{5} = 'c:\_ensightCases\bav_tissue\Controls\5_20120502_134311\';
+PATHNAME{6} = 'c:\_ensightCases\bav_tissue\Controls\6_20120627_093614\';
+PATHNAME{7} = 'c:\_ensightCases\bav_tissue\Controls\7_20120702_092347\';
+PATHNAME{8}= 'c:\_ensightCases\bav_tissue\Controls\8_20120831_101148\';
+PATHNAME{9}= 'c:\_ensightCases\bav_tissue\Controls\9_20121109_080007\';
+PATHNAME{10}= 'c:\_ensightCases\bav_tissue\Controls\10_20130621_122315\';
 FILENAME = 'data_done';
 
 mask1 = probability_mask.matrix;
@@ -365,7 +365,7 @@ for n = 1:size(PATHNAME,2)
    
     tic 
     % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-    fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
+    fsldir = '/cygdrive/d/research/matlabcode/matlab_registration/flirt/';
  
     % save as nifti
     cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
@@ -392,7 +392,7 @@ for n = 1:size(PATHNAME,2)
     fclose(f);
     
     % and go! takes 4-5 mins.
-    system('c:\cygwin\bin\bash runflirt.sh');
+    system('c:\cygwin64\bin\bash runflirt.sh');
     
     % load transformation mask
     load Rotation_Translation -ascii
@@ -545,11 +545,11 @@ for n = 1:size(PATHNAME,2)
     
     if plotFlag == 1
         figure('Name','interpolated to atlas velocity')
-        scatter3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,50,vel_m_new,'filled')
+        scatter3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,50, data2.vel_m,'filled')
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
         
         figure('Name','interpolated to atlas WSS')
-        patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',wss_m_new,'FaceColor','interp','FaceAlpha',1);
+        patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',data2.wss_m ,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
     end
     
@@ -782,7 +782,7 @@ if calculateIE_Flag == 1;
 end
 
 % save the atlas to the directoty of choice
-directory = uigetdir('C:\1_Chicago\Data\MIMICS\');
+directory = uigetdir('c:\_ensightCases\bav_tissue\Controls\');
 disp('...saving atlas...')
 save(strcat(directory,'\atlas'),'atlas')
 
