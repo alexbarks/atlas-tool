@@ -69,11 +69,11 @@ if nargin < 1 || isempty(offset)
 end
 
 if nargin < 2 || isempty(plotFlag)
-    plotFlag = 0;
+    plotFlag = 1;
 end
 
 if nargin < 3 || isempty(calculateRE_Flag)
-    calculateRE_Flag = 0;
+    calculateRE_Flag = 1;
 end
 
 if nargin < 4 || isempty(calculateIE_Flag)
@@ -89,7 +89,7 @@ if nargin < 7 || isempty(calculate_area_of_higherlowerFlag)
 end
 
 if nargin < 8 || isempty(peak_systolicFlag)
-    peak_systolicFlag = 1;
+    peak_systolicFlag = 0;
 end
 
 global data
@@ -99,8 +99,8 @@ global atlas
 Rotation_Translation = [];
 
 %[FILENAME, PATHNAME_atlas] = uigetfile('C:\1_Chicago\Data\MIMICS','Load atlas')
-PATHNAME_atlas = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls\'
-FILENAME = 'atlas_peak_systole'
+PATHNAME_atlas = 'c:\_ensightCases\bav_tissue\Controls\'
+FILENAME = 'atlas.mat'
 load(strcat(PATHNAME_atlas,FILENAME))
 mask1 = atlas.mask;
 
@@ -230,7 +230,7 @@ if calculateIE_Flag == 1;
     end
 end
 
-[FILENAME, PATHNAME] = uigetfile('C:\1_Chicago\Data\MIMICS\traffic_light\','Load aorta data')
+[FILENAME, PATHNAME] = uigetfile('c:\_ensightCases\bav_tissue\','Load aorta data')
 %PATHNAME = 'C:\1_Chicago\Data\MIMICS\traffic_light\2_RN\PT256-MW\'
 %FILENAME = 'data_done'
 load(strcat(PATHNAME,FILENAME))
@@ -365,7 +365,7 @@ tic
 disp('...This can take up to 5 minutes...')
 
 % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
+fsldir = '/cygdrive/d/research/matlabcode/matlab_registration/flirt/';
 
 % save as nifti
 cnii=make_nii(mask1_to_register,[atlas.vox(1) atlas.vox(2) atlas.vox(3)]);
@@ -392,7 +392,7 @@ fprintf(f,'%s',flirtcmd);
 fclose(f);
 
 % and go! takes 4-5 mins.
-system('c:\cygwin\bin\bash runflirt.sh');
+system('c:\cygwin64\bin\bash runflirt.sh');
 
 % load transformation mask
 load Rotation_Translation -ascii
