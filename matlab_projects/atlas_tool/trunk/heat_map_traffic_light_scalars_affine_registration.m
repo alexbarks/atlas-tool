@@ -69,11 +69,11 @@ if nargin < 1 || isempty(offset)
 end
 
 if nargin < 2 || isempty(plotFlag)
-    plotFlag = 1;
+    plotFlag = 0;
 end
 
 if nargin < 3 || isempty(calculateRE_Flag)
-    calculateRE_Flag = 1;
+    calculateRE_Flag = 0;
 end
 
 if nargin < 4 || isempty(calculateIE_Flag)
@@ -99,8 +99,10 @@ global atlas
 Rotation_Translation = [];
 
 %[FILENAME, PATHNAME_atlas] = uigetfile('C:\1_Chicago\Data\MIMICS','Load atlas')
-PATHNAME_atlas = 'c:\_ensightCases\bav_tissue\Controls\'
-FILENAME = 'atlas.mat'
+PATHNAME_atlas = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\'
+FILENAME = 'atlas'
+%PATHNAME_atlas = 'c:\_ensightCases\bav_tissue\Controls\'
+%FILENAME = 'atlas.mat'
 load(strcat(PATHNAME_atlas,FILENAME))
 mask1 = atlas.mask;
 
@@ -365,7 +367,10 @@ tic
 disp('...This can take up to 5 minutes...')
 
 % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-fsldir = '/cygdrive/d/research/matlabcode/matlab_registration/flirt/';
+% Pims folder
+%fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
+% Put in Alex's folder right here
+fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
 
 % save as nifti
 cnii=make_nii(mask1_to_register,[atlas.vox(1) atlas.vox(2) atlas.vox(3)]);
@@ -392,7 +397,8 @@ fprintf(f,'%s',flirtcmd);
 fclose(f);
 
 % and go! takes 4-5 mins.
-system('c:\cygwin64\bin\bash runflirt.sh');
+%system('c:\cygwin64\bin\bash runflirt.sh');
+system('c:\cygwin\bin\bash runflirt.sh');
 
 % load transformation mask
 load Rotation_Translation -ascii
@@ -901,8 +907,21 @@ hold on
 [F3,V3] = isosurface(x./data2.vox(1)-offset,y./data2.vox(2)-offset,z./data2.vox(3)-offset,smooth3(new_mask_green),0);
 p11=patch('Faces',F1,'Vertices',V1,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
 p12=patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[1 0.9 0],'FaceAlpha',1);
+set(p12,'HandleVisibility','on','Visible','off');
 p13=patch('Faces',F3,'Vertices',V3,'EdgeColor','none','FaceColor',[0 1 0],'FaceAlpha',1);
+set(p13,'HandleVisibility','on','Visible','off')
 axis equal; axis off;axis ij
+view([-180 -90]);
+aspectRatio = 1./data2.vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
+camlight headlight;camlight(180,0); lighting phong
+% set up results folder
+dir_orig = pwd;
+dir_new = PATHNAME; cd(dir_new); %cd('..')
+%dir_new = pwd;
+mkdir('results_traffic_light_map')
+dir_new = strcat(dir_new,'results_traffic_light_map');
+saveas(gcf,[dir_new '\traffic_light_map.fig'])
 magnitude = flipdim(double(data2.mag_struct.dataAy(:,:,:,time)),3);
 magnitude(magnitude == 0) = 3;
 magnitude(magnitude == 1) = 3;
@@ -920,7 +939,7 @@ camlight headlight;camlight(180,0); lighting phong
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PvO: Images for the Brief Report for NEJM were created with:
 %%% 1. NO axis ij: I couldn't get the lighting right with axis ij on
-%%%    The images therefore had to be flipped horizontly for the paper.
+%%%    The images therefore had to be flipped horizontally for the paper.
 %%% 2. view([0 -90])
 %%% 3. camlight(-90,0)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -954,14 +973,14 @@ uicontrol('Style','text',...
     'Position',[15 250 120 20],...
     'String','Show Yellow Map')
 uicontrol('Style','checkbox',...
-    'Value',1, 'Position', [10 250 20 20], ...
+    'Value',0, 'Position', [10 250 20 20], ...
     'Callback', {@show_yellow_region,gca});
 
 uicontrol('Style','text',...
     'Position',[15 225 120 20],...
     'String','Show Green Map')
 uicontrol('Style','checkbox',...
-    'Value',1, 'Position', [10 225 20 20], ...
+    'Value',0, 'Position', [10 225 20 20], ...
     'Callback', {@show_green_region,gca});
 
 uicontrol('Style','text',...
@@ -1077,19 +1096,11 @@ traffic_light.green = new_mask_green;
 traffic_light.vertices = [V(:,1)-offset V(:,2)-offset V(:,3)-offset];
 traffic_light.faces = F;
 
-% set up results folder
-dir_orig = pwd;
-dir_new = PATHNAME; cd(dir_new); %cd('..')
-%dir_new = pwd;
-mkdir('results_traffic_light_map')
-dir_new
-dir_new = strcat(dir_new,'results_traffic_light_map');
-
 % save results in results folder
 save(strcat(dir_new,'\results_trafficlight_map'),'traffic_light');
 %savefig(f2,strcat(dir_new,'\heat_map'))
-print(f1,'-zbuffer', '-djpeg','-r600',strcat(dir_new,'\traffic_light_map.jpg'));
-cd(dir_orig)
+print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map.tif'));
+cd(dir_orig);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Heat map (WSS)
@@ -1109,6 +1120,14 @@ color2(4:64,:) = gray_colormap(4:64,:);
 colormap(color2);
 caxis([0 64]);
 axis equal; axis ij; axis off;
+view([-180 -90]);
+% set up results folder
+dir_orig = pwd;
+dir_new = PATHNAME; cd(dir_new); %cd('..')
+%dir_new = pwd;
+mkdir('results_heatmap');
+dir_new = strcat(dir_new,'results_heatmap');
+saveas(gcf,[dir_new '\heat_map.fig'])
 magnitude = flipdim(double(data2.mag_struct.dataAy(:,:,:,time)),3);
 magnitude(magnitude == 0) = 3;
 magnitude(magnitude == 1) = 3;
@@ -1117,7 +1136,7 @@ hold on
 s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3),magnitude(:,:,1),'EdgeColor','none');
 set(s2,'HandleVisibility','off','Visible','off');
 axis equal;
-view([-180 -90])
+%view([-180 -90])
 aspectRatio = 1./data2.vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 
@@ -1154,13 +1173,13 @@ uicontrol('Style','text',...
 uicontrol('Style','checkbox',...
     'Value',0, 'Position', [10 225 20 20], ...
     'Callback', {@show_anatomy2,gca});
- 
-uicontrol('Style','text',...
-    'Position',[15 300 120 20],...
-    'String','Show Heat Map')
-uicontrol('Style','checkbox',...
-    'Value',1, 'Position', [15 300 20 20], ...
-    'Callback', {@show_heat_mapp,gca});
+
+% uicontrol('Style','text',...
+%     'Position',[15 300 120 20],...
+%     'String','Show Heat Map')
+% uicontrol('Style','checkbox',...
+%     'Value',1, 'Position', [15 300 20 20], ...
+%     'Callback', {@show_heat_mapp,gca});
 
     function move_slice2(hObj,event,ax)
         sliceobj = findobj(s2);
@@ -1169,16 +1188,16 @@ uicontrol('Style','checkbox',...
         s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
     end
 
-    function show_heat_mapp(hObj,event,ax)
-        show = round(get(hObj,'Value'));
-        if show == 1
-            patchobj = findobj(p2);
-            set(patchobj,'HandleVisibility','on','Visible','on');
-        elseif show == 0
-            patchobj = findobj(p2);
-            set(patchobj,'HandleVisibility','off','Visible','off');
-        end
-    end
+%     function show_heat_mapp(hObj,event,ax)
+%         show = round(get(hObj,'Value'));
+%         if show == 1
+%             patchobj = findobj(p2);
+%             set(patchobj,'HandleVisibility','on','Visible','on');
+%         elseif show == 0
+%             patchobj = findobj(p2);
+%             set(patchobj,'HandleVisibility','off','Visible','off');
+%         end
+%     end
 
     function show_anatomy2(hObj,event,ax)
         show = round(get(hObj,'Value'));
@@ -1218,17 +1237,9 @@ heat_map.vertices = [x y z];
 heat_map.faces = data2.F_matrix{1};
 heat_map.color = color1;
 
-% set up results folder
-dir_orig = pwd;
-dir_new = PATHNAME; cd(dir_new); %cd('..')
-%dir_new = pwd;
-mkdir('results_heatmap')
-dir_new
-dir_new = strcat(dir_new,'results_heatmap');
-
 % save results in results folder
-save(strcat(dir_new,'\heat_map'),'heat_map')
+save(strcat(dir_new,'\heat_map'),'heat_map');
 %savefig(f2,strcat(dir_new,'\heat_map'))
-print(f2,'-zbuffer', '-djpeg','-r600',strcat(dir_new,'\heat_map.jpg'));
+print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map.tif'));
 cd(dir_orig)
 end
