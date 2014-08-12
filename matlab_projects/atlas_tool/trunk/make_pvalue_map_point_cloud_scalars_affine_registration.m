@@ -81,46 +81,46 @@ if nargin < 5 || isempty(calculate_p_value_volumeFlag)
 end
 
 if nargin < 6 || isempty(calculate_area_of_significance_wss)
-    calculate_area_of_significance_wss = 1;
+    calculate_area_of_significance_wss = 0;
 end
 
 if nargin < 7 || isempty(peak_systolicFlag)
     peak_systolicFlag = 0;
 end
 
-PATHNAME_probability_mask = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls';
+PATHNAME_probability_mask = 'c:\_ensightCases\bav_tissue\Controls\';
 probability_mask = 'probability_mask.mat';
 load(strcat(PATHNAME_probability_mask,probability_mask));
 
 %%%% COHORT 1: datasets to load
 %%%% Copy paste the folders of choice here, add more or discard if needed
-PATHNAME1{1} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\1_20120420_132106\';
-PATHNAME1{2} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\2_20120426_132244\';
-PATHNAME1{3} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\3_20121206_115454\';
-PATHNAME1{4} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\4_20120522_170003\';
-PATHNAME1{5} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\5_20120502_134311\';
-PATHNAME1{6} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\6_20120627_093614\';
-PATHNAME1{7} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\7_20120702_092347\';
-PATHNAME1{8} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\8_20120831_101148\';
-PATHNAME1{9} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\9_20121109_080007\';
-PATHNAME1{10}= 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\10_20130621_122315\';
+PATHNAME1{1} = 'c:\_ensightCases\bav_tissue\controls\1_20120420_132106\';
+PATHNAME1{2} = 'c:\_ensightCases\bav_tissue\controls\2_20120426_132244\';
+PATHNAME1{3} = 'c:\_ensightCases\bav_tissue\controls\3_20121206_115454\';
+PATHNAME1{4} = 'c:\_ensightCases\bav_tissue\controls\4_20120522_170003\';
+PATHNAME1{5} = 'c:\_ensightCases\bav_tissue\controls\5_20120502_134311\';
+PATHNAME1{6} = 'c:\_ensightCases\bav_tissue\controls\6_20120627_093614\';
+PATHNAME1{7} = 'c:\_ensightCases\bav_tissue\controls\7_20120702_092347\';
+PATHNAME1{8} = 'c:\_ensightCases\bav_tissue\controls\8_20120831_101148\';
+PATHNAME1{9} = 'c:\_ensightCases\bav_tissue\controls\9_20121109_080007\';
+PATHNAME1{10}= 'c:\_ensightCases\bav_tissue\controls\10_20130621_122315\';
 FILENAME = 'data_done';
 
 %%%% COHORT 1: datasets to load
 %%%% Copy paste the folders of choice here, add more or discard if needed
-PATHNAME2{1} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\1_PT221-BJ\';
-PATHNAME2{2} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\2_PT23-LS\';
-PATHNAME2{3} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\3_PT68-DD\';
-PATHNAME2{4} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\4_PT47-MR\';
-PATHNAME2{5} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\5_PT115-AG\';
-PATHNAME2{6} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\6_PT151-NJ\';
-PATHNAME2{7} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\7_PT193-SM\';
-PATHNAME2{8} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\8_PT202-AP\';
-PATHNAME2{9} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\9_PT208-KK\';
-PATHNAME2{10}= 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\10_PT214-DT\';
-PATHNAME2{11}= 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\11_PT6-RG_followup\';
-PATHNAME2{12}= 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\12_PT242-JL\';
-PATHNAME2{13}= 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\13_PT53-JJ_followup\';
+PATHNAME2{1} = 'c:\_ensightCases\bav_tissue\bav\1_PT221-BJ\';
+PATHNAME2{2} = 'c:\_ensightCases\bav_tissue\bav\2_PT23-LS\';
+PATHNAME2{3} = 'c:\_ensightCases\bav_tissue\bav\3_PT68-DD\';
+PATHNAME2{4} = 'c:\_ensightCases\bav_tissue\bav\4_PT47-MR\';
+PATHNAME2{5} = 'c:\_ensightCases\bav_tissue\bav\5_PT115-AG\';
+PATHNAME2{6} = 'c:\_ensightCases\bav_tissue\bav\6_PT151-NJ\';
+PATHNAME2{7} = 'c:\_ensightCases\bav_tissue\bav\7_PT193-SM\';
+PATHNAME2{8} = 'c:\_ensightCases\bav_tissue\bav\8_PT202-AP\';
+PATHNAME2{9} = 'c:\_ensightCases\bav_tissue\bav\9_PT208-KK\';
+PATHNAME2{10}= 'c:\_ensightCases\bav_tissue\bav\10_PT214-DT\';
+PATHNAME2{11}= 'c:\_ensightCases\bav_tissue\bav\11_PT6-RG_followup\';
+PATHNAME2{12}= 'c:\_ensightCases\bav_tissue\bav\12_PT242-JL\';
+PATHNAME2{13}= 'c:\_ensightCases\bav_tissue\bav\13_PT53-JJ_followup\';
 FILENAME = 'data_done';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -411,7 +411,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
 
     tic
     % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-    fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
+    fsldir = '/cygdrive/d/research/matlabcode/matlab_registration/flirt/';
 
     % save as nifti
     cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
@@ -438,7 +438,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     fclose(f);
 
     % and go! takes 4-5 mins.
-    system('c:\cygwin\bin\bash runflirt.sh');
+    system('c:\cygwin64\bin\bash runflirt.sh');
 
     % load transformation mask
     load Rotation_Translation -ascii
@@ -747,16 +747,6 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     end
     disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 end
-
-save C:\1_Chicago\VEL1 VEL1
-save C:\1_Chicago\VEL2 VEL2
-save C:\1_Chicago\WSS1 WSS1
-save C:\1_Chicago\WSS2 WSS2
-
-load C:\1_Chicago\VEL1 VEL1
-load C:\1_Chicago\VEL2 VEL2
-load C:\1_Chicago\WSS1 WSS1
-load C:\1_Chicago\WSS2 WSS2
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%% VELOCITY

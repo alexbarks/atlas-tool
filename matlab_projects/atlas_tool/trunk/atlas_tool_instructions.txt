@@ -29,5 +29,10 @@ Important general note: need to make sure that rotation matrix is appropriately 
 		* line 368 (flirt location_
 		* line 395 ('cygwin64')
 		
+	d. run 'make_pvalue_map_point_cloud_scalars_affine_registration.m' to create p-value maps
+	- things to change in the hard code
+		* line 414 (flirt location)
+		* line 441 ('cygwin64')
+		
 		
 		
