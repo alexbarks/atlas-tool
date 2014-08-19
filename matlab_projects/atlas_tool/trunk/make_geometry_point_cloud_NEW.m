@@ -41,17 +41,7 @@ function [probability_mask] = make_geometry_point_cloud_NEW(PATHNAME,plotFlag,sa
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-if ~exist(PATHNAME{1}) == 2 || isempty(PATHNAME{1})
-    error('No Input PATHANME given')
-end
-
-if nargin < 2 || isempty(plotFlag)
-    plotFlag = 1;
-end
-
-
-% %%% masks to load
+% %%% masks to load (use for debug)
 %
 PATHNAME{1} = 'l:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\1_20120420_132106\mrstruct\';
 PATHNAME{2} = 'l:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\2_20120426_132244\mrstruct\';
@@ -65,6 +55,17 @@ PATHNAME{3} = 'l:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Contr
 % PATHNAME{10}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\10_F_20121221_100044_Skyra_NMH\mrstruct\';
 % PATHNAME{11}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\11_F_20130620_144334_Skyra_NMH\mrstruct\';
 % PATHNAME{12}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\12_F_20140502_075511_Aera_NMH\mrstruct\';
+
+if ~exist(PATHNAME{1}) == 2 || isempty(PATHNAME{1})
+    error('No Input PATHANME given')
+end
+
+if nargin < 2 || isempty(plotFlag)
+    plotFlag = 1;
+end
+
+
+
 
 FILENAME = 'mask_struct_aorta';
 
