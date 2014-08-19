@@ -1,4 +1,4 @@
-function [probability_mask] = make_geometry_point_cloud(offset,plotFlag)
+function [probability_mask] = make_geometry_point_cloud_NEW(PATHNAME,plotFlag,saveFlag)
 
 %%% [probability_mask] = make_geometry_point_cloud(offset,plotFlag,calculateRE_Flag)
 %
@@ -40,30 +40,14 @@ function [probability_mask] = make_geometry_point_cloud(offset,plotFlag)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clc, clear, close all % I hate functions that don't close the stuff that was running before
-
-if nargin < 1 || isempty(offset)
-    offset = 40;
+if ~exist(PATHNAME{1}) == 2 || isempty(PATHNAME{1})
+    error('No Input PATHANME given')
 end
 
 if nargin < 2 || isempty(plotFlag)
     plotFlag = 1;
 end
 
-% %%% masks to load
-%
-PATHNAME{1} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\1_M_20140404_094040_Aera_NMH\mrstruct\';
-PATHNAME{2} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\2_F_20140404_082635_Aera_NMH\mrstruct\';
-PATHNAME{3} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\3_M_20120427_100153_Espree_NMH\mrstruct\';
-PATHNAME{4} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\4_M_20120629_141637_Espree_NMH\mrstruct\';
-PATHNAME{5} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\5_M_20120906_064323_Espree_NMH\mrstruct\';
-PATHNAME{6} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\6_M_20121213_152738_Skyra_NMH\mrstruct\';
-PATHNAME{7} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\7_M_20130928_132456_Avanto_NMH\mrstruct\';
-PATHNAME{8} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\8_F_20130620_163030_Skyra_NMH\mrstruct\';
-PATHNAME{9} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\9_F_20120705_092028_Skyra_NMH\mrstruct\';
-PATHNAME{10}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\10_F_20121221_100044_Skyra_NMH\mrstruct\';
-PATHNAME{11}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\11_F_20130620_144334_Skyra_NMH\mrstruct\';
-PATHNAME{12}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\12_F_20140502_075511_Aera_NMH\mrstruct\';
 FILENAME = 'mask_struct_aorta';
 
 disp(['...Busy loading data_done aorta ' num2str(1)])
@@ -74,20 +58,14 @@ disp(['Done loading data_done aorta'  num2str(1)]);disp(' ')
 %data1 = data; clear data;
 mask1 = mrstruct_mask.dataAy;
 mask1_vox = mrstruct_mask.vox;clear mrstruct_mask
-
-%%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
-sizes = [size(mask1,1)+offset  size(mask1,2)+offset size(mask1,3)+offset];
-mask1b = zeros(sizes);
-mask1b((offset+1):size(mask1b,1),(offset+1):size(mask1b,2),(offset+1):size(mask1b,3)) = mask1;
-mask1 = mask1b;clear mask1b
 L = (mask1 ~= 0);
 
 for n = 2:size(PATHNAME,2)
-
+    
     [x,y,z] = meshgrid((1:size(mask1,2)).* mask1_vox(2), ...
         (1:size(mask1,1)).* mask1_vox(1),(1:size(mask1,3)).* mask1_vox(3));
     x_coor1 = x(L);y_coor1 = y(L);z_coor1 = z(L);
-    clear x, clear y, clear z    
+    clear x, clear y, clear z
     
     disp(['...Busy loading data_done aorta ' num2str(n)])
     tic
@@ -97,11 +75,11 @@ for n = 2:size(PATHNAME,2)
     mask2 = mrstruct_mask.dataAy;
     mask2_vox = mrstruct_mask.vox;clear mrstruct_mask
     
-    %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
-    sizes = [size(mask2,1)+offset size(mask2,2)+offset size(mask2,3)+offset];
-    mask2b = zeros(sizes);
-    mask2b((offset+1):size(mask2b,1),(offset+1):size(mask2b,2),(offset+1):size(mask2b,3)) = mask2;
-    mask2 = mask2b;clear mask2b
+    %     %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
+    %     sizes = [size(mask2,1)+offset size(mask2,2)+offset size(mask2,3)+offset];
+    %     mask2b = zeros(sizes);
+    %     mask2b((offset+1):size(mask2b,1),(offset+1):size(mask2b,2),(offset+1):size(mask2b,3)) = mask2;
+    %     mask2 = mask2b;clear mask2b
     
     L = (mask2 ~= 0);
     [x,y,z] = meshgrid((1:size(mask2,2)).* mask2_vox(2), ...
@@ -132,9 +110,9 @@ for n = 2:size(PATHNAME,2)
     
     tic
     % directory with flirt.exe and cygwin1.dll (use cygwin convention)
- %   fsldir = '/cygdrive/d/research/matlabCode/matlab_registration/flirt/';
+    %   fsldir = '/cygdrive/d/research/matlabCode/matlab_registration/flirt/';
     fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
-
+    
     % save as nifti
     cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
     save_nii(cnii,'mask1.nii');
@@ -189,10 +167,25 @@ for n = 2:size(PATHNAME,2)
         axis equal;view([0 90]); axis ij
     end
     
+    offset = 100;
+    if n == 2
+        %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
+        sizes = [size(mask1,1)+offset  size(mask1,2)+offset size(mask1,3)+offset];
+        mask1b = zeros(sizes);
+        mask1b((offset+1):size(mask1b,1),(offset+1):size(mask1b,2),(offset+1):size(mask1b,3)) = mask1;
+        mask1c = mask1b;clear mask1b
+    else
+        %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
+        sizes = [size(probability_mask.matrix,1)+offset  size(probability_mask.matrix,2)+offset size(probability_mask.matrix,3)+offset];
+        mask1b = zeros(sizes);
+        mask1b((offset+1):size(mask1b,1),(offset+1):size(mask1b,2),(offset+1):size(mask1b,3)) = probability_mask.matrix;
+        probability_mask.matrix = mask1b;clear mask1b
+    end
+    
     %%% Round the coordinates to be able to create a matrix
-    x_round = round(x_coor./mask1_vox(1));
-    y_round = round(y_coor./mask1_vox(2));
-    z_round = round(z_coor./mask1_vox(3));
+    x_round = round(x_coor./mask1_vox(1)) + offset;
+    y_round = round(y_coor./mask1_vox(2)) + offset;
+    z_round = round(z_coor./mask1_vox(3)) + offset;
     
     % Create matrix
     indices_mask = [x_round y_round z_round];
@@ -212,60 +205,76 @@ for n = 2:size(PATHNAME,2)
     se = strel('disk',1);
     mask_new = imerode(smooth3(mask_new),se);
     
-    % Make sure both masks have the same dimensions
-    if size(mask1,1) > size(mask_new,1)
-        mask_new(size(mask_new,1):size(mask1,1),:,:) = 0;
-    elseif size(mask1,1) < size(mask_new,1)
-        mask1(size(mask1,1):size(mask_new,1),:,:) = 0;
-    end
-    if size(mask1,2) > size(mask_new,2)
-        mask_new(:,size(mask_new,2):size(mask1,2),:) = 0;
-    elseif size(mask1,2) < size(mask_new,2)
-        mask1(:,size(mask1,2):size(mask_new,2),:) = 0;
-    end
-    if size(mask1,3) > size(mask_new,3)
-        mask_new(:,:,size(mask_new,3):size(mask1,3)) = 0;
-    elseif size(mask1,3) < size(mask_new,3)
-        mask1(:,:,size(mask1,3):size(mask_new,3)) = 0;
-    end
-    
-    L_mask_new = double(mask_new ~= 0);
-    
     if n == 2
-        mask1 = mask1+L_mask_new;
-        probability_mask.matrix  = mask1;
+        % Make sure both masks have the same dimensions
+        if size(mask1c,1) > size(mask_new,1)
+            mask_new(size(mask_new,1):size(mask1c,1),:,:) = 0;
+        elseif size(mask1c,1) < size(mask_new,1)
+            %   mask1c(size(mask1c,1):size(mask_new,1),:,:) = 0;
+            mask_new(size(mask1c,1)+1:size(mask_new,1),:,:) = [];
+        end
+        if size(mask1c,2) > size(mask_new,2)
+            mask_new(:,size(mask_new,2):size(mask1c,2),:) = 0;
+        elseif size(mask1c,2) < size(mask_new,2)
+            %mask1c(:,size(mask1c,2):size(mask_new,2),:) = 0;
+            mask_new(:,size(mask1c,2)+1:size(mask_new,2),:) = [];
+        end
+        if size(mask1c,3) > size(mask_new,3)
+            mask_new(:,:,size(mask_new,3):size(mask1c,3)) = 0;
+        elseif size(mask1c,3) < size(mask_new,3)
+            %mask1c(:,:,size(mask1c,3):size(mask_new,3)) = 0;
+            mask_new(:,:,size(mask1c,3)+1:size(mask_new,3)) = [];
+        end
+        
+        L_mask_new = double(mask_new ~= 0);
+        
+        mask1c = mask1c+L_mask_new;
+        probability_mask.matrix  = mask1c;
+        
+        probability_mask.matrix(1:offset,:,:) = [];
+        probability_mask.matrix(:,1:offset,:) = [];
+        probability_mask.matrix(:,:,1:offset) = [];
     else
         % Make sure both masks have the same dimensions
         if size(probability_mask.matrix,1) > size(mask_new,1)
             mask_new(size(mask_new,1):size(probability_mask.matrix,1),:,:) = 0;
         elseif size(probability_mask.matrix,1) < size(mask_new,1)
-            probability_mask.matrix(size(probability_mask.matrix,1):size(mask_new,1),:,:) = 0;
+            %            probability_mask.matrix(size(probability_mask.matrix,1):size(mask_new,1),:,:) = 0;
+            mask_new(size(probability_mask.matrix,1)+1:size(mask_new,1),:,:) = [];
         end
         if size(probability_mask.matrix,2) > size(mask_new,2)
             mask_new(:,size(mask_new,2):size(probability_mask.matrix,2),:) = 0;
         elseif size(probability_mask.matrix,2) < size(mask_new,2)
-            probability_mask.matrix(:,size(probability_mask.matrix,2):size(mask_new,2),:) = 0;
+            mask_new(:,size(probability_mask.matrix,2)+1:size(mask_new,2),:) = [];
+            %           probability_mask.matrix(:,size(probability_mask.matrix,2):size(mask_new,2),:) = 0;
         end
         if size(probability_mask.matrix,3) > size(mask_new,3)
             mask_new(:,:,size(mask_new,3):size(probability_mask.matrix,3)) = 0;
         elseif size(probability_mask.matrix,3) < size(mask_new,3)
-            probability_mask.matrix(:,:,size(probability_mask.matrix,3):size(mask_new,3)) = 0;
+            %           probability_mask.matrix(:,:,size(probability_mask.matrix,3):size(mask_new,3)) = 0;
+            mask_new(:,:,size(probability_mask.matrix,3)+1:size(mask_new,3)) = [];
         end
         
+        L_mask_new = double(mask_new ~= 0);
+        
         probability_mask.matrix  = probability_mask.matrix + L_mask_new;
+        
+        probability_mask.matrix(1:offset,:,:) = [];
+        probability_mask.matrix(:,1:offset,:) = [];
+        probability_mask.matrix(:,:,1:offset) = [];
     end
     
     if plotFlag == 1
         figure('Name',num2str(n))
         L_figure = (squeeze(max(probability_mask.matrix,[],3))~=0);
         imagesc(squeeze(max(probability_mask.matrix,[],3)),'Alphadata',double(L_figure));
-        colorbar; axis tight; axis equal; axis off
+        colorbar; axis tight; axis equal;% axis off
     end
     
     L = (probability_mask.matrix~=0);
     mask1 = double(L);
     
-    pause(1)
+    pause(8)
     close all
 end
 
@@ -274,6 +283,7 @@ if plotFlag == 1
     L_figure = (squeeze(max(probability_mask.matrix,[],3))~=0);
     imagesc(squeeze(max(probability_mask.matrix,[],3)),'Alphadata',double(L_figure));
     colorbar;axis tight; axis equal; axis off;
+    pause(8)
 end
 
 probability_mask.vox = mask1_vox;
@@ -320,12 +330,6 @@ for n = 1:size(PATHNAME,2)
     disp(['Done loading data_done aorta ' num2str(n)])
     mask2 = mrstruct_mask.dataAy;
     
-    %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
-    sizes = [size(mask2,1)+offset size(mask2,2)+offset size(mask2,3)+offset];
-    mask2b = zeros(sizes);
-    mask2b((offset+1):size(mask2b,1),(offset+1):size(mask2b,2),(offset+1):size(mask2b,3)) = mask2;
-    mask2 = mask2b;clear mask2b
-    
     L = (mask2 ~= 0);
     [x,y,z] = meshgrid((1:size(mask2,2)).* mask2_vox(2), ...
         (1:size(mask2,1)).* mask2_vox(1),(1:size(mask2,3)).* mask2_vox(3));
@@ -335,7 +339,7 @@ for n = 1:size(PATHNAME,2)
     for threshold = 1:size(PATHNAME,2)
         
         L = (probability_mask.matrix >= threshold );
-       [x,y,z] = meshgrid((1:size(probability_mask.matrix,2)).* probability_mask.vox(2), ...
+        [x,y,z] = meshgrid((1:size(probability_mask.matrix,2)).* probability_mask.vox(2), ...
             (1:size(probability_mask.matrix,1)).* probability_mask.vox(1),(1:size(probability_mask.matrix,3)).* probability_mask.vox(3));
         x_coor1 = x(L);y_coor1 = y(L);z_coor1 = z(L);
         
@@ -347,7 +351,7 @@ for n = 1:size(PATHNAME,2)
             imagesc(squeeze(max(mask1,[],3)),'Alphadata',double(L_figure));
             colorbar;axis tight; axis equal; axis off
         end
-            
+        
         if plotFlag == 1
             figure('Name',strcat('To be registered aorta ',num2str(n)))
             plot3(x_coor1,y_coor1,z_coor1,'r.')
@@ -370,7 +374,7 @@ for n = 1:size(PATHNAME,2)
         
         % directory with flirt.exe and cygwin1.dll (use cygwin convention)
         %fsldir = '/cygdrive/d/research/matlabCode/matlab_registration/flirt/';
-        fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';        
+        fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
         
         % save as nifti
         cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
@@ -426,13 +430,12 @@ for n = 1:size(PATHNAME,2)
             axis equal;view([0 90]); axis ij
             
             pause(10)
-            close all
         end
         
         %%% Round the coordinates to be able to create a matrix
-        x_round = round(x_coor./mask1_vox(1));
-        y_round = round(y_coor./mask1_vox(2));
-        z_round = round(z_coor./mask1_vox(3));
+        x_round = round(x_coor./mask1_vox(1)) + offset;
+        y_round = round(y_coor./mask1_vox(2)) + offset;
+        z_round = round(z_coor./mask1_vox(3)) + offset;
         
         % Create matrix
         indices_mask = [x_round y_round z_round];
@@ -452,24 +455,38 @@ for n = 1:size(PATHNAME,2)
         se = strel('disk',1);
         mask_new = imerode(smooth3(mask_new),se);
         
+        %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
+        sizes = [size(mask1,1)+offset size(mask1,2)+offset size(mask1,3)+offset];
+        mask1b = zeros(sizes);
+        mask1b((offset+1):size(mask1b,1),(offset+1):size(mask1b,2),(offset+1):size(mask1b,3)) = mask1;
+        mask1 = mask1b;clear mask2b
+        
         % Make sure both masks have the same dimensions
         if size(mask1,1) > size(mask_new,1)
             mask_new(size(mask_new,1):size(mask1,1),:,:) = 0;
         elseif size(mask1,1) < size(mask_new,1)
-            mask1(size(mask1,1):size(mask_new,1),:,:) = 0;
+            mask_new(size(mask1,1)+1:size(mask_new,1),:,:) = [];
         end
         if size(mask1,2) > size(mask_new,2)
             mask_new(:,size(mask_new,2):size(mask1,2),:) = 0;
         elseif size(mask1,2) < size(mask_new,2)
-            mask1(:,size(mask1,2):size(mask_new,2),:) = 0;
+            mask_new(:,size(mask1,2)+1:size(mask_new,2),:) = [];
         end
         if size(mask1,3) > size(mask_new,3)
             mask_new(:,:,size(mask_new,3):size(mask1,3)) = 0;
         elseif size(mask1,3) < size(mask_new,3)
-            mask1(:,:,size(mask1,3):size(mask_new,3)) = 0;
+            mask_new(:,:,size(mask1,3)+1:size(mask_new,3)) = [];
         end
         
         L_mask_new = double(mask_new ~= 0);
+        
+        if plotFlag == 1
+            figure('Name',num2str(threshold))
+            L_figure = (squeeze(max(mask1+L_mask_new,[],3))~=0);
+            imagesc(squeeze(max(mask1+L_mask_new,[],3)),'Alphadata',double(L_figure));
+            colorbar;axis tight; axis equal;
+            pause(10)
+        end
         
         difference = abs(mask1-L_mask_new);
         [I1,J] = find(mask1~=0);
@@ -478,9 +495,11 @@ for n = 1:size(PATHNAME,2)
         [I_diff,J] = find(difference~=0);
         diff_voxels = size(I_diff,1);
         diff_percentage = ((diff_voxels / mean_I) * 100)./2;
-        disp(['Difference between aorta and atlas = ' num2str(diff_percentage)])
         
         diff_matrix(n,threshold) = diff_percentage
+        disp(['Difference between aorta and atlas = ' num2str(diff_percentage)])
+        
+        close all
     end
 end
 
@@ -501,15 +520,13 @@ if plotFlag == 1
 end
 toc
 
-% Translate back to original position for further use
-mask1(1:offset,:,:) = [];
-mask1(:,1:offset,:) = [];
-mask1(:,:,1:offset) = [];
-
 probability_mask.matrix = mask1;
 
-directory = uigetdir('C:\1_Chicago\Data\MIMICS\');
-disp('...saving probablitity_mask...')
-save(strcat(directory,'\probability_mask'),'probability_mask')
-disp('done')
+if saveFlag
+    directory = uigetdir('C:\1_Chicago\Data\MIMICS\');
+    disp('...saving probablitity_mask...')
+    save(strcat(directory,'\probability_mask'),'probability_mask')
+    disp('done')
 end
+
+%end
