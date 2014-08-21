@@ -77,15 +77,15 @@ end
 % MrstructPath = 'C:\1_Chicago\Data\MIMICS\RL_RN_comparison\RL\PT9_LD\mrstruct\';
 if ~exist(MrstructPath) == 2 || isempty(MrstructPath)
     [MrstructPath] = uigetdir('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Select mrstruct folder');
-    FILENAME1 = '\mask_struct_aorta';        % 1: Load mask
-    FILENAME2 = '\vel_struct';               % 2: Load velocity
-    FILENAME3 = '\Wss_point_cloud_aorta';    % 3: Load WSS
-    FILENAME4 = '\mag_struct';   
+    FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
+    FILENAME2 = 'vel_struct';               % 2: Load velocity
+    FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
+    FILENAME4 = 'mag_struct';   
 else   
-    FILENAME1 = '\mask_struct_aorta';        % 1: Load mask
-    FILENAME2 = '\vel_struct';               % 2: Load velocity
-    FILENAME3 = '\Wss_point_cloud_aorta';    % 3: Load WSS
-    FILENAME4 = '\mag_struct';
+    FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
+    FILENAME2 = 'vel_struct';               % 2: Load velocity
+    FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
+    FILENAME4 = 'mag_struct';
 end
 
 if nargin < 3 || isempty(plotFlag)
@@ -120,7 +120,7 @@ global atlas
 %data = [];
 Rotation_Translation = [];
 
-load(strcat(AtlasPath,FILENAME_atlas))    
+load(strcat(AtlasPath,'\',FILENAME_atlas))    
 mask1 = atlas.mask;
 
 if plotFlag == 1
@@ -249,7 +249,7 @@ if calculateIE_Flag == 1;
     end
 end
 
-load(strcat(MrstructPath,FILENAME1))    
+load(strcat(MrstructPath,'\',FILENAME1))    
 mask2 = mrstruct_mask.dataAy; 
 mask2_vox = mrstruct_mask.vox;
 clear mrstruct_mask 
@@ -267,7 +267,7 @@ V = V .* (ones(size(V,1),1) * mask2_vox(1:3));
 [data2.F,data2.V] = SmoothLaplacian(F,V,15); %laplacian smoothing for surface (Kevin Moerman)    
 clear F, clear V
 
-load(strcat(MrstructPath,FILENAME2))
+load(strcat(MrstructPath,'\',FILENAME2))
 velocity = mrStruct.dataAy; clear mrstruct
 
 for t = 1:size(velocity,5)-1
@@ -286,15 +286,12 @@ end
 
 [I,time] = find(mean_velo==max(mean_velo));
 
-load(strcat(MrstructPath,FILENAME2))
-velocity = double(mrStruct.dataAy); clear mrStruct
-
 %%% Wall shear stress coordinates
 data2.x_coor_wss = data2.V(:,1);
 data2.y_coor_wss = data2.V(:,2);
 data2.z_coor_wss = data2.V(:,3);
           
-load(strcat(MrstructPath,FILENAME3))    
+load(strcat(MrstructPath,'\',FILENAME3))    
 WSS = Wss_point_cloud; clear Wss_point_cloud   
 
     %%% What follows is a horrible piece of code, so if you're reading this and feel like cleaning it up, please do,
@@ -1041,7 +1038,7 @@ dir_new = MrstructPath; cd(dir_new); %cd('..')
 mkdir('results_traffic_light_map')
 dir_new = strcat(dir_new,'\results_traffic_light_map');
 saveas(gcf,[dir_new '\traffic_light_map.fig'])
-load(strcat(MrstructPath,FILENAME4))
+load(strcat(MrstructPath,'\',FILENAME4))
 magnitude = flipdim(double(mrStruct.dataAy(:,:,:,time)),3);clear mrStruct
 magnitude(magnitude == 0) = 3;
 magnitude(magnitude == 1) = 3;
@@ -1249,7 +1246,7 @@ dir_new = MrstructPath; cd(dir_new); %cd('..')
 mkdir('results_heatmap');
 dir_new = strcat(dir_new,'\results_heatmap');
 saveas(gcf,[dir_new '\heat_map.fig'])
-load(strcat(MrstructPath,FILENAME4))
+load(strcat(MrstructPath,'\',FILENAME4))
 magnitude = flipdim(double(mrStruct.dataAy(:,:,:,time)),3);
 magnitude(magnitude == 0) = 3;
 magnitude(magnitude == 1) = 3;
