@@ -19,10 +19,8 @@ function [atlas] = make_atlas_point_cloud_scalars_affine_registration_NEW(PATHNA
 % 2014, Pim van Ooij, Northwestern University
 %
 % Input
-% 1)offset          : To be able to calculate the registration error (RE, see paper mentioned above), the registered aorta needs to be
-%                     transformed back to a matrix. This can only be done when all x, y and z coordinates after registration are > 0.
-%                     Otherwise Matlab will return an error and all will be for nothing. We therefore need to put in an offset to prevent
-%                     this from happening.
+% 1)PATHNAME          : The PATHNAMES for the subjects that the atlas will consist of
+% 2)probability_mask  : The probability mask (or idealized geometry) that is used for the atlas
 % 2)plotFlag        : If plotFlag switched, Matlab will output any possible image to the screen to check if everything happens correctly.
 % 3)calculateRE_Flag: When switched on the registration error will be calculated. However, this is a different RE than the one in the paper
 %                     mentioned above as the RE in this function is calculated from AFFINE registration whereas the RE reported in the paper
@@ -40,11 +38,42 @@ function [atlas] = make_atlas_point_cloud_scalars_affine_registration_NEW(PATHNA
 % The function for creating atlases from mrStructs is under construction
 %
 % Examples:
-% [atlas] = make_atlas_point_cloud_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,peak_systolicFlag)
-% [atlas] = make_atlas_point_cloud_scalars_affine_registration(40,1,1,1,0)
+% [atlas] = make_atlas_point_cloud_scalars_affine_registration_NEW(PATHNAME,probability_mask,plotFlag,calculateRE_Flag,calculateIE_Flag,peak_systolicFlag)
+% [atlas] = make_atlas_point_cloud_scalars_affine_registration_NEW(' ',' ',0,0,0,0)
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% create, or lookup default path cache for flirt and cygwin (in c:\temp)
+% find if c:\temp exists, if exist look for cache file
+if (exist('c:\temp','dir')==7 && exist('c:\temp\atlas_tool.cfg','file')==2)
+    %read settings
+    fid = fopen('c:\temp\atlas_tool.cfg'); % need to assign 'w' if want to write to this file
+    path_flirt  = fgetl(fid);
+    path_cygwin = fgetl(fid);
+    fclose(fid);
+    clear fid
+elseif (exist('c:\temp','dir')==0 || exist('c:\temp\atlas_tool.cfg','file')==0) %else create config
+    % make c:temp dir, turn off warning if already exists
+    wid = 'MATLAB:MKDIR:DirectoryExists';
+    warning('off',wid)
+    mkdir('c:\temp')
+    warning('on',wid)
+    % get working directory and create cfg file with path
+    path_flirt = uigetdir('c:\temp','Select your working directory for flirt');
+    path_cygwin = uigetdir('c:\temp','Select your working directory for cygwin');
+    if ischar(path_flirt) || ischar(path_cygwin) 
+        i_tmp = (path_flirt=='\'); %repalce control char backslash with slash (in order to be able to write the path)
+        path_flirt(i_tmp) = '/';
+        i_tmp = (path_cygwin=='\'); %repalce control char backslash with slash (in order to be able to write the path)
+        path_cygwin(i_tmp) = '/';
+        fid = fopen('c:\temp\atlas_tool.cfg','w');
+        fprintf(fid,[path_flirt '\r' path_cygwin]);
+        fclose(fid);
+        cd(path_flirt)
+    end
+    clear i_tmp fid working_path wid
+end
 
 if nargin < 1 || isempty(PATHNAME)
     % In for-loop
@@ -420,9 +449,8 @@ for n = 1:size(PATHNAME,2)
     disp('...This can take up to 5 minutes...')
     
     tic
-    % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-    %   fsldir = '/cygdrive/d/research/matlabcode/matlab_registration/flirt/';
-    fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
+    % directory with flirt.exe and cygwin1.dll as read from atlas_tool.cfg in C:\temp
+    fsldir = path_flirt; 
     
     % save as nifti
     cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
@@ -449,8 +477,8 @@ for n = 1:size(PATHNAME,2)
     fclose(f);
     
     % and go! takes 4-5 mins.
-    %system('c:\cygwin64\bin\bash runflirt.sh');
-    system('c:\cygwin\bin\bash runflirt.sh');
+    % directory for cygwin as read from atlas_tool.cfg in C:\temp        
+    system(path_cygwin);
     
     % load transformation mask
     load Rotation_Translation -ascii
