@@ -66,15 +66,15 @@ clc, clear, close all
 % PATHNAME{9} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_55_80\10_F_20121206_115454_Avanto_NMH\mrstruct\';
 % PATHNAME{1} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_55_80\9_F_20120817_081853_Skyra_NMH\mrstruct\';
 
-PATHNAME{1} = 'C:\1_Chicago\BAV_tissue\Controls\1_20120420_132106_Espree_NMH_interobserver';
-PATHNAME{2} = 'C:\1_Chicago\BAV_tissue\Controls\2_20120426_132244_Espree_NMH_interobserver';
-PATHNAME{3} = 'C:\1_Chicago\BAV_tissue\Controls\3_20121206_115454_Avanto_NMH';
-PATHNAME{4} = 'C:\1_Chicago\BAV_tissue\Controls\4_20120522_170003_Skyra_NMH_interobserver';
-PATHNAME{5} = 'C:\1_Chicago\BAV_tissue\Controls\5_20120502_134311_Espree_NMH_interobserver';
-PATHNAME{6} = 'C:\1_Chicago\BAV_tissue\Controls\6_20120627_093614_Espree_NMH_interobserver';
-PATHNAME{7} = 'C:\1_Chicago\BAV_tissue\Controls\7_20120702_092347_Espree_NMH_interobserver';
-PATHNAME{8} = 'C:\1_Chicago\BAV_tissue\Controls\8_20120831_101148_Espree_NMH';
-PATHNAME{9} = 'C:\1_Chicago\BAV_tissue\Controls\9_20121109_080007_Skyra_NMH';
+PATHNAME{1} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\1_20120420_132106';
+PATHNAME{2} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\2_20120426_132244';
+PATHNAME{3} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\3_20121206_115454';
+PATHNAME{4} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\4_20120522_170003';
+PATHNAME{5} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\5_20120502_134311';
+PATHNAME{6} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\6_20120627_093614';
+PATHNAME{7} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\7_20120702_092347';
+PATHNAME{8} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\8_20120831_101148';
+PATHNAME{9} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\10_20130621_122315';
 PATHNAME{10} = 'C:\1_Chicago\BAV_tissue\Controls\10_20130621_122315_Aera_NMH';
 
 % Calculate WSS
