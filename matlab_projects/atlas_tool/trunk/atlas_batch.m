@@ -75,7 +75,7 @@ PATHNAME{6} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Contr
 PATHNAME{7} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\7_20120702_092347';
 PATHNAME{8} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\8_20120831_101148';
 PATHNAME{9} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\10_20130621_122315';
-PATHNAME{10} = 'C:\1_Chicago\BAV_tissue\Controls\10_20130621_122315_Aera_NMH';
+PATHNAME{10}= 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\10_20130621_122315';
 
 % Calculate WSS
 for n = 1:size(PATHNAME,2)
