@@ -46,6 +46,10 @@ function [atlas] = make_atlas_point_cloud_scalars_affine_registration_NEW(PATHNA
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if nargin < 1 || isempty(PATHNAME)
+    % In for-loop
+end
+
 if nargin < 2 || isempty(probability_mask)
     [FILENAME,PATHNAME_prob] = uigetfile('.mat','Load probability mask');
     load(strcat(PATHNAME_prob,FILENAME))
@@ -104,7 +108,13 @@ WSSz = zeros(size(geo.V,1),size(PATHNAME,2));
 for n = 1:size(PATHNAME,2)
     disp(['Aorta number ' num2str(n)])
     
-    load(strcat(PATHNAME{n},FILENAME1))
+    if nargin < 1 || isempty(PATHNAME)
+        [FILENAME,PATHNAME{n}] = uigetfile('.mat','Load probability mask');
+        load(strcat(PATHNAME{n},FILENAME))
+    else
+        load(strcat(PATHNAME{n},FILENAME1))
+    end
+    
     mask2 = mrstruct_mask.dataAy;
     mask2_vox = mrstruct_mask.vox;clear mrstruct_mask
     L2 = (mask2 ~= 0);
