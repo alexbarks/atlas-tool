@@ -1,4 +1,4 @@
-This is the atlas_tool instruction manual:
+This is a rough version of the atlas_tool instruction manual:
 
 Important general note: need to make sure that rotation matrix is appropriately applied, this is not inherently obvious (to alex). Need to come up with some general guidelines to id failed registrations, etc. Watch out for peak systole switch
 
@@ -16,15 +16,16 @@ Important general note: need to make sure that rotation matrix is appropriately 
 	   * AJB computer: make sure line 159 has cygwin64 ('c:\cygwin64\bin\bash runflirt.sh')
 	   * Also need to change lines: 369, 396 in a similar fashion as above
 	
-	b. run 'make_atlas_point_cloud_scalars_affine_registration.m' to register every aorta to the geometry and interpolate the biomarker (WSS/velocity...) to make the atlas.
+	b. run 'make_atlas_point_cloud_scalars_affine_registration.m' to register every aorta to the geometry and interpolate the biomarker (WSS/velocity...) to make the atlas. Output is the atlas 'atlas.mat'.
 	- things to change in the hard code
 		* location of prob mask (line 71)
 		* locatoins of 'datasets' or 'data_done.m' (line 77 on )
 		* make sure paths for cygwin and rotation matrix are correct 
 		  - '/cygdrive/d/research/matlabcode/matlab_registration/flirt/' (line 368)
 	- look that registrations are working... (first one will always look good, look at second on)
+	- in future, this function will be combined with '2'
 	
-	c. run 'heat_map_traffic_light_scalars_affine_registration.m' to create heat map
+3. run 'heat_map_traffic_light_scalars_affine_registration.m' to create heat map
 	- things to change in the hard code
 		* line 368 (flirt location_
 		* line 395 ('cygwin64')
