@@ -43,35 +43,20 @@ function [probability_mask] = make_geometry_point_cloud_NEW(PATHNAME,plotFlag,sa
 
 % %%% masks to load (use for debug)
 %
-PATHNAME{1} = 'l:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\1_20120420_132106\mrstruct\';
-PATHNAME{2} = 'l:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\2_20120426_132244\mrstruct\';
-PATHNAME{3} = 'l:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\3_20121206_115454\mrstruct\';
-% PATHNAME{4} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\4_M_20120629_141637_Espree_NMH\mrstruct\';
-% PATHNAME{5} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\5_M_20120906_064323_Espree_NMH\mrstruct\';
-% PATHNAME{6} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\6_M_20121213_152738_Skyra_NMH\mrstruct\';
-% PATHNAME{7} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\7_M_20130928_132456_Avanto_NMH\mrstruct\';
-% PATHNAME{8} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\8_F_20130620_163030_Skyra_NMH\mrstruct\';
-% PATHNAME{9} = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\9_F_20120705_092028_Skyra_NMH\mrstruct\';
-% PATHNAME{10}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\10_F_20121221_100044_Skyra_NMH\mrstruct\';
-% PATHNAME{11}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\11_F_20130620_144334_Skyra_NMH\mrstruct\';
-% PATHNAME{12}= 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_18_30\12_F_20140502_075511_Aera_NMH\mrstruct\';
 
-if ~exist(PATHNAME{1}) == 2 || isempty(PATHNAME{1})
-    error('No Input PATHANME given')
+if ~exist(PATHNAME{1}) == 2 || isempty(PATHNAME{1});
+    % In for-loop %error('No Input PATHNAME given')
 end
 
-if nargin < 2 || isempty(plotFlag)
+if nargin < 2 || isempty(plotFlag);
     plotFlag = 1;
 end
-
-
-
 
 FILENAME = 'mask_struct_aorta';
 
 disp(['...Busy loading data_done aorta ' num2str(1)])
 tic
-load(strcat(PATHNAME{1},FILENAME))
+load(strcat(PATHNAME{1},FILENAME));
 toc
 disp(['Done loading data_done aorta'  num2str(1)]);disp(' ')
 %data1 = data; clear data;
@@ -88,7 +73,12 @@ for n = 2:size(PATHNAME,2)
     
     disp(['...Busy loading data_done aorta ' num2str(n)])
     tic
-    load(strcat(PATHNAME{n},FILENAME))
+    if nargin < 1 || isempty(PATHNAME)
+        [FILENAME,PATHNAME{n}] = uigetfile('.mat','Load probability mask');
+        load(strcat(PATHNAME{n},FILENAME));
+    else
+        load(strcat(PATHNAME{n},FILENAME));
+    end
     toc
     disp(['Done loading data_done aorta '  num2str(n)])
     mask2 = mrstruct_mask.dataAy;
@@ -156,7 +146,8 @@ for n = 2:size(PATHNAME,2)
     fclose(f);
     
     % and go! takes 4-5 mins.
-    system('c:\cygwin64\bin\bash runflirt.sh');
+    %system('c:\cygwin64\bin\bash runflirt.sh');
+    system('c:\cygwin\bin\bash runflirt.sh');
     
     % load transformation mask
     load Rotation_Translation -ascii
