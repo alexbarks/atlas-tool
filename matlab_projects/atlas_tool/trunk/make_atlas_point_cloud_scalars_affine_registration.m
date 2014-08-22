@@ -139,9 +139,9 @@ for n = 1:size(PATHNAME,2)
     
     if nargin < 1 || isempty(PATHNAME)
         [FILENAME,PATHNAME{n}] = uigetfile('.mat','Load probability mask');
-        load(strcat(PATHNAME{n},FILENAME))
+        load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME1])
     else
-        load(strcat(PATHNAME{n},FILENAME1))
+        load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME1])
     end
     
     mask2 = mrstruct_mask.dataAy;
@@ -161,7 +161,7 @@ for n = 1:size(PATHNAME,2)
     [data2.F,data2.V] = SmoothLaplacian(F,V,15); %laplacian smoothing for surface (Kevin Moerman)
     clear F, clear V
     
-    load(strcat(PATHNAME{n},FILENAME2))
+    load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME2])
     velocity = double(mrStruct.dataAy); clear mrStruct; % for interpolation velocity needs to be a double
     
     %%% Wall shear stress coordinates for both datasets
@@ -173,7 +173,7 @@ for n = 1:size(PATHNAME,2)
     data2.y_coor_wss = data2.V(:,2);% + (offset*mask2_vox(2));
     data2.z_coor_wss = data2.V(:,3);% + (offset*mask2_vox(3));
     
-    load(strcat(PATHNAME{n},FILENAME3))
+    load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME3])
     WSS = Wss_point_cloud; clear Wss_point_cloud
     
     % Find max velocity

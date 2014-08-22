@@ -74,30 +74,30 @@ PATHNAME{5} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Contr
 PATHNAME{6} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\6_20120627_093614';
 PATHNAME{7} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\7_20120702_092347';
 PATHNAME{8} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\8_20120831_101148';
-PATHNAME{9} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\10_20130621_122315';
+PATHNAME{9} = 'l:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\9_20121109_080007';
 PATHNAME{10}= 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\10_20130621_122315';
 
-% Calculate WSS
-for n = 1:size(PATHNAME,2)
-        
-    MrstructPath = strcat(PATHNAME{n},'\mrstruct\');
-    MimicsSegPath = strcat(PATHNAME{n},'\results_022\');
-    
-    tic
-    mimics_to_Wss(MrstructPath,MimicsSegPath,1,1,1,1,0,0,0);
-    toc
-%    close all
-end
+% % Calculate WSS
+% for n = 8:size(PATHNAME,2)
+%         
+%     MrstructPath = strcat(PATHNAME{n},'\mrstruct\');
+%     MimicsSegPath = strcat(PATHNAME{n},'\results_022\');
+%     
+%     tic
+%     mimics_to_Wss(MrstructPath,MimicsSegPath,1,1,0,1,0,0,0);
+%     toc
+% %    close all
+% end
 
-% Make idealized aorta geometry
-tic
-[probability_mask] = make_geometry_point_cloud_NEW(PATHNAME,1,0);
-toc
-
+% % Make idealized aorta geometry
+% tic
+% [probability_mask] = make_geometry_point_cloud(PATHNAME,1,0);
+% toc
+% 
 close all
 
 % % Make atlas
-[atlas] = make_atlas_point_cloud_scalars_affine_registration_NEW(PATHNAME,probability_mask,1,1,0,0);
+[atlas] = make_atlas_point_cloud_scalars_affine_registration(PATHNAME,'',0,1,0,0);
 
 % save the atlas to the directory of choice
 directory = uigetdir('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\');
