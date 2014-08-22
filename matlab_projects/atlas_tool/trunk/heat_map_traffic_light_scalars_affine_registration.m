@@ -763,11 +763,11 @@ if plotFlag == 1
     view([180 -90])
     
     figure('Name','Mean atlas WSS')
-    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none', 'FaceVertexCData',atlas_mean_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
+    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_mean_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
     
     figure('Name','std atlas WSS')
-    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none', 'FaceVertexCData',atlas_std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
+    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
 end
 
@@ -1053,7 +1053,7 @@ aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight(-45,0); lighting phong
 print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map_front.tif'));
-axis ij; view([0 90]);camlight(90,0);% lighting flat
+axis ij; view([0 90]);camlight(90,0);axis vis3d
 print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map_back.tif'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PvO: Images for the Brief Report for NEJM were created with:
@@ -1259,7 +1259,7 @@ axis equal;
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map_front.tif'));
-axis equal; axis ij; axis off;
+axis equal; axis ij; axis off;axis vis3d
 view([0 90]);
 print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map_back.tif'));
 
