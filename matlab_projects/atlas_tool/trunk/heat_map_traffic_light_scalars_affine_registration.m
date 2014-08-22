@@ -62,6 +62,37 @@ function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registra
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% create, or lookup default path cache for flirt and cygwin (in c:\temp)
+% find if c:\temp exists, if exist look for cache file
+if (exist('c:\temp','dir')==7 && exist('c:\temp\atlas_tool.cfg','file')==2)
+    %read settings
+    fid = fopen('c:\temp\atlas_tool.cfg'); % need to assign 'w' if want to write to this file
+    path_flirt  = fgetl(fid);
+    path_cygwin = fgetl(fid);
+    fclose(fid);
+    clear fid
+elseif (exist('c:\temp','dir')==0 || exist('c:\temp\atlas_tool.cfg','file')==0) %else create config
+    % make c:temp dir, turn off warning if already exists
+    wid = 'MATLAB:MKDIR:DirectoryExists';
+    warning('off',wid)
+    mkdir('c:\temp')
+    warning('on',wid)
+    % get working directory and create cfg file with path
+    path_flirt = uigetdir('c:\temp','Select your working directory for flirt');
+    path_cygwin = uigetdir('c:\temp','Select your working directory for cygwin');
+    if ischar(path_flirt) || ischar(path_cygwin) 
+        i_tmp = (path_flirt=='\'); %repalce control char backslash with slash (in order to be able to write the path)
+        path_flirt(i_tmp) = '/';
+        i_tmp = (path_cygwin=='\'); %repalce control char backslash with slash (in order to be able to write the path)
+        path_cygwin(i_tmp) = '/';
+        fid = fopen('c:\temp\atlas_tool.cfg','w');
+        fprintf(fid,[path_flirt '\r' path_cygwin]);
+        fclose(fid);
+        cd(path_flirt)
+    end
+    clear i_tmp fid working_path wid
+end
+
 if nargin < 3
     MrstructPath = '';
     AtlasPath = '';    
