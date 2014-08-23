@@ -1,4 +1,4 @@
-function [probability_mask] = make_geometry_point_cloud_NEW(PATHNAME,plotFlag,saveFlag)
+function [probability_mask] = make_geometry_point_cloud(PATHNAME,plotFlag,saveFlag)
 
 %%% [probability_mask] = make_geometry_point_cloud(PATHNAME,plotFlag,saveFlag)
 %
