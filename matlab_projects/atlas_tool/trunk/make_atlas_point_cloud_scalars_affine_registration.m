@@ -1,4 +1,4 @@
-function [atlas] = make_atlas_point_cloud_scalars_affine_registration_NEW(PATHNAME,probability_mask,plotFlag,calculateRE_Flag,calculateIE_Flag,peak_systolicFlag)
+function [atlas] = make_atlas_point_cloud_scalars_affine_registration(PATHNAME,probability_mask,plotFlag,calculateRE_Flag,calculateIE_Flag,peak_systolicFlag)
 
 %%% [atlas] = make_atlas_point_cloud_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,peak_systolicFlag)
 %
