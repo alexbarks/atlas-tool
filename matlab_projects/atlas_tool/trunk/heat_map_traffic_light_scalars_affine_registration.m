@@ -27,22 +27,18 @@ function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registra
 % 2014, Pim van Ooij, Northwestern University
 %
 % Input
-% 1)offset          : To be able to calculate the registration error (RE, see paper
-%                       "A Methodology to Detect Abnormal Relative Wall Shear Stress on the Full Surface of the Thoracic Aorta Using 4D Flow MRI
-%                       van Ooij P, Potters WV, Nederveen AJ, Allen BD, Collins J, Carr J, Malaisrie SC, Markl M, Barker AJ
-%                       Magn Reson Med. 2014 Feb 25, doi: 10.1002/mrm.25224. [Epub ahead of print])",
-%                       the registered aorta needs to be transformed back to a matrix. This can only be done when all x, y and z coordinates after registration are > 0.
-%                     Otherwise Matlab will return an error and all will be for nothing. We therefore need to put in an offset to prevent
-%                     this from happening.
-% 2)plotFlag        : If plotFlag switched, Matlab will output any possible image to the screen to check if everything happens correctly.
+% 1)AtlasPath        : The path where the 'atlas.mat' is located.
+% 2)MrstructPath     : The path where 'mag_struct' and 'vel_struct.mat' are located.
 % 3)calculateRE_Flag: When switched on the registration error will be calculated. However, this is a different RE than the one in the paper
 %                     mentioned above as the RE in this function is calculated from AFFINE registration whereas the RE reported in the paper
-%                     is calculated from RIGID registration in the function 'make_geometry_point_cloud.m'
+%                     is calculated from RIGID registration in the function 'make_geometry_point_cloud.m'. See: van Ooij et al. Magn Res Med 2014
 % 4)calculateIE_Flag: When switched on the interpolation error (RE, see paper mentioned above) will be calculated. Note that ROIs are needed
-%                     which can be drawn manually when switched on.
-% 5)calculate_area_of_significanceFlag: When switched on the area of significance will be calculated (see first paper mentioned above). Note that ROIs are
+%                     which can be drawn manually when switched on. See: van Ooij et al. Magn Res Med 2014
+% 5)calculate_velvolume_and_WSSarea_total: The volumes of the red, yellow and green volumes in the traffic light and the surface areas in the heat map are 
+%                     printed to the screen
+% 6)calculate_area_of_significanceFlag: When switched on the area of significance will be calculated (see first paper mentioned above). Note that ROIs are
 %                     needed which can be drawn manually when switched on. However, if calculateIE_Flag is switched on than you need to do this only once.
-% 6)peak_systolicFlag: When switched on the comparison of the individual patient with the ensemble-averaged maps will be performed for the peak
+% 7)peak_systolicFlag: When switched on the comparison of the individual patient with the ensemble-averaged maps will be performed for the peak
 %                      systolic time frame of the indivual patient only. Note that it makes sense that peak systolic ensemble-averaged are loaded in
 %                      as well. Default is the atlas for 5 systolic timesteps averaged.
 %
@@ -56,8 +52,8 @@ function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registra
 % The function for creating traffic light and heat maps from mrStructs is under construction
 %
 % Examples:
-% [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_area_of_significanceFlag,peak_systolicFlag)
-% [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(40,1,1,1,1,0)
+% [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(AtlasPath,MrstructPath,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_velvolume_and_WSSarea_total,calculate_area_of_higherlowerFlag,peak_systolicFlag)
+% [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration('','',0,0,0,0,0,0,0,0)
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -458,8 +454,8 @@ if plotFlag == 1
     c2=colorbar;caxis([0 1.5])
     axis equal;axis off; axis ij
     view([-180 -90])  
-    pause    
-
+    pause(5)
+    
     figure('Name','data2 WSS')
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
         'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
@@ -908,10 +904,10 @@ if calculate_velvolume_and_WSSarea_total == 1
     percentage_green_volume = green_volume / total_volume * 100;
     total_percentage = percentage_red_volume + percentage_yellow_volume + percentage_green_volume;
     
-    disp(['Red volume percentage of total aorta = ' num2str(percentage_red_volume) ' %'])
-    disp(['Yellow volume percentage of total aorta = ' num2str(percentage_yellow_volume) ' %'])
-    disp(['Green volume percentage of total aorta = ' num2str(percentage_green_volume) ' %'])
-    disp(['Total percentage of total aorta = ' num2str(total_percentage) ' %'])
+    disp(['Red volume percentage of total aorta = ' num2str(round(percentage_red_volume)) ' % (' num2str(round(red_volume./1000)) ' cm3)'])
+    disp(['Yellow volume percentage of total aorta = ' num2str(round(percentage_yellow_volume)) ' % (' num2str(round(yellow_volume./1000)) ' cm3)'])
+    disp(['Green volume percentage of total aorta = ' num2str(round(percentage_green_volume)) ' % (' num2str(round(green_volume./1000)) ' cm3)'])
+    disp(['Total percentage of total aorta = ' num2str(total_percentage) ' % (' num2str(round(total_volume./1000)) ' cm3)'])
     disp(' ')
     
     [I1,J1] = find(heat_mapp == 0);
@@ -919,8 +915,8 @@ if calculate_velvolume_and_WSSarea_total == 1
     percentage_significant_higher_than_controls = size(I2,1) / size(heat_mapp,1) * 100;
     percentage_significant_lower_than_controls = size(I1,1) / size(heat_mapp,1) * 100;
     
-    disp(['Percentage higher than controls inner AAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-    disp(['Percentage lower than controls inner AAo = ' num2str(percentage_significant_lower_than_controls) '%'])
+    disp(['Percentage higher than controls inner AAo = ' num2str(round(percentage_significant_higher_than_controls)) '%'])
+    disp(['Percentage lower than controls inner AAo = ' num2str(round(percentage_significant_lower_than_controls)) '%'])
     disp(' ')
     
 end
@@ -1047,11 +1043,11 @@ contours(L2==1) = 1;
 %[F,V] = isosurface(smooth3(contours),0); % make a surface from the detected contours
 [F,V] = isosurface(contours,0);
 [F,V] = SmoothLaplacian(F,V,15);
-patch('Faces',F,'Vertices',[V(:,1)-offset V(:,2)-offset V(:,3)-offset],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
+patch('Faces',F,'Vertices',[V(:,1) V(:,2) V(:,3)],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
 hold on
-[F1,V1] = isosurface(x./mask2_vox(1)-offset,y./mask2_vox(2)-offset,z./mask2_vox(3)-offset,smooth3(new_mask_red),0);
-[F2,V2] = isosurface(x./mask2_vox(1)-offset,y./mask2_vox(2)-offset,z./mask2_vox(3)-offset,smooth3(new_mask_yellow),0);
-[F3,V3] = isosurface(x./mask2_vox(1)-offset,y./mask2_vox(2)-offset,z./mask2_vox(3)-offset,smooth3(new_mask_green),0);
+[F1,V1] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_red),0);
+[F2,V2] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_yellow),0);
+[F3,V3] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_green),0);
 p11=patch('Faces',F1,'Vertices',V1,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
 p12=patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[1 0.9 0],'FaceAlpha',1);
 set(p12,'HandleVisibility','on','Visible','off');
@@ -1083,9 +1079,11 @@ caxis([0 64]);
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight(-45,0); lighting phong
-print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map_front.tif'));
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-5),['Red volume: ' num2str(round(red_volume/1000)) ' cm^{3}' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
+print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_front.jpeg'));
 axis ij; view([0 90]);camlight(90,0);axis vis3d
-print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map_back.tif'));
+print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_back.jpeg'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PvO: Images for the Brief Report for NEJM were created with:
 %%% 1. NO axis ij: I couldn't get the lighting right with axis ij on
@@ -1257,9 +1255,9 @@ cd(dir_orig);
 count3 = 0;
 angles(1) = 0;
 f2 = figure('Name','Heat map');
-x = data2.x_coor_wss./mask2_vox(1) - offset;
-y = data2.y_coor_wss./mask2_vox(2) - offset;
-z = data2.z_coor_wss./mask2_vox(3) - offset;
+x = data2.x_coor_wss./mask2_vox(1);
+y = data2.y_coor_wss./mask2_vox(2);
+z = data2.z_coor_wss./mask2_vox(3);
 p2=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
 gray_colormap = colormap(gray);
 color2(1,:) = [0 0 1];
@@ -1289,10 +1287,12 @@ axis equal;
 %view([-180 -90])
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
-print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map_front.tif'));
+text(min(x(:))-40,max(y(:)-5),['Red area: ' num2str(round(percentage_significant_higher_than_controls)) '%' ])
+text(min(x(:))-40,max(y(:)),['Blue area: ' num2str(round(percentage_significant_lower_than_controls)) '%' ])
+print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_front.jpeg'));
 axis equal; axis ij; axis off;axis vis3d
 view([0 90]);
-print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map_back.tif'));
+print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_back.jpeg'));
 
 uicontrol('Style','text',...
     'Position',[10 375 120 20],...
