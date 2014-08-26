@@ -1,4 +1,4 @@
-function [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_p_value_volumeFlag,calculate_area_of_significance_wss,peak_systolicFlag)
+function [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration(PATHNAME1,PATHNAME2,probability_mask,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_velvolume_and_WSSarea_total,calculate_area_of_significance_wss,peak_systolicFlag)
 
 %%% [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_p_value_volumeFlag,calculate_area_of_significance_wss,peak_systolicFlag)
 %
@@ -27,10 +27,6 @@ function [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration
 % 2014, Pim van Ooij, Northwestern University
 %
 % Input
-% 1)offset          : To be able to calculate the registration error (RE, see the first paper mentioned above), the registered aorta needs to be
-%                     transformed back to a matrix. This can only be done when all x, y and z coordinates after registration are > 0.
-%                     Otherwise Matlab will return an error and all will be for nothing. We therefore need to put in an offset to prevent
-%                     this from happening.
 % 2)plotFlag        : If plotFlag is switched on, Matlab will output any possible image to the screen to check if everything happens correctly.
 % 3)calculateRE_Flag: When switched on the registration error will be calculated. However, this is a different RE than the one in the paper
 %                     mentioned above as the RE in this function is calculated from AFFINE registration whereas the RE reported in the paper
@@ -55,85 +51,86 @@ function [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-clc, clear, close all % I hate functions that don't close the stuff that was running before
-
-global data
+% For some reason Matlab gives an error if I don't initialize these parameters
+% However, these parameters are the same as in make_atlas)_point_cloud_affine_registration
+% where I don't need to initialize them. 
+mrstruct_mask = [];
+mrStruct = [];
+Wss_point_cloud = [];
 Rotation_Translation = [];
 
-if nargin < 1 || isempty(offset)
-    offset = 40;
+% create, or lookup default path cache for flirt and cygwin (in c:\temp)
+% find if c:\temp exists, if exist look for cache file
+if (exist('c:\temp','dir')==7 && exist('c:\temp\atlas_tool.cfg','file')==2)
+    %read settings
+    fid = fopen('c:\temp\atlas_tool.cfg'); % need to assign 'w' if want to write to this file
+    path_flirt  = fgetl(fid);
+    path_cygwin = fgetl(fid);
+    fclose(fid);
+    clear fid
+elseif (exist('c:\temp','dir')==0 || exist('c:\temp\atlas_tool.cfg','file')==0) %else create config
+    % make c:temp dir, turn off warning if already exists
+    wid = 'MATLAB:MKDIR:DirectoryExists';
+    warning('off',wid)
+    mkdir('c:\temp')
+    warning('on',wid)
+    % get working directory and create cfg file with path
+    path_flirt = uigetdir('c:\temp','Select your working directory for flirt');
+    path_cygwin = uigetdir('c:\temp','Select your working directory for cygwin');
+    if ischar(path_flirt) || ischar(path_cygwin) 
+        i_tmp = (path_flirt=='\'); %repalce control char backslash with slash (in order to be able to write the path)
+        path_flirt(i_tmp) = '/';
+        i_tmp = (path_cygwin=='\'); %repalce control char backslash with slash (in order to be able to write the path)
+        path_cygwin(i_tmp) = '/';
+        fid = fopen('c:\temp\atlas_tool.cfg','w');
+        fprintf(fid,[path_flirt '\r' path_cygwin]);
+        fclose(fid);
+        cd(path_flirt)
+    end
+    clear i_tmp fid working_path wid
 end
 
-if nargin < 2 || isempty(plotFlag)
+if nargin < 3 || isempty(probability_mask)
+    [FILENAME,PATHNAME_prob] = uigetfile('.mat','Load probability mask');
+    load(strcat(PATHNAME_prob,FILENAME))
+end
+
+if nargin < 4 || isempty(plotFlag)
     plotFlag = 1;
 end
 
-if nargin < 3 || isempty(calculateRE_Flag)
+if nargin < 5 || isempty(calculateRE_Flag)
     calculateRE_Flag = 0;
 end
 
-if nargin < 4 || isempty(calculateIE_Flag)
+if nargin < 6 || isempty(calculateIE_Flag)
     calculateIE_Flag = 0;
 end
 
-if nargin < 5 || isempty(calculate_p_value_volumeFlag)
-    calculate_p_value_volumeFlag = 1;
+if nargin < 7 || isempty(calculate_velvolume_and_WSSarea_total)
+     calculate_velvolume_and_WSSarea_total = 1;
 end
 
-if nargin < 6 || isempty(calculate_area_of_significance_wss)
+if nargin < 8 || isempty(calculate_area_of_significance_wss)
     calculate_area_of_significance_wss = 0;
 end
 
-if nargin < 7 || isempty(peak_systolicFlag)
+if nargin < 9 || isempty(peak_systolicFlag)
     peak_systolicFlag = 0;
 end
 
-PATHNAME_probability_mask = 'c:\_ensightCases\bav_tissue\Controls\';
-probability_mask = 'probability_mask.mat';
-load(strcat(PATHNAME_probability_mask,probability_mask));
-
-%%%% COHORT 1: datasets to load
+%%%% datasets to load
 %%%% Copy paste the folders of choice here, add more or discard if needed
-PATHNAME1{1} = 'c:\_ensightCases\bav_tissue\controls\1_20120420_132106\';
-PATHNAME1{2} = 'c:\_ensightCases\bav_tissue\controls\2_20120426_132244\';
-PATHNAME1{3} = 'c:\_ensightCases\bav_tissue\controls\3_20121206_115454\';
-PATHNAME1{4} = 'c:\_ensightCases\bav_tissue\controls\4_20120522_170003\';
-PATHNAME1{5} = 'c:\_ensightCases\bav_tissue\controls\5_20120502_134311\';
-PATHNAME1{6} = 'c:\_ensightCases\bav_tissue\controls\6_20120627_093614\';
-PATHNAME1{7} = 'c:\_ensightCases\bav_tissue\controls\7_20120702_092347\';
-PATHNAME1{8} = 'c:\_ensightCases\bav_tissue\controls\8_20120831_101148\';
-PATHNAME1{9} = 'c:\_ensightCases\bav_tissue\controls\9_20121109_080007\';
-PATHNAME1{10}= 'c:\_ensightCases\bav_tissue\controls\10_20130621_122315\';
-FILENAME = 'data_done';
-
-%%%% COHORT 1: datasets to load
-%%%% Copy paste the folders of choice here, add more or discard if needed
-PATHNAME2{1} = 'c:\_ensightCases\bav_tissue\bav\1_PT221-BJ\';
-PATHNAME2{2} = 'c:\_ensightCases\bav_tissue\bav\2_PT23-LS\';
-PATHNAME2{3} = 'c:\_ensightCases\bav_tissue\bav\3_PT68-DD\';
-PATHNAME2{4} = 'c:\_ensightCases\bav_tissue\bav\4_PT47-MR\';
-PATHNAME2{5} = 'c:\_ensightCases\bav_tissue\bav\5_PT115-AG\';
-PATHNAME2{6} = 'c:\_ensightCases\bav_tissue\bav\6_PT151-NJ\';
-PATHNAME2{7} = 'c:\_ensightCases\bav_tissue\bav\7_PT193-SM\';
-PATHNAME2{8} = 'c:\_ensightCases\bav_tissue\bav\8_PT202-AP\';
-PATHNAME2{9} = 'c:\_ensightCases\bav_tissue\bav\9_PT208-KK\';
-PATHNAME2{10}= 'c:\_ensightCases\bav_tissue\bav\10_PT214-DT\';
-PATHNAME2{11}= 'c:\_ensightCases\bav_tissue\bav\11_PT6-RG_followup\';
-PATHNAME2{12}= 'c:\_ensightCases\bav_tissue\bav\12_PT242-JL\';
-PATHNAME2{13}= 'c:\_ensightCases\bav_tissue\bav\13_PT53-JJ_followup\';
-FILENAME = 'data_done';
+FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
+FILENAME2 = 'vel_struct';               % 2: Load velocity
+FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Probability mask
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 mask1 = probability_mask.matrix;
 mask1_vox = probability_mask.vox;clear probability_mask
-
-%%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
-sizes = [size(mask1,1)+offset size(mask1,2)+offset size(mask1,3)+offset];% size(mask1,4) size(mask1,5)];
-mask1b = zeros(sizes);
-mask1b((offset+1):size(mask1b,1),(offset+1):size(mask1b,2),(offset+1):size(mask1b,3),:,:) = mask1;
-mask1 = mask1b;clear mask1b
 
 L1 = (mask1 ~= 0);
 % create all coordinates
@@ -165,136 +162,202 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         PATHNAME2{n}
     end
 
-    tic
-    disp('...Busy loading data_done...')
-    load(strcat(PATHNAME{n},FILENAME))
-    data2 = data; clear data;
-    disp('...Done loading data...')
-    toc
-
-    if ~isfield(data2,'PC_unaliased')
-        data2.PC_unaliased = data2.PC_zeros;
-    end
-    mask2 = (data2.PC_unaliased(:,:,:,1,1) ~= 0);
-
-    L2a = (mask2 ~= 0); % Using two logicals for the second mask since the size changes after the translation which is needed for coordinates but not for velocity
-
-    %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
-    sizes = [size(mask2,1)+offset size(mask2,2)+offset size(mask2,3)+offset];% size(mask1,4) size(mask1,5)];
-    mask2b = zeros(sizes);
-    mask2b((offset+1):size(mask2b,1),(offset+1):size(mask2b,2),(offset+1):size(mask2b,3),:,:) = mask2;
-    mask2 = mask2b;clear mask2b
-
-    L2b = (mask2 ~= 0);
+    if nargin < 1 || isempty(PATHNAME1)
+        [FILENAME1,PATHNAME{n}] = uigetfile('.mat','Load mask');
+        load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME1])
+    else
+        load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME1])
+    end     
+    
+    mask2 = mrstruct_mask.dataAy;
+    mask2_vox = mrstruct_mask.vox;clear mrstruct_mask
+    
+    L2 = (mask2 ~= 0);
     % create velocity coordinates
-    [x2,y2,z2] = meshgrid((1:size(mask2,2)).* data2.vox(2), ...
-        (1:size(mask2,1)).*data2.vox(1),(1:size(mask2,3)).* data2.vox(3));
-    data2.x_coor_vel = x2(L2b);data2.y_coor_vel = y2(L2b);data2.z_coor_vel = z2(L2b);
+    [x2,y2,z2] = meshgrid((1:size(mask2,2)).* mask2_vox(2), ...
+        (1:size(mask2,1)).*mask2_vox(1),(1:size(mask2,3)).* mask2_vox(3));
+    data2.x_coor_vel = x2(L2);data2.y_coor_vel = y2(L2);data2.z_coor_vel = z2(L2);
     clear x2, clear y2, clear z2
-    contours = zeros(size(L2b));
-    contours(L2b==0) = -1;
-    contours(L2b==1) = 1;
+    contours = zeros(size(L2));
+    contours(L2==0) = -1;
+    contours(L2==1) = 1;
     [data2.F,V] = isosurface(contours,0); % make a surface from the detected contours
-    data2.V = V .* (ones(size(V,1),1) * data2.vox(1:3));
+    data2.V = V .* (ones(size(V,1),1) * mask2_vox(1:3));
+    clear F, clear V
 
-    for t = 1:size(data2.PC_unaliased,5)
-        vx = squeeze(data2.PC_unaliased(:,:,:,1,t));
-        vy = squeeze(data2.PC_unaliased(:,:,:,2,t));
-        vz = squeeze(data2.PC_unaliased(:,:,:,3,t));
-        vmagn = sqrt(vx.^2 + vy.^2 + vz.^2);
-        L =(vmagn ~= 0);
-        mean_velo(t) = mean(vmagn(L));
-    end
-
-    if plotFlag == 1
-        figure('Name','Mean velocity')
-        plot(1:size(data2.PC_unaliased,5),mean_velo,'-ro','LineWidth',5,...
-            'MarkerEdgeColor','k',...
-            'MarkerFaceColor','g',...
-            'MarkerSize',16);
-    end
-
-    [I,time] = find(mean_velo==max(mean_velo));
-    clear mean_velo
-
+    load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME2])
+    velocity = double(mrStruct.dataAy); clear mrStruct; % for interpolation velocity needs to be a double    
+    
     %%% Wall shear stress coordinates for both datasets
     geo.x_coor_wss = geo.V(:,1);
     geo.y_coor_wss = geo.V(:,2);
     geo.z_coor_wss = geo.V(:,3);
 
-    data2.x_coor_wss = data2.V_matrix{1}(:,1) + (offset*data2.vox(1));
-    data2.y_coor_wss = data2.V_matrix{1}(:,2) + (offset*data2.vox(2));
-    data2.z_coor_wss = data2.V_matrix{1}(:,3) + (offset*data2.vox(3));
+    data2.x_coor_wss = data2.V(:,1);
+    data2.y_coor_wss = data2.V(:,2);
+    data2.z_coor_wss = data2.V(:,3);
 
+    load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME3])
+    WSS = Wss_point_cloud; clear Wss_point_cloud    
+    
+    % Find max velocity
+    for t = 1:size(velocity,5)
+        vx = squeeze(velocity(:,:,:,1,t));
+        vy = squeeze(velocity(:,:,:,2,t));
+        vz = squeeze(velocity(:,:,:,3,t));
+        vmagn = sqrt(vx.^2 + vy.^2 + vz.^2);
+        mean_velo(t) = mean(vmagn(L2));
+    end
+    
+    if plotFlag == 1
+        figure('Name','Mean velocity')
+        plot(1:size(velocity,5),mean_velo,'-ro','LineWidth',5,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',16);
+    end
+    [I,time] = find(mean_velo==max(mean_velo));
+    clear mean_velo
+    %%% What follows is a horrible piece of code, so if you're reading this and feel like cleaning it up, please do,
+    %%% I'll buy you a beer next time we meet. PvO
     if peak_systolicFlag == 1
-        % Peak systolic velocity
-        data2.x_value_vel = data2.PC_unaliased(:,:,:,1,time);
-        data2.y_value_vel = data2.PC_unaliased(:,:,:,2,time);
-        data2.z_value_vel = data2.PC_unaliased(:,:,:,3,time);
-        data2.x_value_vel = data2.x_value_vel(L2a);
-        data2.y_value_vel = data2.y_value_vel(L2a);
-        data2.z_value_vel = data2.z_value_vel(L2a);
-        % Peak systolic WSS
-        data2.x_value_wss = data2.WSS_matrix{time}(:,1);
-        data2.y_value_wss = data2.WSS_matrix{time}(:,2);
-        data2.z_value_wss = data2.WSS_matrix{time}(:,3);
-        data2.x_value_wss = data2.x_value_wss;
-        data2.y_value_wss = data2.y_value_wss;
-        data2.z_value_wss = data2.z_value_wss;
+        data2.x_value_vel = velocity(:,:,:,1,time);
+        data2.y_value_vel = velocity(:,:,:,2,time);
+        data2.z_value_vel = velocity(:,:,:,3,time);
+        data2.x_value_vel = data2.x_value_vel(L2);
+        data2.y_value_vel = data2.y_value_vel(L2);
+        data2.z_value_vel = data2.z_value_vel(L2);
+        if size(WSS,2) > 5
+            data2.x_value_wss = WSS{time}(:,1);
+            data2.y_value_wss = WSS{time}(:,2);
+            data2.z_value_wss = WSS{time}(:,3);
+        elseif size(WSS,2) == 5
+            data2.x_value_wss = WSS{3}(:,1);
+            data2.y_value_wss = WSS{3}(:,2);
+            data2.z_value_wss = WSS{3}(:,3);
+        elseif size(WSS,2) == 4
+            data2.x_value_wss = WSS{2}(:,1);
+            data2.y_value_wss = WSS{2}(:,2);
+            data2.z_value_wss = WSS{2}(:,3);
+        elseif size(WSS,2) == 3
+            data2.x_value_wss = WSS{1}(:,1);
+            data2.y_value_wss = WSS{1}(:,2);
+            data2.z_value_wss = WSS{1}(:,3);
+        end
     elseif peak_systolicFlag == 0
         % Velocity averaged over 5 systolic time frames
-        data2.x_value_vel_t1 = data2.PC_unaliased(:,:,:,1,time-2);data2.y_value_vel_t1 = data2.PC_unaliased(:,:,:,2,time-2);data2.z_value_vel_t1 = data2.PC_unaliased(:,:,:,3,time-2);
-        data2.x_value_vel_t2 = data2.PC_unaliased(:,:,:,1,time-1);data2.y_value_vel_t2 = data2.PC_unaliased(:,:,:,2,time-1);data2.z_value_vel_t2 = data2.PC_unaliased(:,:,:,3,time-1);
-        data2.x_value_vel_t3 = data2.PC_unaliased(:,:,:,1,time);  data2.y_value_vel_t3 = data2.PC_unaliased(:,:,:,2,time);  data2.z_value_vel_t3 = data2.PC_unaliased(:,:,:,3,time);
-        data2.x_value_vel_t4 = data2.PC_unaliased(:,:,:,1,time+1);data2.y_value_vel_t4 = data2.PC_unaliased(:,:,:,2,time+1);data2.z_value_vel_t4 = data2.PC_unaliased(:,:,:,3,time+1);
-        data2.x_value_vel_t5 = data2.PC_unaliased(:,:,:,1,time+2);data2.y_value_vel_t5 = data2.PC_unaliased(:,:,:,2,time+2);data2.z_value_vel_t5 = data2.PC_unaliased(:,:,:,3,time+2);
-        data2.x_value_vel = (data2.x_value_vel_t1(L2a) + data2.x_value_vel_t2(L2a) + data2.x_value_vel_t3(L2a) + data2.x_value_vel_t4(L2a) + data2.x_value_vel_t5(L2a))./5;
-        data2.y_value_vel = (data2.y_value_vel_t1(L2a) + data2.y_value_vel_t2(L2a) + data2.y_value_vel_t3(L2a) + data2.y_value_vel_t4(L2a) + data2.y_value_vel_t5(L2a))./5;
-        data2.z_value_vel = (data2.z_value_vel_t1(L2a) + data2.z_value_vel_t2(L2a) + data2.z_value_vel_t3(L2a) + data2.z_value_vel_t4(L2a) + data2.z_value_vel_t5(L2a))./5;
-        % WSS averaged over 5 systolic time frames
-        data2.x_value_wss_t1 = data2.WSS_matrix{time-2}(:,1);data2.y_value_wss_t1 = data2.WSS_matrix{time-2}(:,2);data2.z_value_wss_t1 = data2.WSS_matrix{time-2}(:,3);
-        data2.x_value_wss_t2 = data2.WSS_matrix{time-1}(:,1);data2.y_value_wss_t2 = data2.WSS_matrix{time-1}(:,2);data2.z_value_wss_t2 = data2.WSS_matrix{time-1}(:,3);
-        data2.x_value_wss_t3 = data2.WSS_matrix{time}(:,1);  data2.y_value_wss_t3 = data2.WSS_matrix{time}(:,2);  data2.z_value_wss_t3 = data2.WSS_matrix{time}(:,3);
-        data2.x_value_wss_t4 = data2.WSS_matrix{time+1}(:,1);data2.y_value_wss_t4 = data2.WSS_matrix{time+1}(:,2);data2.z_value_wss_t4 = data2.WSS_matrix{time+1}(:,3);
-        data2.x_value_wss_t5 = data2.WSS_matrix{time+2}(:,1);data2.y_value_wss_t5 = data2.WSS_matrix{time+2}(:,2);data2.z_value_wss_t5 = data2.WSS_matrix{time+2}(:,3);
-        data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4 + data2.x_value_wss_t5)./5;
-        data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4 + data2.y_value_wss_t5)./5;
-        data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4 + data2.z_value_wss_t5)./5;
+        if time == 2    % mistriggering: second time frame is peak systole, averaging over 5 timesteps is not possible
+            disp('TIME FRAMES AVERAGED OVER 4 TIME FRAMES!')
+            data2.x_value_vel_t1 = velocity(:,:,:,1,time-1);data2.y_value_vel_t1 = velocity(:,:,:,2,time-1);data2.z_value_vel_t1 = velocity(:,:,:,3,time-1);
+            data2.x_value_vel_t2 = velocity(:,:,:,1,time);  data2.y_value_vel_t2 = velocity(:,:,:,2,time);  data2.z_value_vel_t2 = velocity(:,:,:,3,time);
+            data2.x_value_vel_t3 = velocity(:,:,:,1,time+1);data2.y_value_vel_t3 = velocity(:,:,:,2,time+1);data2.z_value_vel_t3 = velocity(:,:,:,3,time+1);
+            data2.x_value_vel_t4 = velocity(:,:,:,1,time+2);data2.y_value_vel_t4 = velocity(:,:,:,2,time+2);data2.z_value_vel_t4 = velocity(:,:,:,3,time+2);
+            data2.x_value_vel = (data2.x_value_vel_t1(L2) + data2.x_value_vel_t2(L2) + data2.x_value_vel_t3(L2) + data2.x_value_vel_t4(L2))./4;
+            data2.y_value_vel = (data2.y_value_vel_t1(L2) + data2.y_value_vel_t2(L2) + data2.y_value_vel_t3(L2) + data2.y_value_vel_t4(L2))./4;
+            data2.z_value_vel = (data2.z_value_vel_t1(L2) + data2.z_value_vel_t2(L2) + data2.z_value_vel_t3(L2) + data2.z_value_vel_t4(L2))./4;
+            if size(WSS,2) > 5
+                data2.x_value_wss_t1 = WSS{time-1}(:,1);data2.y_value_wss_t1 = WSS{time-1}(:,2);data2.z_value_wss_t1 = WSS{time-1}(:,3);
+                data2.x_value_wss_t2 = WSS{time}(:,1);  data2.y_value_wss_t2 = WSS{time}(:,2);  data2.z_value_wss_t2 = WSS{time}(:,3);
+                data2.x_value_wss_t3 = WSS{time+1}(:,1);data2.y_value_wss_t3 = WSS{time+1}(:,2);data2.z_value_wss_t3 = WSS{time+1}(:,3);
+                data2.x_value_wss_t4 = WSS{time+2}(:,1);data2.y_value_wss_t4 = WSS{time+2}(:,2);data2.z_value_wss_t4 = WSS{time+2}(:,3);
+                data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4)./4;
+                data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4)./4;
+                data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4)./4;
+            elseif size(WSS,2) == 4
+                data2.x_value_wss_t1 = WSS{time-1}(:,1);data2.y_value_wss_t1 = WSS{time-1}(:,2);data2.z_value_wss_t1 = WSS{time-1}(:,3);
+                data2.x_value_wss_t2 = WSS{time}(:,1);  data2.y_value_wss_t2 = WSS{time}(:,2);  data2.z_value_wss_t2 = WSS{time}(:,3);
+                data2.x_value_wss_t3 = WSS{time+1}(:,1);data2.y_value_wss_t3 = WSS{time+1}(:,2);data2.z_value_wss_t3 = WSS{time+1}(:,3);
+                data2.x_value_wss_t4 = WSS{time+2}(:,1);data2.y_value_wss_t4 = WSS{time+2}(:,2);data2.z_value_wss_t4 = WSS{time+2}(:,3);
+                data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4)./4;
+                data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4)./4;
+                data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4)./4;
+            end
+        elseif time == 1 % mistriggering: first time frame is peak systole, averaging over 5 timesteps is not possible
+            disp('TIME FRAMES AVERAGED OVER 3 TIME FRAMES!')
+            data2.x_value_vel_t1 = velocity(:,:,:,1,time);  data2.y_value_vel_t1 = velocity(:,:,:,2,time);  data2.z_value_vel_t1 = velocity(:,:,:,3,time);
+            data2.x_value_vel_t2 = velocity(:,:,:,1,time+1);data2.y_value_vel_t2 = velocity(:,:,:,2,time+1);data2.z_value_vel_t2 = velocity(:,:,:,3,time+1);
+            data2.x_value_vel_t3 = velocity(:,:,:,1,time+2);data2.y_value_vel_t3 = velocity(:,:,:,2,time+2);data2.z_value_vel_t3 = velocity(:,:,:,3,time+2);
+            data2.x_value_vel = (data2.x_value_vel_t1(L2) + data2.x_value_vel_t2(L2) + data2.x_value_vel_t3(L2))./3;
+            data2.y_value_vel = (data2.y_value_vel_t1(L2) + data2.y_value_vel_t2(L2) + data2.y_value_vel_t3(L2))./3;
+            data2.z_value_vel = (data2.z_value_vel_t1(L2) + data2.z_value_vel_t2(L2) + data2.z_value_vel_t3(L2))./3;
+            if size(WSS,2) > 5
+                data2.x_value_wss_t1 = WSS{time}(:,1);  data2.y_value_wss_t1 = WSS{time}(:,2);  data2.z_value_wss_t1 = WSS{time}(:,3);
+                data2.x_value_wss_t2 = WSS{time+1}(:,1);data2.y_value_wss_t2 = WSS{time+1}(:,2);data2.z_value_wss_t2 = WSS{time+1}(:,3);
+                data2.x_value_wss_t3 = WSS{time+2}(:,1);data2.y_value_wss_t3 = WSS{time+2}(:,2);data2.z_value_wss_t3 = WSS{time+2}(:,3);
+                data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3)./3;
+                data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3)./3;
+                data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3)./3;
+            elseif size(WSS,2) == 3
+                data2.x_value_wss_t1 = WSS{time}(:,1);  data2.y_value_wss_t1 = WSS{time}(:,2);  data2.z_value_wss_t1 = WSS{time}(:,3);
+                data2.x_value_wss_t2 = WSS{time+1}(:,1);data2.y_value_wss_t2 = WSS{time+1}(:,2);data2.z_value_wss_t2 = WSS{time+1}(:,3);
+                data2.x_value_wss_t3 = WSS{time+2}(:,1);data2.y_value_wss_t3 = WSS{time+2}(:,2);data2.z_value_wss_t3 = WSS{time+2}(:,3);
+                data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3)./3;
+                data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3)./3;
+                data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3)./3;
+            end
+        else % normal triggering timestep > 2 is peak systole
+            data2.x_value_vel_t1 = velocity(:,:,:,1,time-2);data2.y_value_vel_t1 = velocity(:,:,:,2,time-2);data2.z_value_vel_t1 = velocity(:,:,:,3,time-2);
+            data2.x_value_vel_t2 = velocity(:,:,:,1,time-1);data2.y_value_vel_t2 = velocity(:,:,:,2,time-1);data2.z_value_vel_t2 = velocity(:,:,:,3,time-1);
+            data2.x_value_vel_t3 = velocity(:,:,:,1,time);  data2.y_value_vel_t3 = velocity(:,:,:,2,time);  data2.z_value_vel_t3 = velocity(:,:,:,3,time);
+            data2.x_value_vel_t4 = velocity(:,:,:,1,time+1);data2.y_value_vel_t4 = velocity(:,:,:,2,time+1);data2.z_value_vel_t4 = velocity(:,:,:,3,time+1);
+            data2.x_value_vel_t5 = velocity(:,:,:,1,time+2);data2.y_value_vel_t5 = velocity(:,:,:,2,time+2);data2.z_value_vel_t5 = velocity(:,:,:,3,time+2);
+            data2.x_value_vel = (data2.x_value_vel_t1(L2) + data2.x_value_vel_t2(L2) + data2.x_value_vel_t3(L2) + data2.x_value_vel_t4(L2) + data2.x_value_vel_t5(L2))./5;
+            data2.y_value_vel = (data2.y_value_vel_t1(L2) + data2.y_value_vel_t2(L2) + data2.y_value_vel_t3(L2) + data2.y_value_vel_t4(L2) + data2.y_value_vel_t5(L2))./5;
+            data2.z_value_vel = (data2.z_value_vel_t1(L2) + data2.z_value_vel_t2(L2) + data2.z_value_vel_t3(L2) + data2.z_value_vel_t4(L2) + data2.z_value_vel_t5(L2))./5;
+            if size(WSS,2) > 5
+                data2.x_value_wss_t1 = WSS{time-2}(:,1);data2.y_value_wss_t1 = WSS{time-2}(:,2);data2.z_value_wss_t1 = WSS{time-2}(:,3);
+                data2.x_value_wss_t2 = WSS{time-1}(:,1);data2.y_value_wss_t2 = WSS{time-1}(:,2);data2.z_value_wss_t2 = WSS{time-1}(:,3);
+                data2.x_value_wss_t3 = WSS{time}(:,1);  data2.y_value_wss_t3 = WSS{time}(:,2);  data2.z_value_wss_t3 = WSS{time}(:,3);
+                data2.x_value_wss_t4 = WSS{time+1}(:,1);data2.y_value_wss_t4 = WSS{time+1}(:,2);data2.z_value_wss_t4 = WSS{time+1}(:,3);
+                data2.x_value_wss_t5 = WSS{time+2}(:,1);data2.y_value_wss_t5 = WSS{time+2}(:,2);data2.z_value_wss_t5 = WSS{time+2}(:,3);
+                data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4 + data2.x_value_wss_t5)./5;
+                data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4 + data2.y_value_wss_t5)./5;
+                data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4 + data2.z_value_wss_t5)./5;
+            elseif size(WSS,2) == 5
+                time = 3;
+                data2.x_value_wss_t1 = WSS{time-2}(:,1);data2.y_value_wss_t1 = WSS{time-2}(:,2);data2.z_value_wss_t1 = WSS{time-2}(:,3);
+                data2.x_value_wss_t2 = WSS{time-1}(:,1);data2.y_value_wss_t2 = WSS{time-1}(:,2);data2.z_value_wss_t2 = WSS{time-1}(:,3);
+                data2.x_value_wss_t3 = WSS{time}(:,1);  data2.y_value_wss_t3 = WSS{time}(:,2);  data2.z_value_wss_t3 = WSS{time}(:,3);
+                data2.x_value_wss_t4 = WSS{time+1}(:,1);data2.y_value_wss_t4 = WSS{time+1}(:,2);data2.z_value_wss_t4 = WSS{time+1}(:,3);
+                data2.x_value_wss_t5 = WSS{time+2}(:,1);data2.y_value_wss_t5 = WSS{time+2}(:,2);data2.z_value_wss_t5 = WSS{time+2}(:,3);
+                data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4 + data2.x_value_wss_t5)./5;
+                data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4 + data2.y_value_wss_t5)./5;
+                data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4 + data2.z_value_wss_t5)./5;
+            end
+        end
     end
-
+    
     % Velocity and WSS magnitude (scalar)
     data2.vel_m = sqrt(data2.x_value_vel.^2 + data2.y_value_vel.^2 + data2.z_value_vel.^2);
     data2.wss_m = sqrt(data2.x_value_wss.^2 + data2.y_value_wss.^2 + data2.z_value_wss.^2);
 
     if plotFlag == 1
         figure('Name','data2 velocity')
-        patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
+        patch('Faces',data2.F,'Vertices',data2.V, ...
             'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
         hold on
-        scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,data2.vel_m.*50,data2.vel_m,'filled')
+        scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,50,data2.vel_m,'filled')
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-
+        
         figure('Name','data2 WSS')
-        patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
+        patch('Faces',data2.F,'Vertices',data2.V, ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
     end
 
-    if calculateIE_Flag == 1;
+     if calculateIE_Flag == 1;
         if ~exist(strcat(PATHNAME{n},'interpolation_error_ROI\mask1.mat'),'file')
-
+            
             mkdir(PATHNAME{n},'interpolation_error_ROI')
-
+            
             F1=figure('Name','Aorta shape: Paused after finishing a region so press space when finished!');
-            patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',0.25);
+            patch('Faces',data2.F,'Vertices',data2.V,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',0.25);
             view([-180 -90]);axis ij;axis equal;axis off
-
+            
             for i = 1:6
                 %Polygon and mask for AAo
                 polyAAo = impoly;
                 wait(polyAAo);
                 region = getPosition(polyAAo);
-
+                
                 %          disp('saving, pausing')
                 save(strcat([PATHNAME{n} 'interpolation_error_ROI\mask' num2str(i)]),'region');
                 pause
@@ -331,21 +394,21 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         mean_vel_DAo_outer = mean(data2.vel_m(data2_mask_DAo_outer_vel));
         data2_mask_DAo_outer_wss = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
         mean_wss_DAo_outer = mean(data2.wss_m(data2_mask_DAo_outer_wss));
-
+        
         mean_vel_before_interpolation(n,1) = mean_vel_asc_inner;
         mean_vel_before_interpolation(n,2) = mean_vel_asc_outer;
         mean_vel_before_interpolation(n,3) = mean_vel_arch_inner;
         mean_vel_before_interpolation(n,4) = mean_vel_arch_outer;
         mean_vel_before_interpolation(n,5) = mean_vel_DAo_inner;
         mean_vel_before_interpolation(n,6) = mean_vel_DAo_outer;
-
+        
         mean_wss_before_interpolation(n,1) = mean_wss_asc_inner;
         mean_wss_before_interpolation(n,2) = mean_wss_asc_outer;
         mean_wss_before_interpolation(n,3) = mean_wss_arch_inner;
         mean_wss_before_interpolation(n,4) = mean_wss_arch_outer;
         mean_wss_before_interpolation(n,5) = mean_wss_DAo_inner;
         mean_wss_before_interpolation(n,6) = mean_wss_DAo_outer;
-
+        
         if plotFlag == 1
             figure('Name','Velocity before interpolation: inner AAo')
             scatter3(data2.x_coor_vel(data2_mask_AAo_inner_vel),data2.y_coor_vel(data2_mask_AAo_inner_vel),data2.z_coor_vel(data2_mask_AAo_inner_vel),20,data2.vel_m(data2_mask_AAo_inner_vel),'filled');axis equal;caxis([0 1.5])
@@ -385,70 +448,71 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
         end
     end
-
+    
     if plotFlag == 1
         figure('Name',strcat('To be registered aorta ',num2str(n)))
         plot3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,'r.')
         hold on
-        % plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
+        plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
         plot3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,'b.')
-        % plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'k.')
+        plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'k.')
         legend('to remain the same','to be transformed')
         axis equal; axis off;view([-180 -90]); axis ij
     end
 
-    %%% Registration
+     %%% Registration
     PSF = fspecial('gaussian',1,1);
     mask1_to_register = mask1;
     mask1_to_register = imfilter(mask1_to_register,PSF,'conv');
-
+    
     mask2 = imfilter(mask2,PSF,'conv');
-
+    
     disp(' ')
     disp('...Busy registering...Affine registration (dof = 12)! So only scalars used (Affine registration doesnt work for vectors)')
     disp(' ')
     disp('...This can take up to 5 minutes...')
-
+    
     tic
-    % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-    fsldir = '/cygdrive/d/research/matlabcode/matlab_registration/flirt/';
-
+    % directory with flirt.exe and cygwin1.dll as read from atlas_tool.cfg in C:\temp
+    fsldir = [path_flirt '/']
+    
     % save as nifti
     cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
     save_nii(cnii,'mask1.nii');
-    mnii=make_nii(mask2,[data2.vox(1) data2.vox(2) data2.vox(3)]);
+    mnii=make_nii(mask2,[mask2_vox(1) mask2_vox(2) mask2_vox(3)]);
     save_nii(mnii,'mask2.nii');
-
+    
     % run flirt (needs cygwin installed)
     infile = 'mask2.nii';
     reffile = 'mask1.nii';
     outfile = 'rmask2.nii';
     omat = 'Rotation_Translation.mat';
-
+    
     flirtcmd= [...
         'flirt -searchrx -0 0 -searchry -0 0 -searchrz -0 0 -dof 12' ...
         '-in ' infile ...
         ' -ref ' reffile ' -out ' outfile ' -omat ' omat];
     flirtcmd=[fsldir flirtcmd];
     flirtcmd = ['export FSLOUTPUTTYPE=NIFTI;' flirtcmd];
-
+    
     % create file with run command
     f=fopen('runflirt.sh','wt');
     fprintf(f,'%s',flirtcmd);
     fclose(f);
-
+    
     % and go! takes 4-5 mins.
-    system('c:\cygwin64\bin\bash runflirt.sh');
-
+    % directory for cygwin as read from atlas_tool.cfg in C:\temp        
+    system([path_cygwin '\bash runflirt.sh']);
+    
     % load transformation mask
     load Rotation_Translation -ascii
-
+    
     flirtmat = 'Rotation_Translation.mat';
     src = infile;
     trg = reffile;
     [worldmat spmvoxmat fslvoxmat] = flirtmat2worldmat(flirtmat, src, trg);
     rotmat = worldmat(1:3,1:3);
-
+    
     %%% Velocity coordinates
     yxz_coor_vel = [data2.y_coor_vel data2.x_coor_vel data2.z_coor_vel];
     yxz_coor_vel(:,4) = 1;
@@ -456,7 +520,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     x_coor_vel = yxz_coor_vel_new(2,:)';
     y_coor_vel = yxz_coor_vel_new(1,:)';
     z_coor_vel = yxz_coor_vel_new(3,:)';clear yxz_coor_vel_new
-
+    
     %%% WSS coordinates
     yxz_coor_wss = [data2.y_coor_wss data2.x_coor_wss data2.z_coor_wss];
     yxz_coor_wss(:,4) = 1;
@@ -466,7 +530,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     z_coor_wss = yxz_coor_wss_new(3,:)';clear yxz_coor_wss_new
     toc
     disp('..Done registering...')
-
+    
     % NOTE HERE THAT VELOCITY VECTORS AND WSS VECTORS ARE NOT ROTATED!
     % That's because affine registration includes not only translating and rotating
     % but also SCALING. We don't want our velocity and WSS vectors to be scaled.
@@ -489,24 +553,26 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         pause(10)
 
         figure('Name','transformed velocity')
-        patch('Faces',data2.F_matrix{1},'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
+        patch('Faces',data2.F,'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
             'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
         hold on
         scatter3(x_coor_vel,y_coor_vel,z_coor_vel,50,data2.vel_m,'filled')
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-
+        
         figure('Name','transformed WSS')
-        patch('Faces',data2.F_matrix{1},'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
+        patch('Faces',data2.F,'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
     end
 
-    if calculateRE_Flag == 1
+   if calculateRE_Flag == 1
+        offset = 100;
+        
         % Transform point cloud back to matrix by rounding the coordinates
-        x_vel_round = round(x_coor_vel./mask1_vox(1));
-        y_vel_round = round(y_coor_vel./mask1_vox(2));
-        z_vel_round = round(z_coor_vel./mask1_vox(3));
-
+        x_vel_round = round(x_coor_vel./mask1_vox(1)) + offset;
+        y_vel_round = round(y_coor_vel./mask1_vox(2)) + offset;
+        z_vel_round = round(z_coor_vel./mask1_vox(3)) + offset;
+        
         % remove doubles ue to rounding and put them in a matrix
         indices_mask2 = [x_vel_round y_vel_round z_vel_round];
         siz=max(indices_mask2,[],1);
@@ -515,40 +581,46 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         clear b, clear m
         indices_mask2 = [x_vel_round(IND_double_removed) y_vel_round(IND_double_removed) z_vel_round(IND_double_removed)];
         clear IND_double_removed, clear IND
-        mask2_new = zeros([max(y_vel_round) max(x_vel_round) max(z_vel_round)]);
+        mask_new = zeros([max(y_vel_round) max(x_vel_round) max(z_vel_round)]);
         for i = 1:size(indices_mask2,1)
-            mask2_new(indices_mask2(i,2),indices_mask2(i,1),indices_mask2(i,3)) = 1;
+            mask_new(indices_mask2(i,2),indices_mask2(i,1),indices_mask2(i,3)) = 1;
         end
-
+        
         % Due to the rounding of coordinates there are holes in the aorta, we fill them by smooth3
         % and then erode the aorta to give it the right size again
         se = strel('disk',1);
-        mask2_new = imerode(smooth3(mask2_new),se);
-
+        mask_new = imerode(smooth3(mask_new),se);
+        
+        %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
+        sizes = [size(mask1,1)+offset size(mask1,2)+offset size(mask1,3)+offset];
+        mask1b = zeros(sizes);
+        mask1b((offset+1):size(mask1b,1),(offset+1):size(mask1b,2),(offset+1):size(mask1b,3)) = mask1;
+        %    mask1 = mask1b;clear mask2b
+        
         % Make sure both masks have the same dimensions
-        if size(mask1,1) > size(mask2_new,1)
-            mask2_new(size(mask2_new,1):size(mask1,1),:,:) = 0;
-        elseif size(mask1,1) < size(mask2_new,1)
-            mask1(size(mask1,1):size(mask2_new,1),:,:) = 0;
+        if size(mask1b,1) > size(mask_new,1)
+            mask_new(size(mask_new,1):size(mask1b,1),:,:) = 0;
+        elseif size(mask1b,1) < size(mask_new,1)
+            mask_new(size(mask1b,1)+1:size(mask_new,1),:,:) = [];
         end
-        if size(mask1,2) > size(mask2_new,2)
-            mask2_new(:,size(mask2_new,2):size(mask1,2),:) = 0;
-        elseif size(mask1,2) < size(mask2_new,2)
-            mask1(:,size(mask1,2):size(mask2_new,2),:) = 0;
+        if size(mask1b,2) > size(mask_new,2)
+            mask_new(:,size(mask_new,2):size(mask1b,2),:) = 0;
+        elseif size(mask1b,2) < size(mask_new,2)
+            mask_new(:,size(mask1b,2)+1:size(mask_new,2),:) = [];
         end
-        if size(mask1,3) > size(mask2_new,3)
-            mask2_new(:,:,size(mask2_new,3):size(mask1,3)) = 0;
-        elseif size(mask1,3) < size(mask2_new,3)
-            mask1(:,:,size(mask1,3):size(mask2_new,3)) = 0;
+        if size(mask1b,3) > size(mask_new,3)
+            mask_new(:,:,size(mask_new,3):size(mask1b,3)) = 0;
+        elseif size(mask1b,3) < size(mask_new,3)
+            mask_new(:,:,size(mask1b,3)+1:size(mask_new,3)) = [];
         end
-
+        
         % due to smoothing values of mask2_new are between 0 and 1, so set
         % everything > 0 to 1
-        L_mask2 = double(mask2_new ~= 0);
-
+        L_mask2 = double(mask_new ~= 0);
+        
         % calculate where voxels exist for both masks
-        difference = abs(mask1-L_mask2);
-        [I1,J] = find(mask1~=0);
+        difference = abs(mask1b-L_mask2);
+        [I1,J] = find(mask1b~=0);
         [I2,J] = find(L_mask2~=0);
         mean_I = (size(I1,1) + size(I2,1))/2;
         [I_diff,J] = find(difference~=0);
@@ -757,7 +829,7 @@ new_mask_red_ = zeros([size(VEL1,1) 1]);
 new_mask_blue_ = zeros([size(VEL1,1) 1]);
 new_mask_gray_ = zeros([size(VEL1,1) 1]);
 alpha = 0.05;
-disp('...Busy creating P-value map for velocity...')
+disp('...Busy creating P-value map for velocity...This may take a while...')
 tic
 for i=1:size(VEL1,1)
     for n1 = 1:size(PATHNAME1,2)
@@ -799,36 +871,13 @@ new_mask_gray = zeros(size(L1));
 new_mask_gray(L1) = new_mask_gray_;
 new_mask_gray(~L1) = -1;
 
-if calculate_p_value_volumeFlag == 1
-    
-    [I,J] = find(L1~=0);
-    total_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
-    
-    [I,J] = find(new_mask_red==1);
-    red_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
-    percentage_red_volume = red_volume / total_volume * 100;
-    [I,J] = find(new_mask_blue==1);
-    blue_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
-    percentage_blue_volume = blue_volume / total_volume * 100;
-    [I,J] = find(new_mask_gray==1);
-    gray_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
-    percentage_gray_volume = gray_volume / total_volume * 100;
-    total_percentage = percentage_red_volume + percentage_blue_volume + percentage_gray_volume;
-    
-    disp(['Red volume percentage of total aorta = ' num2str(percentage_red_volume) ' %'])
-    disp(['Blue volume percentage of total aorta = ' num2str(percentage_blue_volume) ' %'])
-    disp(['Gray volume percentage of total aorta = ' num2str(percentage_gray_volume) ' %'])
-    disp(['Total percentage of total aorta = ' num2str(total_percentage) ' %'])
-    disp(' ')
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%% WSS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cohort1_wss = zeros([size(PATHNAME1,2) 1]);
 cohort2_wss = zeros([size(PATHNAME2,2) 1]);
 p_value_wss = zeros([size(WSS1,1) 1]);
-alpha = 0.05;
-disp('...Busy creating P-value map for WSS...')
+disp('...Busy creating P-value map for WSS...This may take a while...')
 tic
 for i=1:size(WSS1,1)
     for n1 = 1:size(PATHNAME1,2)
@@ -865,12 +914,12 @@ color2(33:64,2) = color2(33:64,2).*0.5;
 color2(33:64,3) = color2(33:64,3).*0.5;
 
 if calculate_area_of_significance_wss == 1;
-    if ~exist(strcat(PATHNAME_probability_mask,'six_regions_not_transformed\mask1.mat'),'file')
+    if ~exist(strcat(PATHNAME_prob,'six_regions_not_transformed\mask1.mat'),'file')
         
         patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
         view([-180 -90]);axis ij;axis equal;axis off
         
-        mkdir(PATHNAME_probability_mask,'six_regions_not_transformed')
+        mkdir(PATHNAME_prob,'six_regions_not_transformed')
         
         for i = 1:6
             %Polygon and mask for AAo
@@ -880,7 +929,7 @@ if calculate_area_of_significance_wss == 1;
             %mask = inpolygon(x, y, AAo(:,1), AAo(:,2));
             
             disp('saving, pausing')
-            save(strcat([PATHNAME_probability_mask 'six_regions_not_transformed\mask' num2str(i)]),'region');
+            save(strcat([PATHNAME_prob 'six_regions_not_transformed\mask' num2str(i)]),'region');
             pause
         end
     end
@@ -985,6 +1034,33 @@ if calculate_area_of_significance_wss == 1;
     end
 end
 
+if calculate_velvolume_and_WSSarea_total == 1
+    
+    [I,J] = find(L1~=0);
+    total_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
+    
+    [I,J] = find(new_mask_red==1);
+    red_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
+    percentage_red_volume = red_volume / total_volume * 100;
+    [I,J] = find(new_mask_blue==1);
+    blue_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
+    percentage_blue_volume = blue_volume / total_volume * 100;
+    
+    disp(['Red volume percentage of total aorta = ' num2str(round(percentage_red_volume)) ' % (' num2str(round(red_volume./1000)) ' cm3)'])
+    disp(['Blue volume percentage of total aorta = ' num2str(round(percentage_blue_volume)) ' % (' num2str(round(blue_volume./1000)) ' cm3)'])
+%    disp(['Total percentage of total aorta = ' num2str(total_percentage) ' % (' num2str(round(total_volume./1000)) ' cm3)'])
+    disp(' ')
+    
+    [I1,J1] = find(p_value_wss == 1);
+    [I2,J2] = find(p_value_wss == 0);
+    percentage_significant_red = size(I2,1) / size(p_value_wss,1) * 100;
+    percentage_significant_blue = size(I1,1) / size(p_value_wss,1) * 100;
+    
+    disp(['Red percentage = ' num2str(round(percentage_significant_red)) '%'])
+    disp(['Blue percentage = ' num2str(round(percentage_significant_blue)) '%'])
+    disp(' ')
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%% VELOCITY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -995,10 +1071,10 @@ contours = zeros(size(L1));
 contours(L1==0) = -1;
 contours(L1==1) = 1;
 [F,V] = isosurface(smooth3(contours),0); % make a surface from the detected contours
-patch('Faces',F,'Vertices',[V(:,1)-offset V(:,2)-offset V(:,3)-offset],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
+patch('Faces',F,'Vertices',[V(:,1) V(:,2) V(:,3)],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
 hold on
-[F1,V1] = isosurface(x./mask1_vox(1)-offset,y./mask1_vox(2)-offset,z./mask1_vox(3)-offset,smooth3(new_mask_red),0);
-[F2,V2] = isosurface(x./mask1_vox(1)-offset,y./mask1_vox(2)-offset,z./mask1_vox(3)-offset,smooth3(new_mask_blue),0);
+[F1,V1] = isosurface(x./mask1_vox(1),y./mask1_vox(2),z./mask1_vox(3),smooth3(new_mask_red),0);
+[F2,V2] = isosurface(x./mask1_vox(1),y./mask1_vox(2),z./mask1_vox(3),smooth3(new_mask_blue),0);
 p11=patch('Faces',F1,'Vertices',V1,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
 p12=patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[0 0 1],'FaceAlpha',1);
 %p13=patch('Faces',F3,'Vertices',V3,'EdgeColor','none','FaceColor',[0 1 0],'FaceAlpha',1);
@@ -1007,12 +1083,13 @@ view([-180 -90])
 
 % set up results folder
 dir_orig = pwd;
-dir_new = PATHNAME_probability_mask; cd(dir_new); %cd('..')
+dir_new = 'C:\temp\'; cd(dir_new); %cd('..')
 %dir_new = pwd;
 mkdir('results_pvalue_map')
 dir_new
 dir_new = strcat(dir_new,'results_pvalue_map');
 saveas(gcf,[dir_new '\pvalue_map_velocity.fig'])
+disp('Results saved to C:\temp')
 
 aspectRatio = 1./mask1_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
@@ -1111,9 +1188,9 @@ contours = zeros(size(L1));
 contours(L1==0) = -1;
 contours(L1==1) = 1;
 [F,V] = isosurface(smooth3(contours),0); % make a surface from the detected contours
-patch('Faces',F,'Vertices',[V(:,1)-offset V(:,2)-offset V(:,3)-offset],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
+patch('Faces',F,'Vertices',[V(:,1) V(:,2) V(:,3)],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
 hold on
-p21=patch('Faces',geo.F,'Vertices',[geo.V(:,1)./mask1_vox(1)-offset geo.V(:,2)./mask1_vox(2)-offset geo.V(:,3)./mask1_vox(3)-offset],'EdgeColor','none', 'FaceVertexCData',p_value_wss,'FaceColor','interp','FaceAlpha',1);
+p21=patch('Faces',geo.F,'Vertices',[geo.V(:,1)./mask1_vox(1) geo.V(:,2)./mask1_vox(2) geo.V(:,3)./mask1_vox(3)],'EdgeColor','none', 'FaceVertexCData',p_value_wss,'FaceColor','interp','FaceAlpha',1);
 colormap(color2)
 caxis([0 4]);
 axis equal; axis ij; axis off;
@@ -1192,7 +1269,7 @@ set(f2,'toolbar','figure');
 p_value_map.red_vel = new_mask_red;
 p_value_map.blue_vel = new_mask_blue;
 p_value_map.gray_vel = new_mask_gray;
-p_value_map.vertices = [V(:,1)-offset V(:,2)-offset V(:,3)-offset];
+p_value_map.vertices = [V(:,1) V(:,2) V(:,3)];
 p_value_map.faces = F;
 p_value_map.p_value_wss = p_value_wss;
 
@@ -1201,5 +1278,5 @@ save(strcat(dir_new,'\p_value_map'),'p_value_map');
 %savefig(f2,strcat(dir_new,'\heat_map'))
 print(f2,'-dtiff','-r600',strcat(dir_new,'\p_value_wss.tif'));
 cd(dir_orig)
-
+disp('Results saved to C:\temp')
 end
