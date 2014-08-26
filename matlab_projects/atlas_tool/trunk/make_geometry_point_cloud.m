@@ -140,7 +140,7 @@ for n = 2:size(PATHNAME,2)
     
     tic
     % directory with flirt.exe and cygwin1.dll as read from atlas_tool.cfg in C:\temp
-    fsldir = path_flirt;   
+    fsldir = [path_flirt '/']
     
     % save as nifti
     cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
@@ -168,7 +168,7 @@ for n = 2:size(PATHNAME,2)
     
     % and go! takes 4-5 mins.
     % directory for cygwin as read from atlas_tool.cfg in C:\temp
-    system(path_cygwin);
+    system([path_cygwin '\bash runflirt.sh']);
     
     % load transformation mask
     load Rotation_Translation -ascii
@@ -377,7 +377,7 @@ for n = 1:size(PATHNAME,2)
         disp('...This can take up to 5 minutes...')
         
         % directory with flirt.exe and cygwin1.dll as read from atlas_tool.cfg in C:\temp
-        fsldir = path_flirt; 
+        fsldir = [path_flirt '/']
         
         % save as nifti
         cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
@@ -405,7 +405,7 @@ for n = 1:size(PATHNAME,2)
         
         % and go! takes 4-5 mins.
         % directory for cygwin as read from atlas_tool.cfg in C:\temp        
-        system(path_cygwin);
+        system([path_cygwin '\bash runflirt.sh']);
         
         % load transformation mask
         load Rotation_Translation -ascii
