@@ -1303,8 +1303,6 @@ axis equal; axis ij; axis off;axis vis3d
 view([0 90]);
 print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_back.jpeg'));
 
-pause
-
 uicontrol('Style','text',...
     'Position',[10 375 120 20],...
     'String','Rotate')
