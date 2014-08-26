@@ -100,10 +100,6 @@ if nargin < 6 || isempty(peak_systolicFlag)
     peak_systolicFlag = 0;
 end
 
-% PATHNAME_probability_mask = 'C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups\Mixed_51_60\';
-% probability_mask = 'probability_mask.mat';
-% load(strcat(PATHNAME_probability_mask,probability_mask));
-
 %%%% datasets to load
 %%%% Copy paste the folders of choice here, add more or discard if needed
 FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
@@ -169,9 +165,9 @@ for n = 1:size(PATHNAME,2)
     geo.y_coor_wss = geo.V(:,2);
     geo.z_coor_wss = geo.V(:,3);
     
-    data2.x_coor_wss = data2.V(:,1);% + (offset*mask2_vox(1));
-    data2.y_coor_wss = data2.V(:,2);% + (offset*mask2_vox(2));
-    data2.z_coor_wss = data2.V(:,3);% + (offset*mask2_vox(3));
+    data2.x_coor_wss = data2.V(:,1);
+    data2.y_coor_wss = data2.V(:,2);
+    data2.z_coor_wss = data2.V(:,3);
     
     load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME3])
     WSS = Wss_point_cloud; clear Wss_point_cloud
@@ -450,7 +446,7 @@ for n = 1:size(PATHNAME,2)
     
     tic
     % directory with flirt.exe and cygwin1.dll as read from atlas_tool.cfg in C:\temp
-    fsldir = path_flirt; 
+    fsldir = [path_flirt '/']
     
     % save as nifti
     cnii=make_nii(mask1_to_register,[mask1_vox(1) mask1_vox(2) mask1_vox(3)]);
@@ -478,7 +474,7 @@ for n = 1:size(PATHNAME,2)
     
     % and go! takes 4-5 mins.
     % directory for cygwin as read from atlas_tool.cfg in C:\temp        
-    system(path_cygwin);
+    system([path_cygwin '\bash runflirt.sh']);
     
     % load transformation mask
     load Rotation_Translation -ascii
