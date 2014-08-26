@@ -95,15 +95,17 @@ if nargin < 3
 end
 
 if ~exist(AtlasPath) == 2 || isempty(AtlasPath)
-    [FILENAME_atlas,AtlasPath] = uigetfile('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Load atlas,mat');
-    FILENAME_atlas = 'atlas.mat';
+    %[FILENAME_atlas,AtlasPath] = uigetfile('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Load atlas.mat');
+    FILENAME_atlas = 'atlas_peak_systole.mat'
+    AtlasPath = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls'
 else
     FILENAME_atlas = 'atlas.mat';
 end
 
-% MrstructPath = 'C:\1_Chicago\Data\MIMICS\RL_RN_comparison\RL\PT9_LD\mrstruct\';
+
 if ~exist(MrstructPath) == 2 || isempty(MrstructPath)
-    [MrstructPath] = uigetdir('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Select mrstruct folder');
+    %[MrstructPath] = uigetdir('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Select mrstruct folder');
+    MrstructPath = 'C:\1_Chicago\Data\MIMICS\traffic_light\2_RN\PT256-MW\mrstruct\';
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
@@ -136,7 +138,7 @@ if nargin < 7 || isempty(calculate_area_of_higherlowerFlag)
 end
 
 if nargin < 8 || isempty(peak_systolicFlag)
-    peak_systolicFlag = 0;
+    peak_systolicFlag = 1;
 end
 
 global mrstruct_mask
@@ -151,6 +153,16 @@ load(strcat(AtlasPath,'\',FILENAME_atlas))
 mask1 = atlas.mask;
 
 if plotFlag == 1
+        
+    atlas_matrix = zeros(size(atlas.mask));
+    L = (atlas.mask~=0);
+    [I,J] = find(L==1);
+    atlas_matrix(L) = atlas.mean_vel;
+    figure('Name','MIP')
+    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);view([180 -90])
+    
     figure('Name','Mean atlas velocity')
     scatter3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,atlas.mean_vel.*50,atlas.mean_vel,'filled')
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
@@ -491,10 +503,7 @@ tic
 disp('...This can take up to 5 minutes...')
 
 % directory with flirt.exe and cygwin1.dll (use cygwin convention)
-% Pims folder
-%fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
-% Put in Alex's folder right here
-fsldir = '/cygdrive/c/1_Chicago/WSSprojectWithAmsterdam/flirt/';
+fsldir = [path_flirt '/']
 
 % save as nifti
 cnii=make_nii(mask1_to_register,[atlas.vox(1) atlas.vox(2) atlas.vox(3)]);
@@ -522,7 +531,7 @@ fclose(f);
 
 % and go! takes 4-5 mins.
 %system('c:\cygwin64\bin\bash runflirt.sh');
-system('c:\cygwin\bin\bash runflirt.sh');
+system([path_cygwin '\bash runflirt.sh']);
 
 % load transformation mask
 load Rotation_Translation -ascii
@@ -1255,9 +1264,9 @@ cd(dir_orig);
 count3 = 0;
 angles(1) = 0;
 f2 = figure('Name','Heat map');
-x = data2.x_coor_wss./mask2_vox(1);
-y = data2.y_coor_wss./mask2_vox(2);
-z = data2.z_coor_wss./mask2_vox(3);
+x = data2.x_coor_wss;%./mask2_vox(1);
+y = data2.y_coor_wss;%./mask2_vox(2);
+z = data2.z_coor_wss;%./mask2_vox(3);
 p2=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
 gray_colormap = colormap(gray);
 color2(1,:) = [0 0 1];
@@ -1293,6 +1302,8 @@ print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_front.jpeg'));
 axis equal; axis ij; axis off;axis vis3d
 view([0 90]);
 print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_back.jpeg'));
+
+pause
 
 uicontrol('Style','text',...
     'Position',[10 375 120 20],...
@@ -1385,6 +1396,7 @@ uicontrol('Style','checkbox',...
     end
 
 set(f2,'toolbar','figure');
+axis vis3d
 
 heat_map.heat_map = heat_mapp;
 heat_map.vertices = [x y z];
