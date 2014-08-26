@@ -27,17 +27,21 @@ function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registra
 % 2014, Pim van Ooij, Northwestern University
 %
 % Input
+
 % 1)AtlasPath        : The path where the 'atlas.mat' is located.
 % 2)MrstructPath     : The path where 'mag_struct' and 'vel_struct.mat' are located.
 % 3)calculateRE_Flag: When switched on the registration error will be calculated. However, this is a different RE than the one in the paper
 %                     mentioned above as the RE in this function is calculated from AFFINE registration whereas the RE reported in the paper
+
 %                     is calculated from RIGID registration in the function 'make_geometry_point_cloud.m'. See: van Ooij et al. Magn Res Med 2014
 % 4)calculateIE_Flag: When switched on the interpolation error (RE, see paper mentioned above) will be calculated. Note that ROIs are needed
+
 %                     which can be drawn manually when switched on. See: van Ooij et al. Magn Res Med 2014
 % 5)calculate_velvolume_and_WSSarea_total: The volumes of the red, yellow and green volumes in the traffic light and the surface areas in the heat map are 
 %                     printed to the screen
 % 6)calculate_area_of_significanceFlag: When switched on the area of significance will be calculated (see first paper mentioned above). Note that ROIs are
 %                     needed which can be drawn manually when switched on. However, if calculateIE_Flag is switched on than you need to do this only once.
+
 % 7)peak_systolicFlag: When switched on the comparison of the individual patient with the ensemble-averaged maps will be performed for the peak
 %                      systolic time frame of the indivual patient only. Note that it makes sense that peak systolic ensemble-averaged are loaded in
 %                      as well. Default is the atlas for 5 systolic timesteps averaged.
@@ -52,6 +56,7 @@ function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registra
 % The function for creating traffic light and heat maps from mrStructs is under construction
 %
 % Examples:
+
 % [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(AtlasPath,MrstructPath,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_velvolume_and_WSSarea_total,calculate_area_of_higherlowerFlag,peak_systolicFlag)
 % [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration('','',0,0,0,0,0,0,0,0)
 %
@@ -95,6 +100,7 @@ if nargin < 3
 end
 
 if ~exist(AtlasPath) == 2 || isempty(AtlasPath)
+
     %[FILENAME_atlas,AtlasPath] = uigetfile('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Load atlas.mat');
     FILENAME_atlas = 'atlas_peak_systole.mat'
     AtlasPath = 'C:\1_Chicago\Data\MIMICS\traffic_light\4_controls'
@@ -103,7 +109,9 @@ else
 end
 
 
+
 if ~exist(MrstructPath) == 2 || isempty(MrstructPath)
+
     %[MrstructPath] = uigetdir('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Select mrstruct folder');
     MrstructPath = 'C:\1_Chicago\Data\MIMICS\traffic_light\2_RN\PT256-MW\mrstruct\';
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
@@ -138,6 +146,7 @@ if nargin < 7 || isempty(calculate_area_of_higherlowerFlag)
 end
 
 if nargin < 8 || isempty(peak_systolicFlag)
+
     peak_systolicFlag = 1;
 end
 
@@ -466,6 +475,7 @@ if plotFlag == 1
     c2=colorbar;caxis([0 1.5])
     axis equal;axis off; axis ij
     view([-180 -90])  
+
     pause(5)
     
     figure('Name','data2 WSS')
@@ -503,6 +513,7 @@ tic
 disp('...This can take up to 5 minutes...')
 
 % directory with flirt.exe and cygwin1.dll (use cygwin convention)
+
 fsldir = [path_flirt '/']
 
 % save as nifti
@@ -530,7 +541,7 @@ fprintf(f,'%s',flirtcmd);
 fclose(f);
 
 % and go! takes 4-5 mins.
-%system('c:\cygwin64\bin\bash runflirt.sh');
+
 system([path_cygwin '\bash runflirt.sh']);
 
 % load transformation mask
@@ -913,6 +924,7 @@ if calculate_velvolume_and_WSSarea_total == 1
     percentage_green_volume = green_volume / total_volume * 100;
     total_percentage = percentage_red_volume + percentage_yellow_volume + percentage_green_volume;
     
+
     disp(['Red volume percentage of total aorta = ' num2str(round(percentage_red_volume)) ' % (' num2str(round(red_volume./1000)) ' cm3)'])
     disp(['Yellow volume percentage of total aorta = ' num2str(round(percentage_yellow_volume)) ' % (' num2str(round(yellow_volume./1000)) ' cm3)'])
     disp(['Green volume percentage of total aorta = ' num2str(round(percentage_green_volume)) ' % (' num2str(round(green_volume./1000)) ' cm3)'])
@@ -924,6 +936,7 @@ if calculate_velvolume_and_WSSarea_total == 1
     percentage_significant_higher_than_controls = size(I2,1) / size(heat_mapp,1) * 100;
     percentage_significant_lower_than_controls = size(I1,1) / size(heat_mapp,1) * 100;
     
+
     disp(['Percentage higher than controls inner AAo = ' num2str(round(percentage_significant_higher_than_controls)) '%'])
     disp(['Percentage lower than controls inner AAo = ' num2str(round(percentage_significant_lower_than_controls)) '%'])
     disp(' ')
@@ -1052,8 +1065,10 @@ contours(L2==1) = 1;
 %[F,V] = isosurface(smooth3(contours),0); % make a surface from the detected contours
 [F,V] = isosurface(contours,0);
 [F,V] = SmoothLaplacian(F,V,15);
+
 patch('Faces',F,'Vertices',[V(:,1) V(:,2) V(:,3)],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
 hold on
+
 [F1,V1] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_red),0);
 [F2,V2] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_yellow),0);
 [F3,V3] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_green),0);
@@ -1088,10 +1103,12 @@ caxis([0 64]);
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight(-45,0); lighting phong
+
 text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-5),['Red volume: ' num2str(round(red_volume/1000)) ' cm^{3}' ])
 text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
 print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_front.jpeg'));
 axis ij; view([0 90]);camlight(90,0);axis vis3d
+
 print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_back.jpeg'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PvO: Images for the Brief Report for NEJM were created with:
@@ -1264,6 +1281,7 @@ cd(dir_orig);
 count3 = 0;
 angles(1) = 0;
 f2 = figure('Name','Heat map');
+
 x = data2.x_coor_wss;%./mask2_vox(1);
 y = data2.y_coor_wss;%./mask2_vox(2);
 z = data2.z_coor_wss;%./mask2_vox(3);
@@ -1296,11 +1314,13 @@ axis equal;
 %view([-180 -90])
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
+
 text(min(x(:))-40,max(y(:)-5),['Red area: ' num2str(round(percentage_significant_higher_than_controls)) '%' ])
 text(min(x(:))-40,max(y(:)),['Blue area: ' num2str(round(percentage_significant_lower_than_controls)) '%' ])
 print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_front.jpeg'));
 axis equal; axis ij; axis off;axis vis3d
 view([0 90]);
+
 print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_back.jpeg'));
 
 uicontrol('Style','text',...
