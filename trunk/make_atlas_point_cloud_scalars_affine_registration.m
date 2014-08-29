@@ -833,6 +833,15 @@ if plotFlag == 1
     scatter3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,50,atlas.mean_vel,'filled')
     colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
     
+    atlas_matrix = zeros(size(atlas.mask));
+    L = (atlas.mask~=0);
+    [I,J] = find(L==1);
+    atlas_matrix(L) = atlas.mean_vel;
+    figure('Name','MIP')
+    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
+    
     figure('Name','Mean atlas WSS')
     patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
     colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])

@@ -1,34 +1,39 @@
 This is a rough version of the atlas_tool instruction manual:
 
+Important general note: need to make sure that rotation matrix is appropriately applied, this is not inherently obvious (to alex). Need to come up with some general guidelines to id failed registrations, etc. Watch out for peak systole switch
 
-1. (Easy way to computer and register WSS: run 'atlas_batch.m' with everything uncommented) In essence this is doing the following:
+1. Need to compute WSS with 'mimics_to_Wss'
+   - SVN location: 
+   - AJB Location: d:\research\matlabCode 
+   - output is data_done (which will be used to compute the atlas, or heatmap)
 
-	a) mimics_to_Wss(MrstructPath,MimicsSegPath,1,1,0,1,0,0,0)
-		- MrstructPath,MimicsSegPath are pulled from PATHNAME, which is formatted the following way:
-			MrstructPath = strcat(PATHNAME{n},'\mrstruct\');
-		    MimicsSegPath = strcat(PATHNAME{n},'\results_022\');
-		- Pathname is the study folder for each individual subject, ie
-			PATHNAME{1} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\1_20120420_132106';
-			PATHNAME{2} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\2_20120426_132244';
-		- note that output is saved uinder the mrStruct folder as 
-			'mask_struct_aorta.mat'     - this is 0's and 1's where the mimics seg exists (this is the same as the output from mimics2ensight_tool)
-			'Wss_struct_aorta.mat'      - this is the WSS in the matrix format, which can be input into ensight (if every timestep is calculated, which will happen if ensight flag is on)
-			'Wss_point_cloud_aorta.mat' - This is the WSS point cloud (similar to the matrix, but more accurate, and used for the matlab analysis steps)
-	b) [probability_mask] = make_geometry_point_cloud(PATHNAME,1,1);
-		- output is the probability mask - note that this has already been chosen for the ideal threshold for the geometry (i.e. zeros and ones)
-	c) [atlas] = make_atlas_point_cloud_scalars_affine_registration(PATHNAME,'',0,1,0,0)
-	   [atlas] = make_atlas_point_cloud_scalars_affine_registration(PATHNAME,probability_mask,0,1,0,0)
-		- this creates the atlas of velocity and WSS
-	d) then atlas output from above needs to be saved
-
-2. Things that can go wrong:
-	a) need to make sure that rotation matrix is appropriately applied, this is not inherently obvious (to alex). Need to come up with some general guidelines to id failed registrations, etc. Watch out for peak systole switch. 
+2. The atlas_tool is used to create a probablity mask, geometry, and atlas from a number of patients
+	- SVN location: https://fsm1mqfns1/svn/main/matlab_projects/atlas_tool/trunk
+	- AJB location: d:\research\matlabCode 
+	a. run make_geometry_point_cloud_NEW.m (make sure to select subject paths and set flirt folder location) to create 'shape' otherwise known as the 'probability_mask.m'
+	   * when run make_geometry... make sure to change path when hit f5 (in order to have filrt work)
+	   * AJB computer: flirt folder location is /cygdrive/d/research/matlabcode/matlab_registration/flirt/ (line 132, make sure to have file separation at the end)
+	   * AJB computer: make sure line 159 has cygwin64 ('c:\cygwin64\bin\bash runflirt.sh')
+	   * Also need to change lines: 369, 396 in a similar fashion as above
 	
-	b) Also watch for the fact that you need to have the flirt and cygwin locations working (Alex has noted where they exist on his computer
-	   * flirt folder  /cygdrive/d/research/matlabcode/matlab_registration/flirt/ (make sure to have file separation at the end)
-	   * cygwin64 'c:\cygwin64\bin\bash runflirt.sh'
+	b. run 'make_atlas_point_cloud_scalars_affine_registration.m' to register every aorta to the geometry and interpolate the biomarker (WSS/velocity...) to make the atlas. Output is the atlas 'atlas.mat'.
+	- things to change in the hard code
+		* location of prob mask (line 71)
+		* locatoins of 'datasets' or 'data_done.m' (line 77 on )
+		* make sure paths for cygwin and rotation matrix are correct 
+		  - '/cygdrive/d/research/matlabcode/matlab_registration/flirt/' (line 368)
+	- look that registrations are working... (first one will always look good, look at second on)
+	- in future, this function will be combined with '2'
 	
-	
+3. run 'heat_map_traffic_light_scalars_affine_registration.m' to create heat map
+	- things to change in the hard code
+		* line 368 (flirt location_
+		* line 395 ('cygwin64')
+		
+	d. run 'make_pvalue_map_point_cloud_scalars_affine_registration.m' to create p-value maps
+	- things to change in the hard code
+		* line 414 (flirt location)
+		* line 441 ('cygwin64')
 		
 		
 		
