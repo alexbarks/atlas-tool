@@ -1,4 +1,4 @@
-function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(AtlasPath,MrstructPath,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_velvolume_and_WSSarea_total,calculate_area_of_higherlowerFlag,peak_systolicFlag)
+function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(AtlasPath,PATHNAME,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_velvolume_and_WSSarea_total,calculate_area_of_higherlowerFlag,peak_systolicFlag)
 
 %%% [heat_map,traffic_light]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_area_of_significanceFlag,peak_systolicFlag)
 %
@@ -101,14 +101,14 @@ else
 end
 
 
-if ~exist(MrstructPath) == 2 || isempty(MrstructPath)
-    %[MrstructPath] = uigetdir('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Select mrstruct folder');
-    MrstructPath = 'C:\1_Chicago\Data\MIMICS\traffic_light\2_RN\PT256-MW\mrstruct\';
+if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
+    [MrstructPath] = uigetdir('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Select patient folder containing mrstruct folder');
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
     FILENAME4 = 'mag_struct';   
 else   
+    MrstructPath = strcat(PATHNAME,'\mrstruct')
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
@@ -1069,7 +1069,7 @@ set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight headlight;camlight(180,0); lighting phong
 % set up results folder
 dir_orig = pwd;
-dir_new = MrstructPath; cd(dir_new); %cd('..')
+dir_new = PATHNAME; cd(dir_new); %cd('..')
 %dir_new = pwd;
 mkdir('results_traffic_light_map')
 dir_new = strcat(dir_new,'\results_traffic_light_map');
@@ -1088,11 +1088,11 @@ caxis([0 64]);
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight(-45,0); lighting phong
-text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-5),['Red volume: ' num2str(round(red_volume/1000)) ' cm^{3}' ])
-text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
-print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_front.jpeg'));
+%text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-5),['Red volume: ' num2str(round(red_volume/1000)) ' cm^{3}' ])
+%text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
+print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map_front.tiff'));
 axis ij; view([0 90]);camlight(90,0);axis vis3d
-print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_back.jpeg'));
+print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map_back.tiff'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PvO: Images for the Brief Report for NEJM were created with:
 %%% 1. NO axis ij: I couldn't get the lighting right with axis ij on
@@ -1281,7 +1281,7 @@ axis equal; axis ij; axis off;
 view([-180 -90]);
 % set up results folder
 dir_orig = pwd;
-dir_new = MrstructPath; cd(dir_new); %cd('..')
+dir_new = PATHNAME; cd(dir_new); %cd('..')
 %dir_new = pwd;
 mkdir('results_heatmap');
 dir_new = strcat(dir_new,'\results_heatmap');
@@ -1298,12 +1298,11 @@ axis equal;
 %view([-180 -90])
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
-text(min(x(:))-40,max(y(:)-5),['Red area: ' num2str(round(percentage_significant_higher_than_controls)) '%' ])
-text(min(x(:))-40,max(y(:)),['Blue area: ' num2str(round(percentage_significant_lower_than_controls)) '%' ])
-print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_front.jpeg'));
+%text(min(x(:))-40,max(y(:)),['Blue area: ' num2str(round(percentage_significant_lower_than_controls)) '%' ])
+print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map_front.tiff'));
 axis equal; axis ij; axis off;axis vis3d
 view([0 90]);
-print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_back.jpeg'));
+print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map_back.tiff'));
 
 uicontrol('Style','text',...
     'Position',[10 375 120 20],...
