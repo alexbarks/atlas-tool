@@ -303,12 +303,13 @@ for n = 1:size(PATHNAME,2)
     
     if plotFlag == 1
         figure('Name','data2 velocity')
-        patch('Faces',data2.F,'Vertices',data2.V, ...
-            'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
-        hold on
-        scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,50,data2.vel_m,'filled')
-        colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-        
+        vel_matrix = zeros(size(mask2));
+        L = (mask2~=0);
+        vel_matrix(L) = data2.vel_m;
+        L_figure = (squeeze(max(vel_matrix,[],3))~=0);
+        imagesc(squeeze(max(vel_matrix,[],3)),'Alphadata',double(L_figure));
+        colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
+       
         figure('Name','data2 WSS')
         patch('Faces',data2.F,'Vertices',data2.V, ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
@@ -425,9 +426,9 @@ for n = 1:size(PATHNAME,2)
         figure('Name',strcat('To be registered aorta ',num2str(n)))
         plot3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,'r.')
         hold on
-        plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
+  %      plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
         plot3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,'b.')
-        plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'k.')
+  %      plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'k.')
         legend('to remain the same','to be transformed')
         axis equal; axis off;view([-180 -90]); axis ij
     end
@@ -516,21 +517,14 @@ for n = 1:size(PATHNAME,2)
         figure('Name','Registered')
         plot3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,'r.')
         hold on
-        plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
+   %     plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
         plot3(x_coor_vel,y_coor_vel,z_coor_vel,'b.')
-        plot3(x_coor_wss,y_coor_wss,z_coor_wss,'k.')
+   %     plot3(x_coor_wss,y_coor_wss,z_coor_wss,'k.')
         legend('Prob mask','Aorta')
         %legend('probability mask/atlas','individual aorta')
         axis equal; axis off;view([-180 -90]); axis ij
         pause(10)
-        
-        figure('Name','transformed velocity')
-        patch('Faces',data2.F,'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
-            'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
-        hold on
-        scatter3(x_coor_vel,y_coor_vel,z_coor_vel,50,data2.vel_m,'filled')
-        colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-        
+                
         figure('Name','transformed WSS')
         patch('Faces',data2.F,'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
@@ -635,9 +629,13 @@ for n = 1:size(PATHNAME,2)
     
     if plotFlag == 1
         figure('Name','interpolated to atlas velocity')
-        scatter3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,50, data2.vel_m,'filled')
-        colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-        
+        vel_matrix = zeros(size(mask1));
+        L = (mask1~=0);
+        vel_matrix(L) = data2.vel_m;
+        L_figure = (squeeze(max(vel_matrix,[],3))~=0);
+        imagesc(squeeze(max(vel_matrix,[],3)),'Alphadata',double(L_figure));
+        colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
+       
         figure('Name','interpolated to atlas WSS')
         patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',data2.wss_m ,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
@@ -830,14 +828,18 @@ atlas.std_wss = sqrt(atlas.stdx_wss.^2 + atlas.stdy_wss.^2 + atlas.stdz_wss.^2);
 
 if plotFlag == 1
     figure('Name','Mean atlas velocity')
-    scatter3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,50,atlas.mean_vel,'filled')
-    colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-    
+    atlas_matrix = zeros(size(atlas.mask));
+    L = (atlas.mask~=0);
+    atlas_matrix(L) = atlas.mean_vel;
+    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
+       
+    figure('Name','SD atlas velocity')    
     atlas_matrix = zeros(size(atlas.mask));
     L = (atlas.mask~=0);
     [I,J] = find(L==1);
-    atlas_matrix(L) = atlas.mean_vel;
-    figure('Name','MIP')
+    atlas_matrix(L) = atlas.mean_std;
     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
     colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
@@ -845,11 +847,7 @@ if plotFlag == 1
     figure('Name','Mean atlas WSS')
     patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
     colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-    
-    figure('Name','SD atlas velocity')
-    scatter3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,50,atlas.std_vel,'filled')
-    colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-    
+        
     figure('Name','SD atlas wss')
     patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
     axis equal;axis off; axis ij;caxis([0 1.5]);view([-180 -90])
