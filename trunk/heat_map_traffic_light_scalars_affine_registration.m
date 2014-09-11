@@ -152,24 +152,20 @@ mask1 = atlas.mask;
 
 if plotFlag == 1
         
-    atlas
     atlas_matrix = zeros(size(atlas.mask));
     L = (atlas.mask~=0);
-    [I,J] = find(L==1);
     atlas_matrix(L) = atlas.mean_vel;
-    figure('Name','MIP')
+    figure('Name','mean velocity atlas')
     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
     colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
-        
-    figure('Name','Mean atlas velocity')
-    scatter3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,atlas.mean_vel.*50,atlas.mean_vel,'filled')
-    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
-    
-    figure('Name','std atlas velocity')
-    scatter3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,atlas.std_vel.*50,atlas.std_vel,'filled')
-    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
-    
+            
+    atlas_matrix(L) = atlas.std_vel;
+    figure('Name','mean velocity atlas')
+    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
+         
     figure('Name','Mean atlas WSS')
     patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
@@ -177,7 +173,6 @@ if plotFlag == 1
     figure('Name','std atlas WSS')
     patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
-    pause
 end
 
 if calculateIE_Flag == 1;
@@ -447,12 +442,14 @@ WSS = Wss_point_cloud; clear Wss_point_cloud
     data2.wss_m = sqrt(data2.x_value_wss.^2 + data2.y_value_wss.^2 + data2.z_value_wss.^2);
 
 if plotFlag == 1
+
+    atlas_matrix = zeros(size(mask2));
+    L = (mask2~=0);
+    atlas_matrix(L) = data2.vel_m;
     figure('Name','data2 velocity')
-    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
-        'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
-    hold on
-    scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,50,data2.vel_m,'filled')
-    colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
+    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])     
     
     figure('Name','data2 WSS vectors')
     a = [2 15];
@@ -788,16 +785,16 @@ if calculateIE_Flag == 1;
 end
 
 if plotFlag == 1
-    figure('Name','Mean atlas velocity')
+    figure('Name','Mean transformed atlas velocity')
     scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_mean_vel.*50,atlas_mean_vel,'filled')
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
     
-    figure('Name','std atlas velocity')
+    figure('Name','std transformed atlas velocity')
     scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_std_vel.*50,atlas_std_vel,'filled')
     axis equal;axis off; axis ij;
     caxis([0 1.5])
     view([180 -90])
-    
+   
     figure('Name','Mean atlas WSS')
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_mean_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
@@ -1071,8 +1068,8 @@ camlight headlight;camlight(180,0); lighting phong
 dir_orig = pwd;
 dir_new = PATHNAME; cd(dir_new); %cd('..')
 %dir_new = pwd;
-mkdir('results_traffic_light_map')
-dir_new = strcat(dir_new,'\results_traffic_light_map');
+mkdir('results_traffic_light_map_new_pipeline')
+dir_new = strcat(dir_new,'\results_traffic_light_map_new_pipeline');
 saveas(gcf,[dir_new '\traffic_light_map.fig'])
 load(strcat(MrstructPath,'\',FILENAME4))
 magnitude = flipdim(double(mrStruct.dataAy(:,:,:,time)),3);clear mrStruct
@@ -1088,11 +1085,11 @@ caxis([0 64]);
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight(-45,0); lighting phong
-%text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-5),['Red volume: ' num2str(round(red_volume/1000)) ' cm^{3}' ])
-%text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
-print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map_front.tiff'));
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-5),['Red volume: ' num2str(round(red_volume/1000)) ' cm^{3}' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
+print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_front.jpg'));
 axis ij; view([0 90]);camlight(90,0);axis vis3d
-print(f1,'-dtiff','-r600',strcat(dir_new,'\traffic_light_map_back.tiff'));
+print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_back.jpg'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PvO: Images for the Brief Report for NEJM were created with:
 %%% 1. NO axis ij: I couldn't get the lighting right with axis ij on
@@ -1256,7 +1253,7 @@ traffic_light.vertices = [V(:,1) V(:,2) V(:,3)];
 traffic_light.faces = F;
 
 % save results in results folder
-save(strcat(dir_new,'\results_trafficlight_map'),'traffic_light');
+save(strcat(dir_new,'\results_trafficlight_map_new_pipeline'),'traffic_light');
 %savefig(f2,strcat(dir_new,'\heat_map'))
 cd(dir_orig);
 
@@ -1283,8 +1280,8 @@ view([-180 -90]);
 dir_orig = pwd;
 dir_new = PATHNAME; cd(dir_new); %cd('..')
 %dir_new = pwd;
-mkdir('results_heatmap');
-dir_new = strcat(dir_new,'\results_heatmap');
+mkdir('results_heatmap_new_pipeline');
+dir_new = strcat(dir_new,'\results_heatmap_new_pipeline');
 saveas(gcf,[dir_new '\heat_map.fig'])
 load(strcat(MrstructPath,'\',FILENAME4))
 magnitude = flipdim(double(mrStruct.dataAy(:,:,:,time)),3);
@@ -1298,11 +1295,13 @@ axis equal;
 %view([-180 -90])
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
-%text(min(x(:))-40,max(y(:)),['Blue area: ' num2str(round(percentage_significant_lower_than_controls)) '%' ])
-print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map_front.tiff'));
+text(min(x(:))-40,max(y(:))-10,['Red area: ' num2str(round(percentage_significant_higher_than_controls)) '%' ])
+text(min(x(:))-40,max(y(:)),['Blue area: ' num2str(round(percentage_significant_lower_than_controls)) '%' ])
+%print(f2,'-dtif','-r600',strcat(dir_new,'\heat_map_front.tif'));
+print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_front.jpg'));
 axis equal; axis ij; axis off;axis vis3d
 view([0 90]);
-print(f2,'-dtiff','-r600',strcat(dir_new,'\heat_map_back.tiff'));
+print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_back.jpg'));
 
 uicontrol('Style','text',...
     'Position',[10 375 120 20],...
@@ -1403,7 +1402,7 @@ heat_map.faces = data2.F;
 heat_map.color = color1;
 
 % save results in results folder
-save(strcat(dir_new,'\heat_map'),'heat_map');
+save(strcat(dir_new,'\heat_map_new_pipeline'),'heat_map');
 %savefig(f2,strcat(dir_new,'\heat_map'))
 cd(dir_orig)
 end
