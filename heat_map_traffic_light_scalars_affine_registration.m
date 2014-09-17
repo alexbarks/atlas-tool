@@ -304,7 +304,7 @@ clear F, clear V
 load(strcat(MrstructPath,'\',FILENAME2))
 velocity = mrStruct.dataAy; clear mrstruct
 
-for t = 1:size(velocity,5)-1
+for t = 1:size(velocity,5)
     vx = squeeze(velocity(:,:,:,1,t));
     vy = squeeze(velocity(:,:,:,2,t));
     vz = squeeze(velocity(:,:,:,3,t));
@@ -314,7 +314,7 @@ end
 
 if plotFlag == 1
     figure('Name','Mean velocity')
-    plot(1:size(velocity,5)-1,mean_velo,'-ro','LineWidth',5,...
+    plot(1:size(velocity,5),mean_velo,'-ro','LineWidth',5,...
         'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',16);
 end
 
