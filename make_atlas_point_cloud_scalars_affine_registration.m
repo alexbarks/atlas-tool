@@ -839,7 +839,7 @@ if plotFlag == 1
     atlas_matrix = zeros(size(atlas.mask));
     L = (atlas.mask~=0);
     [I,J] = find(L==1);
-    atlas_matrix(L) = atlas.mean_std;
+    atlas_matrix(L) = atlas.std_vel;
     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
     colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
