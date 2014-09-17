@@ -90,23 +90,23 @@ elseif (exist('c:\temp','dir')==0 || exist('c:\temp\atlas_tool.cfg','file')==0) 
 end
 
 if nargin < 3
-    MrstructPath = '';
-    AtlasPath = '';    
+    AtlasPath = '';
+    PATHNAME = '';    
 end
 
 if ~exist(AtlasPath) == 2 || isempty(AtlasPath)
-    [FILENAME_atlas,AtlasPath] = uigetfile('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Load atlas.mat');
+    [FILENAME_atlas,AtlasPath] = uigetfile('C:\1_Chicago\Data\MIMICS\traffic_light\4_controls','Load atlas.mat');
 else
     FILENAME_atlas = 'atlas.mat';
 end
 
-
 if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
-    [MrstructPath] = uigetdir('C:\1_Chicago\Data\MIMICS\3_ControlsSagittalView\AgeGroups','Select patient folder containing mrstruct folder');
+    [PATHNAME] = uigetdir('C:\1_Chicago\Data\MIMICS\traffic_light\4_controls','Select patient folder containing mrstruct folder');
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
     FILENAME4 = 'mag_struct';   
+    MrstructPath = strcat(PATHNAME,'\mrstruct')
 else   
     MrstructPath = strcat(PATHNAME,'\mrstruct')
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
