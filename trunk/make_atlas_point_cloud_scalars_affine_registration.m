@@ -190,6 +190,7 @@ for n = 1:size(PATHNAME,2)
     end
     [I,time] = find(mean_velo==max(mean_velo));
     clear mean_velo
+
     %%% What follows is a horrible piece of code, so if you're reading this and feel like cleaning it up, please do,
     %%% I'll buy you a beer next time we meet. PvO
     if peak_systolicFlag == 1
