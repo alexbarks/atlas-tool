@@ -106,7 +106,7 @@ if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
     FILENAME4 = 'mag_struct';   
-    MrstructPath = strcat(PATHNAME,'\mrstruct')
+    MrstructPath = PATHNAME;%strcat(PATHNAME,'\mrstruct')
 else   
     MrstructPath = strcat(PATHNAME,'\mrstruct')
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
@@ -136,7 +136,7 @@ if nargin < 7 || isempty(calculate_area_of_higherlowerFlag)
 end
 
 if nargin < 8 || isempty(peak_systolicFlag)
-    peak_systolicFlag = 1;
+    peak_systolicFlag = 0;
 end
 
 global mrstruct_mask
