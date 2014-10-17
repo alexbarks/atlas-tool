@@ -108,7 +108,7 @@ if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
     FILENAME4 = 'mag_struct';   
     MrstructPath = PATHNAME;%strcat(PATHNAME,'\mrstruct')
 else   
-    MrstructPath = strcat(PATHNAME,'')
+    MrstructPath = strcat(PATHNAME,'\mrstruct')
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
@@ -1169,6 +1169,86 @@ uicontrol('Style', 'slider',...
     'SliderStep',[1/(size(magnitude,3)-1) 10/(size(magnitude,3)-1)],...
     'Callback', {@move_slice1,gca});
 
+    function move_slice1(hObj,event,ax)
+        sliceobj = findobj(s1);
+        delete(sliceobj)
+        slice = round(get(hObj,'Value'));
+        s1 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
+    end
+
+    function show_red_region(hObj,event,ax)
+        show = round(get(hObj,'Value'));
+        if show == 1
+            patchobj = findobj(p11);
+            set(patchobj,'HandleVisibility','on','Visible','on');
+        elseif show == 0
+            patchobj = findobj(p11);
+            set(patchobj,'HandleVisibility','off','Visible','off');
+        end
+    end
+
+    function show_yellow_region(hObj,event,ax)
+        show = round(get(hObj,'Value'));
+        if show == 1
+            patchobj = findobj(p12);
+            set(patchobj,'HandleVisibility','on','Visible','on');
+        elseif show == 0
+            patchobj = findobj(p12);
+            set(patchobj,'HandleVisibility','off','Visible','off');
+        end
+    end
+
+    function show_green_region(hObj,event,ax)
+        show = round(get(hObj,'Value'));
+        if show == 1
+            patchobj = findobj(p13);
+            set(patchobj,'HandleVisibility','on','Visible','on');
+        elseif show == 0
+            patchobj = findobj(p13);
+            set(patchobj,'HandleVisibility','off','Visible','off');
+        end
+    end
+
+    function show_anatomy1(hObj,event,ax)
+        show = round(get(hObj,'Value'));
+        if show == 1
+            patchobj = findobj(s1);
+            set(patchobj,'HandleVisibility','on','Visible','on');
+        elseif show == 0
+            patchobj = findobj(s1);
+            set(patchobj,'HandleVisibility','off','Visible','off');
+        end
+    end
+
+    function change_contrast1(hObj,event,ax)
+        contrast1 = round(get(hObj,'Value'));
+        caxis([0 contrast1])
+    end
+
+    function rotater1(hObj,event,ax)
+        count1 = count1 + 1;
+        dtheta = get(hObj,'Value');
+        dphi = 0;
+        
+        if count1 == 1;
+            dtheta2 = dtheta*3;
+        else
+            dtheta2 = (dtheta - angles(count1-1))*3;
+        end
+        
+        camorbit(dtheta2,dphi,'data',[0 1 0])
+        angles(count1) = dtheta;
+    end
+
+    function rotate_light(hObj,event,ax)
+        clear c
+        dthetas = get(hObj,'Value');
+        dphi = 0;
+              
+        c=camlight(dthetas,dphi);
+        lighting phong        
+    end
+
 set(f1,'toolbar','figure');
 
 traffic_light.vox = mask2_vox;
@@ -1271,97 +1351,12 @@ uicontrol('Style','checkbox',...
 %     'Value',1, 'Position', [15 300 20 20], ...
 %     'Callback', {@show_heat_mapp,gca});
 
-
-set(f2,'toolbar','figure');
-axis vis3d
-
-heat_map.heat_map = heat_mapp;
-heat_map.vertices = [x y z];
-heat_map.faces = data2.F;
-heat_map.color = color1;
-
-% save results in results folder
-save(strcat(dir_new,'\heat_map_new_pipeline'),'heat_map');
-%savefig(f2,strcat(dir_new,'\heat_map'))
-cd(dir_orig)
-
-    function move_slice1(hObj,event,ax)
-        sliceobj = findobj(s1);
-        delete(sliceobj)
-        slice = round(get(hObj,'Value'));
-        s1 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
-
-    function show_red_region(hObj,event,ax)
-        show = round(get(hObj,'Value'));
-        if show == 1
-            patchobj = findobj(p11);
-            set(patchobj,'HandleVisibility','on','Visible','on');
-        elseif show == 0
-            patchobj = findobj(p11);
-            set(patchobj,'HandleVisibility','off','Visible','off');
-        end
-
-    function show_yellow_region(hObj,event,ax)
-        show = round(get(hObj,'Value'));
-        if show == 1
-            patchobj = findobj(p12);
-            set(patchobj,'HandleVisibility','on','Visible','on');
-        elseif show == 0
-            patchobj = findobj(p12);
-            set(patchobj,'HandleVisibility','off','Visible','off');
-        end
-
-    function show_green_region(hObj,event,ax)
-        show = round(get(hObj,'Value'));
-        if show == 1
-            patchobj = findobj(p13);
-            set(patchobj,'HandleVisibility','on','Visible','on');
-        elseif show == 0
-            patchobj = findobj(p13);
-            set(patchobj,'HandleVisibility','off','Visible','off');
-        end
-
-    function show_anatomy1(hObj,event,ax)
-        show = round(get(hObj,'Value'));
-        if show == 1
-            patchobj = findobj(s1);
-            set(patchobj,'HandleVisibility','on','Visible','on');
-        elseif show == 0
-            patchobj = findobj(s1);
-            set(patchobj,'HandleVisibility','off','Visible','off');
-        end
-
-    function change_contrast1(hObj,event,ax)
-        contrast1 = round(get(hObj,'Value'));
-        caxis([0 contrast1])
-
-    function rotater1(hObj,event,ax)
-        count1 = count1 + 1;
-        dtheta = get(hObj,'Value');
-        dphi = 0;
-        
-        if count1 == 1;
-            dtheta2 = dtheta*3;
-        else
-            dtheta2 = (dtheta - angles(count1-1))*3;
-        end
-        
-        camorbit(dtheta2,dphi,'data',[0 1 0])
-        angles(count1) = dtheta;
-
-    function rotate_light(hObj,event,ax)
-        clear c
-        dthetas = get(hObj,'Value');
-        dphi = 0;
-        
-        c=camlight(dthetas,dphi);
-        lighting phong
-
     function move_slice2(hObj,event,ax)
         sliceobj = findobj(s2);
         delete(sliceobj)
         slice = round(get(hObj,'Value'));
         s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
+    end
 
 %     function show_heat_mapp(hObj,event,ax)
 %         show = round(get(hObj,'Value'));
@@ -1383,10 +1378,12 @@ cd(dir_orig)
             patchobj = findobj(s2);
             set(patchobj,'HandleVisibility','off','Visible','off');
         end
+    end
 
     function change_contrast2(hObj,event,ax)
         contrast = round(get(hObj,'Value'));
         caxis([0 contrast])
+    end
 
     function rotater2(hObj,event,ax)
         count3 = count3 + 1;
@@ -1401,4 +1398,18 @@ cd(dir_orig)
         
         camorbit(dtheta4,dphi,'data',[0 1 0])
         angles(count3) = dtheta3;
+    end
 
+set(f2,'toolbar','figure');
+axis vis3d
+
+heat_map.heat_map = heat_mapp;
+heat_map.vertices = [x y z];
+heat_map.faces = data2.F;
+heat_map.color = color1;
+
+% save results in results folder
+save(strcat(dir_new,'\heat_map_new_pipeline'),'heat_map');
+%savefig(f2,strcat(dir_new,'\heat_map'))
+cd(dir_orig)
+end
