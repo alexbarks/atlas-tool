@@ -81,7 +81,7 @@ end
 
 if nargin < 2 || isempty(PATHNAME_probability_mask)
     [FILENAME,PATHNAME_probability_mask] = uigetfile('.mat','Load probability mask');
-    load(strcat(PATHNAME_prob,FILENAME))
+    load(strcat(PATHNAME_probability_mask,FILENAME))
 else
     load([PATHNAME_probability_mask '\probability_mask' ])
 end
