@@ -93,6 +93,8 @@ L = (mask1 ~= 0);
 
 for n = 2:size(PATHNAME,2)
     
+    PATHNAME{n}
+    
     [x,y,z] = meshgrid((1:size(mask1,2)).* mask1_vox(2), ...
         (1:size(mask1,1)).* mask1_vox(1),(1:size(mask1,3)).* mask1_vox(3));
     x_coor1 = x(L);y_coor1 = y(L);z_coor1 = z(L);
