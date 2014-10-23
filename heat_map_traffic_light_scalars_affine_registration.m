@@ -108,7 +108,7 @@ if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
     FILENAME4 = 'mag_struct';
     MrstructPath = PATHNAME;%strcat(PATHNAME,'\mrstruct')
 else
-    MrstructPath = strcat(PATHNAME,'\mrstruct')
+    MrstructPath = strcat(PATHNAME,'\mrstruct');
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
@@ -116,7 +116,7 @@ else
 end
 
 if nargin < 3 || isempty(plotFlag)
-    plotFlag = 1;
+    plotFlag = 0;
 end
 
 if nargin < 4 || isempty(calculateIE_Flag)
@@ -132,13 +132,15 @@ if nargin < 6 || isempty(peak_systolicFlag)
 end
 
 if nargin < 7 || isempty(images_for_surgeryFlag)
-    images_for_surgeryFlag = 1;
+    images_for_surgeryFlag = 0;
 end
 
 global mrstruct_mask
 global mrStruct
 global Wss_point_cloud
 global atlas
+global angles
+global count3
 %
 %data = [];
 Rotation_Translation = [];
@@ -1406,53 +1408,53 @@ save(strcat(dir_new,'\heat_map'),'heat_map');
 cd(dir_orig)
 
 if images_for_surgeryFlag
-   f2 = figure('Name','Heat map');
-x = data2.x_coor_wss/mask2_vox(1);
-y = data2.y_coor_wss/mask2_vox(2);
-z = data2.z_coor_wss/mask2_vox(3);
-p2=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
-gray_colormap = colormap(gray);
-color2(1,:) = [0 0 1];
-color2(2,:) = [1 0 0];
-color2(3,:) = [0.5 0.5 0.5];
-color2(4:64,:) = gray_colormap(4:64,:);
-colormap(color2);
-caxis([0 64]);
-axis equal; axis ij; axis off;
-aspectRatio = 1./mask2_vox;
-set(gca,'dataaspectRatio',aspectRatio(1:3))
-view([-180 -90]);
-% set up results folder
-dir_orig = pwd;
-dir_new = PATHNAME; cd(dir_new); %cd('..')
-%dir_new = pwd;
-mkdir('images_for_surgery');
-dir_new = strcat(dir_new,'\images_for_surgery');
-load(strcat(MrstructPath,'\',FILENAME4))
-magnitude = flipdim(double(mrStruct.dataAy(:,:,:,time)),3);
-magnitude(magnitude == 0) = 3;
-magnitude(magnitude == 1) = 3;
-magnitude(magnitude == 2) = 3;
-hold on
-s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3),magnitude(:,:,1),'EdgeColor','none');
-set(s2,'HandleVisibility','on','Visible','on');
-axis equal;
-%view([-180 -90])
-aspectRatio = 1./mask2_vox;
-set(gca,'dataaspectRatio',aspectRatio(1:3))
-print(f2,'-djpeg','-r600',strcat(dir_new,'\image1'));
-axis equal; axis ij; axis off;axis vis3d
-delete(s2)
-s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
-set(s2,'HandleVisibility','on','Visible','on');
-print(f2,'-djpeg','-r600',strcat(dir_new,'\image2')); 
-camorbit(-90,0,'data',[0 1 0])
-print(f2,'-djpeg','-r600',strcat(dir_new,'\image3')); 
-view([0 90])
-print(f2,'-djpeg','-r600',strcat(dir_new,'\image4')); 
-delete(s2)
-s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* 1,magnitude(:,:,size(magnitude,3)),'EdgeColor','none');
-print(f2,'-djpeg','-r600',strcat(dir_new,'\image5')); 
+    f2 = figure('Name','Heat map');
+    x = data2.x_coor_wss/mask2_vox(1);
+    y = data2.y_coor_wss/mask2_vox(2);
+    z = data2.z_coor_wss/mask2_vox(3);
+    p2=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
+    gray_colormap = colormap(gray);
+    color2(1,:) = [0 0 1];
+    color2(2,:) = [1 0 0];
+    color2(3,:) = [0.5 0.5 0.5];
+    color2(4:64,:) = gray_colormap(4:64,:);
+    colormap(color2);
+    caxis([0 64]);
+    axis equal; axis ij; axis off;
+    aspectRatio = 1./mask2_vox;
+    set(gca,'dataaspectRatio',aspectRatio(1:3))
+    view([-180 -90]);
+    % set up results folder
+    dir_orig = pwd;
+    dir_new = PATHNAME; cd(dir_new); %cd('..')
+    %dir_new = pwd;
+    mkdir('images_for_surgery');
+    dir_new = strcat(dir_new,'\images_for_surgery');
+    load(strcat(MrstructPath,'\',FILENAME4))
+    magnitude = flipdim(double(mrStruct.dataAy(:,:,:,time)),3);
+    magnitude(magnitude == 0) = 3;
+    magnitude(magnitude == 1) = 3;
+    magnitude(magnitude == 2) = 3;
+    hold on
+    s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3),magnitude(:,:,1),'EdgeColor','none');
+    set(s2,'HandleVisibility','on','Visible','on');
+    axis equal;
+    %view([-180 -90])
+    aspectRatio = 1./mask2_vox;
+    set(gca,'dataaspectRatio',aspectRatio(1:3))
+    print(f2,'-djpeg','-r600',strcat(dir_new,'\image1'));
+    axis equal; axis ij; axis off;axis vis3d
+    delete(s2)
+    s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
+    set(s2,'HandleVisibility','on','Visible','on');
+    print(f2,'-djpeg','-r600',strcat(dir_new,'\image2'));
+    camorbit(-90,0,'data',[0 1 0])
+    print(f2,'-djpeg','-r600',strcat(dir_new,'\image3'));
+    view([0 90])
+    print(f2,'-djpeg','-r600',strcat(dir_new,'\image4'));
+    delete(s2)
+    s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* 1,magnitude(:,:,size(magnitude,3)),'EdgeColor','none');
+    print(f2,'-djpeg','-r600',strcat(dir_new,'\image5'));
 end
 
 end
