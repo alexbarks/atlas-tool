@@ -40,7 +40,7 @@ CALCULATION OF A HEATMAP (if have already computed an atlas previously)
 	  (seems to work when I run it from the patient folder)
 	  
 	* getting errors from red_volume and variable 'offset' (seems to be a object) - this is b/c I need to set the following switches 'on': 
-	[traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration('','',1,1,0,1,0,0,0,0)
+	>> [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration('','',1,0,0,0,1)
 	  
 	  
    
