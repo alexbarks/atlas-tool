@@ -810,6 +810,7 @@ end
 % Determine thresholds
 mean_plus_2SD_atlas_vel = atlas_mean_vel + 1.96.*atlas_std_vel;
 mean_plus_1SD_atlas_vel = atlas_mean_vel + 0.98.*atlas_std_vel;
+mean_min_2SD_atlas_vel = atlas_mean_vel - 1.96.*atlas_std_vel;
 mean_plus_2SD_atlas_wss = atlas_mean_wss + 1.96.*atlas_std_wss;
 mean_min_2SD_atlas_wss = atlas_mean_wss - 1.96.*atlas_std_wss;
 
@@ -838,19 +839,28 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 new_mask_red_ = zeros(size(data2.vel_m));
 new_mask_yellow_ = zeros(size(data2.vel_m));
+new_mask_blue_ = zeros(size(data2.vel_m));
 new_mask_green_ = zeros(size(data2.vel_m));
 for i=1:size(data2.vel_m,1)
     if data2.vel_m(i) > mean_plus_2SD_atlas_vel(i)
         new_mask_red_(i,1) = 1;
         new_mask_yellow_(i,1) = -1;
+        new_mask_blue_(i,1) = -1;        
         new_mask_green_(i,1) = -1;
     elseif data2.vel_m(i) > mean_plus_1SD_atlas_vel(i)
         new_mask_red_(i,1) = -1;
         new_mask_yellow_(i,1) = 1;
+        new_mask_blue_(i,1) = -1;         
         new_mask_green_(i,1) = -1;
+    elseif data2.vel_m(i) < mean_min_2SD_atlas_vel(i)
+        new_mask_red_(i,1) = -1;
+        new_mask_yellow_(i,1) = -1;
+        new_mask_blue_(i,1) = 1;         
+        new_mask_green_(i,1) = -1;        
     else
         new_mask_red_(i,1) = -1;
         new_mask_yellow_(i,1) = -1;
+        new_mask_blue_(i,1) = -1;          
         new_mask_green_(i,1) = 1;
     end
 end
@@ -862,6 +872,9 @@ new_mask_red(~L2) = -1;
 new_mask_yellow = zeros(size(L2));
 new_mask_yellow(L2) = new_mask_yellow_;
 new_mask_yellow(~L2) = -1;
+new_mask_blue = zeros(size(L2));
+new_mask_blue(L2) = new_mask_blue_;
+new_mask_blue(~L2) = -1;
 new_mask_green = zeros(size(L2));
 new_mask_green(L2) = new_mask_green_;
 new_mask_green(~L2) = -1;
@@ -900,19 +913,23 @@ color1(43:63,3) = color1(43:63,3).*0.5;%0;%color(33,3);
 [I,J] = find(L2~=0);
 total_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
 
-[I,J] = find(new_mask_red==1);
+[I,J] = find(smooth3(new_mask_red)>0);
 red_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
 percentage_red_volume = red_volume / total_volume * 100;
-[I,J] = find(new_mask_yellow==1);
+[I,J] = find(smooth3(new_mask_yellow)>0);
 yellow_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
 percentage_yellow_volume = yellow_volume / total_volume * 100;
-[I,J] = find(new_mask_green==1);
+[I,J] = find(smooth3(new_mask_blue)>0);
+blue_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
+percentage_blue_volume = blue_volume / total_volume * 100;
+[I,J] = find(smooth3(new_mask_green)>0);
 green_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
 percentage_green_volume = green_volume / total_volume * 100;
-total_percentage = percentage_red_volume + percentage_yellow_volume + percentage_green_volume;
+total_percentage = percentage_red_volume + percentage_yellow_volume + percentage_blue_volume + percentage_green_volume;
 
 disp(['Red volume percentage of total aorta = ' num2str(round(percentage_red_volume)) ' % (' num2str(round(red_volume./1000)) ' cm3)'])
 disp(['Yellow volume percentage of total aorta = ' num2str(round(percentage_yellow_volume)) ' % (' num2str(round(yellow_volume./1000)) ' cm3)'])
+disp(['Blue volume percentage of total aorta = ' num2str(round(percentage_blue_volume)) ' % (' num2str(round(blue_volume./1000)) ' cm3)'])
 disp(['Green volume percentage of total aorta = ' num2str(round(percentage_green_volume)) ' % (' num2str(round(green_volume./1000)) ' cm3)'])
 disp(['Total percentage of total aorta = ' num2str(total_percentage) ' % (' num2str(round(total_volume./1000)) ' cm3)'])
 disp(' ')
@@ -1052,12 +1069,15 @@ patch('Faces',F,'Vertices',[V(:,1) V(:,2) V(:,3)],'EdgeColor','none','FaceColor'
 hold on
 [F1,V1] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_red),0);
 [F2,V2] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_yellow),0);
-[F3,V3] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_green),0);
+[F3,V3] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_blue),0);
+[F4,V4] = isosurface(x./mask2_vox(1),y./mask2_vox(2),z./mask2_vox(3),smooth3(new_mask_green),0);
 p11=patch('Faces',F1,'Vertices',V1,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
 p12=patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[1 0.9 0],'FaceAlpha',1);
 set(p12,'HandleVisibility','on','Visible','off');
-p13=patch('Faces',F3,'Vertices',V3,'EdgeColor','none','FaceColor',[0 1 0],'FaceAlpha',1);
-set(p13,'HandleVisibility','on','Visible','off')
+p13=patch('Faces',F3,'Vertices',V3,'EdgeColor','none','FaceColor',[0 0 1],'FaceAlpha',1);
+set(p13,'HandleVisibility','on','Visible','on')
+p14=patch('Faces',F4,'Vertices',V4,'EdgeColor','none','FaceColor',[0 1 0],'FaceAlpha',1);
+set(p14,'HandleVisibility','on','Visible','off')
 axis equal; axis off;axis ij
 view([-180 -90]);
 aspectRatio = 1./mask2_vox;
@@ -1084,8 +1104,10 @@ caxis([0 64]);
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight(-45,0); lighting phong
-text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-5),['Red volume: ' num2str(round(red_volume/1000)) ' cm^{3}' ])
-text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-35),['Red volume: ' num2str(round(red_volume/1000)) ' cm^{3}' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-30),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-25),['Blue volume: ' num2str(round(blue_volume/1000)) ' cm^{3}' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-20),['Blue volume: ' num2str(round(percentage_blue_volume)) ' %' ])
 print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_front.jpg'));
 axis ij; view([0 90]);camlight(90,0);axis vis3d
 print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_back.jpg'));
@@ -1131,16 +1153,23 @@ uicontrol('Style','checkbox',...
 
 uicontrol('Style','text',...
     'Position',[15 225 120 20],...
-    'String','Show Green Map')
+    'String','Show Blue Map')
 uicontrol('Style','checkbox',...
     'Value',0, 'Position', [10 225 20 20], ...
-    'Callback', {@show_green_region,gca});
+    'Callback', {@show_blue_region,gca});
 
 uicontrol('Style','text',...
     'Position',[15 200 120 20],...
-    'String','Show Anatomy')
+    'String','Show Green Map')
 uicontrol('Style','checkbox',...
     'Value',0, 'Position', [10 200 20 20], ...
+    'Callback', {@show_green_region,gca});
+
+uicontrol('Style','text',...
+    'Position',[15 175 120 20],...
+    'String','Show Anatomy')
+uicontrol('Style','checkbox',...
+    'Value',0, 'Position', [10 175 20 20], ...
     'Callback', {@show_anatomy1,gca});
 
 uicontrol('Style','text',...
@@ -1190,13 +1219,24 @@ uicontrol('Style', 'slider',...
         end
     end
 
-    function show_green_region(hObj,event,ax)
+    function show_blue_region(hObj,event,ax)
         show = round(get(hObj,'Value'));
         if show == 1
             patchobj = findobj(p13);
             set(patchobj,'HandleVisibility','on','Visible','on');
         elseif show == 0
             patchobj = findobj(p13);
+            set(patchobj,'HandleVisibility','off','Visible','off');
+        end
+    end
+
+    function show_green_region(hObj,event,ax)
+        show = round(get(hObj,'Value'));
+        if show == 1
+            patchobj = findobj(p14);
+            set(patchobj,'HandleVisibility','on','Visible','on');
+        elseif show == 0
+            patchobj = findobj(p14);
             set(patchobj,'HandleVisibility','off','Visible','off');
         end
     end
@@ -1247,6 +1287,7 @@ traffic_light.vox = mask2_vox;
 traffic_light.mask = mask2;
 traffic_light.red = new_mask_red;
 traffic_light.yellow = new_mask_yellow;
+traffic_light.blue = new_mask_blue;
 traffic_light.green = new_mask_green;
 traffic_light.vertices = [V(:,1) V(:,2) V(:,3)];
 traffic_light.faces = F;
