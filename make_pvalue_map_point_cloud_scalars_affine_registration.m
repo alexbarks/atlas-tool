@@ -174,8 +174,8 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     
     L2 = (mask2 ~= 0);
     % create velocity coordinates
-    [x2,y2,z2] = meshgrid((1:size(mask2,2)).* mask2_vox(2), ...
-        (1:size(mask2,1)).*mask2_vox(1),(1:size(mask2,3)).* mask2_vox(3));
+    [x2,y2,z2] = meshgrid((1:size(mask2,2)).* mask1_vox(2), ...
+        (1:size(mask2,1)).*mask1_vox(1),(1:size(mask2,3)).* mask1_vox(3));
     data2.x_coor_vel = x2(L2);data2.y_coor_vel = y2(L2);data2.z_coor_vel = z2(L2);
     clear x2, clear y2, clear z2
     contours = zeros(size(L2));
@@ -1037,13 +1037,13 @@ end
 if calculate_velvolume_and_WSSarea_total == 1
     
     [I,J] = find(L1~=0);
-    total_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
+    total_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     
     [I,J] = find(new_mask_red==1);
-    red_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
+    red_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     percentage_red_volume = red_volume / total_volume * 100;
     [I,J] = find(new_mask_blue==1);
-    blue_volume = mask2_vox(1)*mask2_vox(2)*mask2_vox(3)*size(I,1);
+    blue_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     percentage_blue_volume = blue_volume / total_volume * 100;
     
     disp(['Red volume percentage of total aorta = ' num2str(round(percentage_red_volume)) ' % (' num2str(round(red_volume./1000)) ' cm3)'])
