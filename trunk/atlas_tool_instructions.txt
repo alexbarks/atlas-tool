@@ -32,15 +32,14 @@ This is a rough version of the atlas_tool instruction manual:
 	
 CALCULATION OF A HEATMAP (if have already computed an atlas previously)
 1. compute WSS using 'mimics_to_Wss.m'
-   * example usage:
-		"mimics_to_Wss('c:\_ensightCases\bav_tissue\thorn_PT421\3dpc_aorta\mrstruct_subject_20141007_user009\','c:\_ensightCases\bav_tissue\thorn_PT421\3dpc_aorta\results_user009\',1,1,1,1,0,0,0)"
+   * example usage (note have to simplify mrstruct naming so it will work with step 2):
+	mimics_to_Wss('c:\_ensightCases\bav_tissue\poetzinger_PT447\mrstruct\','c:\_ensightCases\bav_tissue\poetzinger_PT447\results_user009\',1,1,1,1,0,0,0)
 		
 2. Compute heatmap via heat_map_traffic_light_scalars_affing_registration.m 
 	* make sure to run in the correct folder or will get the error about 'Cannot open file mask1.nii'
 	  (seems to work when I run it from the patient folder)
-	  
-	* getting errors from red_volume and variable 'offset' (seems to be a object) - this is b/c I need to set the following switches 'on': 
-	>> [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration('','',1,0,0,0,1)
+	 heat_map_traffic_light_scalars_affine_registration('l:\cv_mri\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls','c:\_ensightCases\bav_tissue\poetzinger_PT447\',1,0,0,0,1)
+	
 	  
 	  
    
