@@ -95,13 +95,16 @@ if nargin < 3
 end
 
 if ~exist(AtlasPath) == 2 || isempty(AtlasPath)
-    [FILENAME_atlas,AtlasPath] = uigetfile('C:\1_Chicago\Data\MIMICS\traffic_light\4_controls','Load atlas.mat');
+   [FILENAME_atlas,AtlasPath] = uigetfile('C:\1_Chicago\Data\MIMICS\traffic_light\4_controls','Load atlas.mat');
+   %FILENAME_atlas = 'atlas.mat' 
+   %AtlasPath = 'L:\cv_mri\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls'
 else
     FILENAME_atlas = 'atlas.mat';
 end
 
 if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
     [PATHNAME] = uigetdir('C:\1_Chicago\Data\MIMICS\traffic_light\4_controls','Select patient folder containing mrstruct folder');
+  %  PATHNAME = 'L:\cv_mri\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\BAV\07_PT193-SM\mrstruct'
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
@@ -128,7 +131,7 @@ if nargin < 5 || isempty(calculate_area_of_higherlowerFlag)
 end
 
 if nargin < 6 || isempty(peak_systolicFlag)
-    peak_systolicFlag = 1;
+    peak_systolicFlag = 0;
 end
 
 if nargin < 7 || isempty(images_for_surgeryFlag)
@@ -1080,8 +1083,10 @@ p14=patch('Faces',F4,'Vertices',V4,'EdgeColor','none','FaceColor',[0 1 0],'FaceA
 set(p14,'HandleVisibility','on','Visible','off')
 axis equal; axis off;axis ij
 view([-180 -90]);
+
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
+
 camlight headlight;camlight(180,0); lighting phong
 % set up results folder
 dir_orig = pwd;
@@ -1109,7 +1114,7 @@ text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-30),['Red volume: ' num2str(
 text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-25),['Blue volume: ' num2str(round(blue_volume/1000)) ' cm^{3}' ])
 text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-20),['Blue volume: ' num2str(round(percentage_blue_volume)) ' %' ])
 print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_front.jpg'));
-axis ij; view([0 90]);camlight(90,0);axis vis3d
+axis ij; view([0 90]);camlight(90,0);%axis vis3d
 print(f1,'-djpeg','-r600',strcat(dir_new,'\traffic_light_map_back.jpg'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% PvO: Images for the Brief Report for NEJM were created with:
@@ -1303,9 +1308,9 @@ cd(dir_orig);
 count3 = 0;
 angles(1) = 0;
 f2 = figure('Name','Heat map');
-x = data2.x_coor_wss/mask2_vox(1);
-y = data2.y_coor_wss/mask2_vox(2);
-z = data2.z_coor_wss/mask2_vox(3);
+x = data2.x_coor_wss./mask2_vox(1);
+y = data2.y_coor_wss./mask2_vox(2);
+z = data2.z_coor_wss./mask2_vox(3);
 p2=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
 gray_colormap = colormap(gray);
 color2(1,:) = [0 0 1];
@@ -1341,9 +1346,11 @@ text(min(x(:))-40,max(y(:))-10,['Red area: ' num2str(round(percentage_significan
 text(min(x(:))-40,max(y(:)),['Blue area: ' num2str(round(percentage_significant_lower_than_controls)) '%' ])
 %print(f2,'-dtif','-r600',strcat(dir_new,'\heat_map_front.tif'));
 print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_front.jpg'));
-axis equal; axis ij; axis off;axis vis3d
+axis equal; axis ij; axis off;%axis vis3d
 view([0 90]);
 print(f2,'-djpeg','-r600',strcat(dir_new,'\heat_map_back.jpg'));
+aspectRatio = 1./mask2_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
 
 uicontrol('Style','text',...
     'Position',[10 375 120 20],...
@@ -1407,16 +1414,31 @@ uicontrol('Style','checkbox',...
     function show_anatomy2(hObj,event,ax)
         show = round(get(hObj,'Value'));
         if show == 1
+%             delete(p2)
+%             x = data2.x_coor_wss./mask2_vox(1);
+%             y = data2.y_coor_wss./mask2_vox(2);
+%             z = data2.z_coor_wss./mask2_vox(3);
+%             p2=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
+%             
             patchobj = findobj(s2);
             set(patchobj,'HandleVisibility','on','Visible','on');
+%            caxis([0 64])            
         elseif show == 0
+            
+%             delete(p2)
+%             x = data2.x_coor_wss;
+%             y = data2.y_coor_wss;
+%             z = data2.z_coor_wss;
+%             p2=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
+%                 
             patchobj = findobj(s2);
             set(patchobj,'HandleVisibility','off','Visible','off');
+ %           caxis([0 64])
         end
     end
 
     function change_contrast2(hObj,event,ax)
-        contrast = round(get(hObj,'Value'));
+        contrast = round(get(hObj,'Value'))
         caxis([0 contrast])
     end
 
@@ -1488,13 +1510,21 @@ if images_for_surgeryFlag
     delete(s3)
     s3 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
     set(s3,'HandleVisibility','on','Visible','on');
+    aspectRatio = 1./mask2_vox;
+    set(gca,'dataaspectRatio',aspectRatio(1:3))
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image2'));
     camorbit(-90,0,'data',[0 1 0])
+aspectRatio = 1./mask2_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))    
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image3'));
     view([0 90])
+aspectRatio = 1./mask2_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))    
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image4'));
     delete(s3)
     s3 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* 1,magnitude(:,:,size(magnitude,3)),'EdgeColor','none');
+   aspectRatio = 1./mask2_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image5'));
     delete(f3)
 end
