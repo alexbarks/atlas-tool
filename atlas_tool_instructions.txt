@@ -42,5 +42,5 @@ CALCULATION OF A HEATMAP (if have already computed an atlas previously)
 	
 	* can also run just as a command, but watch out for the systoleFlag (set to 1 if no inputs)	  
 	  
-   
+   test commit to see if emilie is a user
 		
