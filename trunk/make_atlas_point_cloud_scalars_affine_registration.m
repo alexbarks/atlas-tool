@@ -786,7 +786,7 @@ for n = 1:size(PATHNAME,2)
         disp(['IE WSS total = ' num2str(IE_total_wss) ' %'])
     end
     
-    pause(10)
+   % pause(10)
     close all
     
     VELx(:,n) = x_value_vel;
@@ -837,7 +837,7 @@ atlas.stdy_wss = sqrt(sum(std_y_wss,2)./size(PATHNAME,2));
 atlas.stdz_wss = sqrt(sum(std_z_wss,2)./size(PATHNAME,2));
 atlas.std_wss = sqrt(atlas.stdx_wss.^2 + atlas.stdy_wss.^2 + atlas.stdz_wss.^2); % WSS standard deviation magnitude
 
-if plotFlag == 1
+%if plotFlag == 1
     figure('Name','Mean atlas velocity')
     atlas_matrix = zeros(size(atlas.mask));
     L = (atlas.mask~=0);
@@ -862,7 +862,7 @@ if plotFlag == 1
     figure('Name','SD atlas wss')
     patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
     axis equal;axis off; axis ij;caxis([0 1.5]);view([-180 -90])
-end
+%end
 
 if calculateRE_Flag == 1;
     disp(['Mean registration error = ' num2str(mean(diff_percentage(:,1))) ' +/- ' num2str(std(diff_percentage(:,1))) '%'])
