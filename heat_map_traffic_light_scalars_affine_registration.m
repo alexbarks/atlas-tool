@@ -131,11 +131,11 @@ if nargin < 5 || isempty(calculate_area_of_higherlowerFlag)
 end
 
 if nargin < 6 || isempty(peak_systolicFlag)
-    peak_systolicFlag = 0;
+    peak_systolicFlag = 1;
 end
 
 if nargin < 7 || isempty(images_for_surgeryFlag)
-    images_for_surgeryFlag = 1;
+    images_for_surgeryFlag = 0;
 end
 
 global mrstruct_mask
@@ -159,13 +159,13 @@ if plotFlag == 1
     figure('Name','mean velocity atlas')
     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
+    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);%view([180 -90])
     
     atlas_matrix(L) = atlas.std_vel;
     figure('Name','mean velocity atlas')
     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
+    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);%view([180 -90])
     
     figure('Name','Mean atlas WSS')
     patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
@@ -173,7 +173,7 @@ if plotFlag == 1
     
     figure('Name','std atlas WSS')
     patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
-    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+    axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
 end
 
 if calculateIE_Flag == 1;
@@ -1078,7 +1078,7 @@ p11=patch('Faces',F1,'Vertices',V1,'EdgeColor','none','FaceColor',[1 0 0],'FaceA
 p12=patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[1 0.9 0],'FaceAlpha',1);
 set(p12,'HandleVisibility','on','Visible','off');
 p13=patch('Faces',F3,'Vertices',V3,'EdgeColor','none','FaceColor',[0 0 1],'FaceAlpha',1);
-set(p13,'HandleVisibility','on','Visible','off')
+%set(p13,'HandleVisibility','on','Visible','off')
 p14=patch('Faces',F4,'Vertices',V4,'EdgeColor','none','FaceColor',[0 1 0],'FaceAlpha',1);
 set(p14,'HandleVisibility','on','Visible','off')
 axis equal; axis off;axis ij
@@ -1090,11 +1090,11 @@ set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight headlight;camlight(180,0); lighting phong
 % set up results folder
 dir_orig = pwd;
-dir_new = PATHNAME; cd(dir_new); %cd('..')
+dir_new = PATHNAME; %cd(dir_new); %cd('..')
 %dir_new = pwd;
-mkdir('results_traffic_light_map')
+mkdir(PATHNAME,'results_traffic_light_map');
 dir_new = strcat(dir_new,'\results_traffic_light_map');
-saveas(gcf,[dir_new '\traffic_light_map.fig'])
+saveas(gcf,[dir_new '\traffic_light_map.fig']);
 load(strcat(MrstructPath,'\',FILENAME4))
 magnitude = flipdim(double(mrStruct.dataAy(:,:,:,time)),3);clear mrStruct
 magnitude(magnitude == 0) = 3;
@@ -1300,7 +1300,7 @@ traffic_light.faces = F;
 % save results in results folder
 save(strcat(dir_new,'\results_trafficlight_map'),'traffic_light');
 %savefig(f2,strcat(dir_new,'\heat_map'))
-cd(dir_orig);
+%cd(dir_orig);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Heat map (WSS)
@@ -1325,9 +1325,9 @@ set(gca,'dataaspectRatio',aspectRatio(1:3))
 view([-180 -90]);
 % set up results folder
 dir_orig = pwd;
-dir_new = PATHNAME; cd(dir_new); %cd('..')
+dir_new = PATHNAME; %cd(dir_new); %cd('..')
 %dir_new = pwd;
-mkdir('results_heatmap');
+mkdir(PATHNAME,'results_heatmap');
 dir_new = strcat(dir_new,'\results_heatmap');
 saveas(gcf,[dir_new '\heat_map.fig'])
 load(strcat(MrstructPath,'\',FILENAME4))
@@ -1468,7 +1468,7 @@ heat_map.color = color1;
 % save results in results folder
 save(strcat(dir_new,'\heat_map'),'heat_map');
 %savefig(f2,strcat(dir_new,'\heat_map'))
-cd(dir_orig)
+%cd(dir_orig)
 
 if images_for_surgeryFlag
     f3 = figure('Name','Heat map');
@@ -1489,7 +1489,7 @@ if images_for_surgeryFlag
     view([-180 -90]);
     % set up results folder
     dir_orig = pwd;
-    dir_new = PATHNAME; cd(dir_new); %cd('..')
+    dir_new = PATHNAME; %cd(dir_new); %cd('..')
     %dir_new = pwd;
     mkdir('images_for_surgery');
     dir_new = strcat(dir_new,'\images_for_surgery');
