@@ -1,43 +1,43 @@
-function [probability_mask] = make_geometry_point_cloud(PATHNAME,plotFlag,saveFlag)
+function [probability_mask] = make_geometry_point_cloud(PATHNAME,plotFlag,saveFlag,lower_thresh,upper_thresh)
 
-%%% [probability_mask] = make_geometry_point_cloud(PATHNAME,plotFlag,saveFlag)
-%
-% This function creates the probability mask (or idealized geometry) that will be used in the function
-% 'make_atlas_point_cloud_scalars_affine_registration' of the batch data put into this file.
-% The method developed was published in (so please cite this paper when using this method):
-%
-% A Methodology to Detect Abnormal Relative Wall Shear Stress on the Full Surface of the Thoracic Aorta Using 4D Flow MRI
-% van Ooij P, Potters WV, Nederveen AJ, Allen BD, Collins J, Carr J, Malaisrie SC, Markl M, Barker AJ
-% Magn Reson Med. 2014 Feb 25, doi: 10.1002/mrm.25224. [Epub ahead of print]
-%
-% First, the first two aortas (you can probably use this for carotids and intracranial vessels as well, but I haven't tried yet) are co-registered
-% (rigid registration) and added to create an initial 'overlap map'. The third aorta is co-registered to the overlap map and added and so forth for
-% all aortas in the cohort. Next, the threshold (O_thresh in the above mentioned paper) is varied from 1 to the number of aortas and again, all aortas
-% are co-registered to the overlap map of varying thresholds and the registration error (RE) is determined. The overlap map where the RE averaged
-% over all aortas is smallest is chosen as the probability mask (or idealized geometry).
-%
-% 2014, Pim van Ooij, Northwestern University
-%
-% Input
-% 1)PATHNAME          : The PATHNAMES for the subjects that the probability_mask will be made of
-% 2)plotFlag          : If plotFlag switched on, Matlab will output any possible image to the screen to check if everything happens correctly.
-% 3)saveFlag          : You can choose to save the probability_mask to a directory of choice, but if make_geometry_point_cloud combined with 
-%                       make_atlas_point_cloud_scalars_affine_registration there is really no need
-% Output
-% 1)probability_mask: The mask of the probability mask (or idealized aortic geometry)
-%
-% Usage
-% This code is for creating the probability mask (or idealized aortic geometry) from a cohort that consists of 'data_done' structs as
-% created by Pims_postprocessing tool
-% The function for creating prbability masks from mrStructs is under construction
-%
-% Examples:
-% [probability_mask] = make_geometry_point_cloud_NEW(PATHNAME,plotFlag,saveFlag)
-% [probability_mask] = make_geometry_point_cloud('',0,1)
-%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+% %%% [probability_mask] = make_geometry_point_cloud(PATHNAME,plotFlag,saveFlag)
+% %
+% % This function creates the probability mask (or idealized geometry) that will be used in the function
+% % 'make_atlas_point_cloud_scalars_affine_registration' of the batch data put into this file.
+% % The method developed was published in (so please cite this paper when using this method):
+% %
+% % A Methodology to Detect Abnormal Relative Wall Shear Stress on the Full Surface of the Thoracic Aorta Using 4D Flow MRI
+% % van Ooij P, Potters WV, Nederveen AJ, Allen BD, Collins J, Carr J, Malaisrie SC, Markl M, Barker AJ
+% % Magn Reson Med. 2014 Feb 25, doi: 10.1002/mrm.25224. [Epub ahead of print]
+% %
+% % First, the first two aortas (you can probably use this for carotids and intracranial vessels as well, but I haven't tried yet) are co-registered
+% % (rigid registration) and added to create an initial 'overlap map'. The third aorta is co-registered to the overlap map and added and so forth for
+% % all aortas in the cohort. Next, the threshold (O_thresh in the above mentioned paper) is varied from 1 to the number of aortas and again, all aortas
+% % are co-registered to the overlap map of varying thresholds and the registration error (RE) is determined. The overlap map where the RE averaged
+% % over all aortas is smallest is chosen as the probability mask (or idealized geometry).
+% %
+% % 2014, Pim van Ooij, Northwestern University
+% %
+% % Input
+% % 1)PATHNAME          : The PATHNAMES for the subjects that the probability_mask will be made of
+% % 2)plotFlag          : If plotFlag switched on, Matlab will output any possible image to the screen to check if everything happens correctly.
+% % 3)saveFlag          : You can choose to save the probability_mask to a directory of choice, but if make_geometry_point_cloud combined with 
+% %                       make_atlas_point_cloud_scalars_affine_registration there is really no need
+% % Output
+% % 1)probability_mask: The mask of the probability mask (or idealized aortic geometry)
+% %
+% % Usage
+% % This code is for creating the probability mask (or idealized aortic geometry) from a cohort that consists of 'data_done' structs as
+% % created by Pims_postprocessing tool
+% % The function for creating prbability masks from mrStructs is under construction
+% %
+% % Examples:
+% % [probability_mask] = make_geometry_point_cloud_NEW(PATHNAME,plotFlag,saveFlag)
+% % [probability_mask] = make_geometry_point_cloud('',0,1)
+% %
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
 % create, or lookup default path cache for flirt and cygwin (in c:\temp)
 % find if c:\temp exists, if exist look for cache file
 if (exist('c:\temp','dir')==7 && exist('c:\temp\atlas_tool.cfg','file')==2)
@@ -85,8 +85,6 @@ disp(['...Busy loading data_done aorta ' num2str(1)])
 tic
 load(strcat(PATHNAME{1},'\mrstruct\',FILENAME));
 toc
-disp(['Done loading data_done aorta'  num2str(1)]);disp(' ')
-%data1 = data; clear data;
 mask1 = mrstruct_mask.dataAy;
 mask1_vox = mrstruct_mask.vox;clear mrstruct_mask
 L = (mask1 ~= 0);
@@ -199,7 +197,7 @@ for n = 2:size(PATHNAME,2)
         axis equal;view([0 90]); axis ij
     end
     
-    offset = 100;
+      offset = 100;
     if n == 2
         %%% translate the geometry away from the origin to prevent coordinates < 0 after registration, otherwise the geometry can not be transformed back to a matrix
         sizes = [size(mask1,1)+offset  size(mask1,2)+offset size(mask1,3)+offset];
@@ -221,7 +219,7 @@ for n = 2:size(PATHNAME,2)
     
     % Create matrix
     indices_mask = [x_round y_round z_round];
-    siz=max(indices_mask,[],1);
+    siz=max(indices_mask,[],1)
     IND = sub2ind(siz,x_round,y_round,z_round);
     [b, IND_double_removed] = unique(IND);
     clear b
@@ -319,7 +317,8 @@ if plotFlag == 1
 end
 
 probability_mask.vox = mask1_vox;
-
+save C:\1_Chicago\Data\MIMICS\age_matching\probability_mask probability_mask
+load C:\1_Chicago\Data\MIMICS\age_matching\probability_mask probability_mask
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% The code to calculate the idealized geometry start here! %%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -329,12 +328,9 @@ diff_matrix = zeros(size(PATHNAME,2));
 
 for n = 1:size(PATHNAME,2)
     
-    disp(['...Busy loading data_done aorta ' num2str(n)])
-    tic
     load(strcat(PATHNAME{n},'\mrstruct\',FILENAME))
-    toc
-    disp(['Done loading data_done aorta ' num2str(n)])
     mask2 = mrstruct_mask.dataAy;
+    mask2_vox =  mrstruct_mask.vox;
     
     L = (mask2 ~= 0);
     [x,y,z] = meshgrid((1:size(mask2,2)).* mask2_vox(2), ...
@@ -342,7 +338,7 @@ for n = 1:size(PATHNAME,2)
     x_coor2 = x(L);y_coor2 = y(L);z_coor2 = z(L);
     clear x, clear y, clear z
     
-    for threshold = 1:size(PATHNAME,2)
+    for threshold = lower_thresh:upper_thresh;%size(PATHNAME,2)
         
         L = (probability_mask.matrix >= threshold );
         [x,y,z] = meshgrid((1:size(probability_mask.matrix,2)).* probability_mask.vox(2), ...
@@ -509,8 +505,10 @@ for n = 1:size(PATHNAME,2)
     end
 end
 
-diff = squeeze(mean(diff_matrix,1));
-[I,J] = find(diff==min(diff))
+diff = squeeze(mean(diff_matrix,1))
+diff2 = diff(diff~=0)
+[I,J] = find(diff2==min(diff2))
+J = J + (lower_thresh-1)
 L = (probability_mask.matrix >= J);
 mask1 = double(L);
 
