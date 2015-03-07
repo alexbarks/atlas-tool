@@ -356,10 +356,18 @@ if peak_systolicFlag == 1
         data2.x_value_wss = WSS{1}(:,1);
         data2.y_value_wss = WSS{1}(:,2);
         data2.z_value_wss = WSS{1}(:,3);
+    elseif size(WSS,2) == 1    % Emilie: calculated at only one time (peak systole)
+        data2.x_value_wss = WSS{1}(:,1);
+        data2.y_value_wss = WSS{1}(:,2);
+        data2.z_value_wss = WSS{1}(:,3);
     end
 elseif peak_systolicFlag == 0
+    % Emilie: if WSS was previously calculated only at peak systole
+    if size(WSS,2) == 1
+        warndlg('WSS was previously calculated only at peak systole! Please check the ''Compute at peak systole'' box.');
+        return;
     % Velocity averaged over 5 systolic time frames
-    if time == 2    % mistriggering: second time frame is peak systole, averaging over 5 timesteps is not possible
+    elseif time == 2    % mistriggering: second time frame is peak systole, averaging over 5 timesteps is not possible
         disp('TIME FRAMES AVERAGED OVER 4 TIME FRAMES!')
         data2.x_value_vel_t1 = velocity(:,:,:,1,time-1);data2.y_value_vel_t1 = velocity(:,:,:,2,time-1);data2.z_value_vel_t1 = velocity(:,:,:,3,time-1);
         data2.x_value_vel_t2 = velocity(:,:,:,1,time);  data2.y_value_vel_t2 = velocity(:,:,:,2,time);  data2.z_value_vel_t2 = velocity(:,:,:,3,time);
@@ -1471,6 +1479,7 @@ save(strcat(dir_new,'\heat_map'),'heat_map');
 %cd(dir_orig)
 
 if images_for_surgeryFlag
+
     f3 = figure('Name','Heat map');
     x = data2.x_coor_wss/mask2_vox(1);
     y = data2.y_coor_wss/mask2_vox(2);
@@ -1506,27 +1515,128 @@ if images_for_surgeryFlag
     aspectRatio = 1./mask2_vox;
     set(gca,'dataaspectRatio',aspectRatio(1:3))
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image1'));
+    
+    hax_f3 = gca;
+    h = figure; % Emilie: figure including all views for report
+    subP1 = subplot(1,5,1);
+    posP1 = get(subP1,'Position');
+    delete(subP1);
+    hax_h1 = copyobj(hax_f3,h); % copy figure 1 axes into report figure
+    set(hax_h1, 'Position', posP1);
+    colormap(color3);
+    % Emilie: manual interaction to chose magnitude slice on which RPA can be visualized, if needed
+    h2 = figure('Name','Selection of the magnitude slice');
+    colormap(color3);
+    caxis([0 64]);
+    axis equal; axis ij; axis off;
+    set(gca,'dataaspectRatio',aspectRatio(1:3))
+    view([-180 -90]);
+    hold on
+    s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
+    uicontrol('Style','text',...
+        'Position',[10 200 120 70],...
+        'String','Please choose using the slider a magnitude slice on which RPA can be visualized and then click ok button')
+    uicontrol('Style','text',...
+        'Position',[10 75 120 20],...
+        'String','Slice slider')
+    sl1 = uicontrol('Style', 'slider',...
+        'Min',1,'Max',size(magnitude,3),'Value',size(magnitude,3)/2,...
+        'Position', [10 50 120 20],...
+        'SliderStep',[1/(size(magnitude,3)-1) 10/(size(magnitude,3)-1)],...
+        'Callback', {@move_slice3,gca});
+    but_ok = uicontrol('Position',[10 25 120 20],...
+        'String','ok',...
+        'Callback', 'uiresume(gcbf)');
+    uiwait(gcf);
+    RPAslice=get(sl1, 'Value');
+    close(h2)
+    % End Emilie: manual interaction to chose magnitude slice on which RPA can be visualized
+    figure(f3)
     axis equal; axis ij; axis off;axis vis3d
     delete(s3)
-    s3 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
+%     s3 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
+    s3 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* RPAslice,magnitude(:,:,RPAslice),'EdgeColor','none');  % Emilie: display the slice previously selected by user
     set(s3,'HandleVisibility','on','Visible','on');
     aspectRatio = 1./mask2_vox;
     set(gca,'dataaspectRatio',aspectRatio(1:3))
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image2'));
+    % Emilie: copy figure 2 axes into report figure
+    hax_f3 = gca;
+    figure(h)
+    subP2 = subplot(1,5,2);
+    posP2 = get(subP2,'Position');
+    delete(subP2);
+    hax_h2 = copyobj(hax_f3,h);
+    set(hax_h2, 'Position', posP2);
+
+    figure(f3)
     camorbit(-90,0,'data',[0 1 0])
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))    
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image3'));
+    % Emilie: copy figure 3 axes into report figure
+    hax_f3 = gca;
+    figure(h)
+    subP3 = subplot(1,5,3);
+    posP3 = get(subP3,'Position');
+    delete(subP3);
+    hax_h3 = copyobj(hax_f3,h);
+    set(hax_h3, 'Position', posP3);
+
+    figure(f3)
     view([0 90])
 aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))    
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image4'));
+    % Emilie: copy figure 4 axes into report figure
+    hax_f3 = gca;
+    figure(h)
+    subP4 = subplot(1,5,4);
+    posP4=get(subP4,'Position');
+    delete(subP4);
+    hax_h4=copyobj(hax_f3,h);
+    set(hax_h4, 'Position', posP4);
+    %
+    figure(f3)
     delete(s3)
     s3 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* 1,magnitude(:,:,size(magnitude,3)),'EdgeColor','none');
    aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
     print(f3,'-djpeg','-r600',strcat(dir_new,'\image5'));
+    % Emilie: copy figure 5 axes into report figure
+    hax_f3 = gca;
+    figure(h)
+    subP5 = subplot(1,5,5);
+    posP5 = get(subP5,'Position');
+    delete(subP5);
+    hax_h5 = copyobj(hax_f3,h);
+    set(hax_h5, 'Position', posP5);
+    % Display of report figure
+    posP1(1)=-0.075;
+    posP1(3)=.38;
+    set(hax_h1, 'Position', posP1);
+    posP2(1)=posP2(1)-.1;
+    posP2(3)=.3;
+    set(hax_h2, 'Position', posP2);
+    posP3(1)=posP3(1)-0.11;
+    posP3(3)=.3;
+    set(hax_h3, 'Position', posP3);
+    posP4(1)=posP4(1)-.11;
+    posP4(3)=.3;
+    set(hax_h4, 'Position', posP4);
+    posP5(1)=posP5(1)-.045;
+    posP5(3)=.3;
+    set(hax_h5, 'Position', posP5);
+    % Save report figure
+    print(h,'-djpeg','-r600',strcat(dir_new,'\report'));
     delete(f3)
+end
+
+function move_slice3(hObj,event,ax) % Emilie: for manual interaction to chose magnitude slice on which RPA can be visualized
+	sliceobj = findobj(s4);
+	delete(sliceobj)
+	slice = round(get(hObj,'Value'));
+	s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
 end
 
 end
