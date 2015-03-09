@@ -62,7 +62,7 @@ elseif (exist('c:\temp','dir')==0 || exist('c:\temp\atlas_tool.cfg','file')==0) 
     % get working directory and create cfg file with path
     path_flirt = uigetdir('c:\temp','Select your working directory for flirt');
     path_cygwin = uigetdir('c:\temp','Select your working directory for cygwin');
-    if ischar(path_flirt) || ischar(path_cygwin) 
+    if ischar(path_flirt) || ischar(path_cygwin)
         i_tmp = (path_flirt=='\'); %repalce control char backslash with slash (in order to be able to write the path)
         path_flirt(i_tmp) = '/';
         i_tmp = (path_cygwin=='\'); %repalce control char backslash with slash (in order to be able to write the path)
@@ -162,6 +162,9 @@ for n = 1:size(PATHNAME,2)
     load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME2])
     velocity = double(mrStruct.dataAy); clear mrStruct; % for interpolation velocity needs to be a double
     
+    vx = velocity(:,:,:,1,:);vy = velocity(:,:,:,2,:);vz = velocity(:,:,:,3,:);    
+    velocity(:,:,:,1,:) = vy;velocity(:,:,:,2,:) = vx;velocity(:,:,:,3,:) = vz;
+    
     %%% Wall shear stress coordinates for both datasets
     geo.x_coor_wss = geo.V(:,1);
     geo.y_coor_wss = geo.V(:,2);
@@ -190,7 +193,7 @@ for n = 1:size(PATHNAME,2)
     end
     [I,time] = find(mean_velo==max(mean_velo));
     clear mean_velo
-
+    
     %%% What follows is a horrible piece of code, so if you're reading this and feel like cleaning it up, please do,
     %%% I'll buy you a beer next time we meet. PvO
     if peak_systolicFlag == 1
@@ -312,7 +315,7 @@ for n = 1:size(PATHNAME,2)
         L_figure = (squeeze(max(vel_matrix,[],3))~=0);
         imagesc(squeeze(max(vel_matrix,[],3)),'Alphadata',double(L_figure));
         colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
-       
+        
         figure('Name','data2 WSS')
         patch('Faces',data2.F,'Vertices',data2.V, ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
@@ -328,7 +331,7 @@ for n = 1:size(PATHNAME,2)
             patch('Faces',data2.F,'Vertices',data2.V,'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',0.25);
             view([-180 -90]);axis ij;axis equal;axis off
             
-            for i = 1:3
+            for i = 1:6
                 %Polygon and mask for AAo
                 polyAAo = impoly;
                 wait(polyAAo);
@@ -355,37 +358,38 @@ for n = 1:size(PATHNAME,2)
         mean_vel_arch_inner = mean(data2.vel_m(data2_mask_arch_inner_vel));
         data2_mask_arch_inner_wss = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
         mean_wss_arch_inner = mean(data2.wss_m(data2_mask_arch_inner_wss));
-%         load(strcat(PATHNAME{n},'\interpolation_error_ROI\mask4'))
-%         data2_mask_arch_outer_vel = inpolygon(data2.x_coor_vel, data2.y_coor_vel, region(:,1), region(:,2));
-%         mean_vel_arch_outer = mean(data2.vel_m(data2_mask_arch_outer_vel));
-%         data2_mask_arch_outer_wss = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%         mean_wss_arch_outer = mean(data2.wss_m(data2_mask_arch_outer_wss));
-%         load(strcat(PATHNAME{n},'\interpolation_error_ROI\mask5'))
-%         data2_mask_DAo_inner_vel = inpolygon(data2.x_coor_vel, data2.y_coor_vel, region(:,1), region(:,2));
-%         mean_vel_DAo_inner = mean(data2.vel_m(data2_mask_DAo_inner_vel));
-%         data2_mask_DAo_inner_wss = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%         mean_wss_DAo_inner = mean(data2.wss_m(data2_mask_DAo_inner_wss));
-%         load(strcat(PATHNAME{n},'\interpolation_error_ROI\mask6'))
-%         data2_mask_DAo_outer_vel = inpolygon(data2.x_coor_vel, data2.y_coor_vel, region(:,1), region(:,2));
-%         mean_vel_DAo_outer = mean(data2.vel_m(data2_mask_DAo_outer_vel));
-%         data2_mask_DAo_outer_wss = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%         mean_wss_DAo_outer = mean(data2.wss_m(data2_mask_DAo_outer_wss));
-         mean_vel_total_before_interpolation(n,1) = mean(data2.vel_m)
-         mean_wss_total_before_interpolation(n,1) = mean(data2.wss_m)         
-
+        load(strcat(PATHNAME{n},'\interpolation_error_ROI\mask4'))
+        data2_mask_arch_outer_vel = inpolygon(data2.x_coor_vel, data2.y_coor_vel, region(:,1), region(:,2));
+        mean_vel_arch_outer = mean(data2.vel_m(data2_mask_arch_outer_vel));
+        data2_mask_arch_outer_wss = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+        mean_wss_arch_outer = mean(data2.wss_m(data2_mask_arch_outer_wss));
+        load(strcat(PATHNAME{n},'\interpolation_error_ROI\mask5'))
+        data2_mask_DAo_inner_vel = inpolygon(data2.x_coor_vel, data2.y_coor_vel, region(:,1), region(:,2));
+        mean_vel_DAo_inner = mean(data2.vel_m(data2_mask_DAo_inner_vel));
+        data2_mask_DAo_inner_wss = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+        mean_wss_DAo_inner = mean(data2.wss_m(data2_mask_DAo_inner_wss));
+        load(strcat(PATHNAME{n},'\interpolation_error_ROI\mask6'))
+        data2_mask_DAo_outer_vel = inpolygon(data2.x_coor_vel, data2.y_coor_vel, region(:,1), region(:,2));
+        mean_vel_DAo_outer = mean(data2.vel_m(data2_mask_DAo_outer_vel));
+        data2_mask_DAo_outer_wss = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+        mean_wss_DAo_outer = mean(data2.wss_m(data2_mask_DAo_outer_wss));
+        
+        mean_vel_total_before_interpolation(n,1) = mean(data2.vel_m)
+        mean_wss_total_before_interpolation(n,1) = mean(data2.wss_m)
+        
         mean_vel_before_interpolation(n,1) = mean_vel_asc_inner;
         mean_vel_before_interpolation(n,2) = mean_vel_asc_outer;
-        mean_vel_before_interpolation(n,3) = mean_vel_arch_inner
-%         mean_vel_before_interpolation(n,4) = mean_vel_arch_outer;
-%         mean_vel_before_interpolation(n,5) = mean_vel_DAo_inner;
-%         mean_vel_before_interpolation(n,6) = mean_vel_DAo_outer;
+        mean_vel_before_interpolation(n,3) = mean_vel_arch_inner;
+        mean_vel_before_interpolation(n,4) = mean_vel_arch_outer;
+        mean_vel_before_interpolation(n,5) = mean_vel_DAo_inner;
+        mean_vel_before_interpolation(n,6) = mean_vel_DAo_outer
         
         mean_wss_before_interpolation(n,1) = mean_wss_asc_inner;
         mean_wss_before_interpolation(n,2) = mean_wss_asc_outer;
-        mean_wss_before_interpolation(n,3) = mean_wss_arch_inner
-%         mean_wss_before_interpolation(n,4) = mean_wss_arch_outer;
-%         mean_wss_before_interpolation(n,5) = mean_wss_DAo_inner;
-%         mean_wss_before_interpolation(n,6) = mean_wss_DAo_outer;
+        mean_wss_before_interpolation(n,3) = mean_wss_arch_inner;
+        mean_wss_before_interpolation(n,4) = mean_wss_arch_outer;
+        mean_wss_before_interpolation(n,5) = mean_wss_DAo_inner;
+        mean_wss_before_interpolation(n,6) = mean_wss_DAo_outer
         
         if plotFlag == 1
             figure('Name','Velocity before interpolation: inner AAo')
@@ -397,15 +401,15 @@ for n = 1:size(PATHNAME,2)
             figure('Name','Velocity before interpolation: inner arch')
             scatter3(data2.x_coor_vel(data2_mask_arch_inner_vel),data2.y_coor_vel(data2_mask_arch_inner_vel),data2.z_coor_vel(data2_mask_arch_inner_vel),20,data2.vel_m(data2_mask_arch_inner_vel),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
-%             figure('Name','Velocity before interpolation: outer arch')
-%             scatter3(data2.x_coor_vel(data2_mask_arch_outer_vel),data2.y_coor_vel(data2_mask_arch_outer_vel),data2.z_coor_vel(data2_mask_arch_outer_vel),20,data2.vel_m(data2_mask_arch_outer_vel),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
-%             figure('Name','Velocity before interpolation: inner DAo')
-%             scatter3(data2.x_coor_vel(data2_mask_DAo_inner_vel),data2.y_coor_vel(data2_mask_DAo_inner_vel),data2.z_coor_vel(data2_mask_DAo_inner_vel),20,data2.vel_m(data2_mask_DAo_inner_vel),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
-%             figure('Name','Velocity before interpolation: outer DAo')
-%             scatter3(data2.x_coor_vel(data2_mask_DAo_outer_vel),data2.y_coor_vel(data2_mask_DAo_outer_vel),data2.z_coor_vel(data2_mask_DAo_outer_vel),20,data2.vel_m(data2_mask_DAo_outer_vel),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
+            figure('Name','Velocity before interpolation: outer arch')
+            scatter3(data2.x_coor_vel(data2_mask_arch_outer_vel),data2.y_coor_vel(data2_mask_arch_outer_vel),data2.z_coor_vel(data2_mask_arch_outer_vel),20,data2.vel_m(data2_mask_arch_outer_vel),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
+            figure('Name','Velocity before interpolation: inner DAo')
+            scatter3(data2.x_coor_vel(data2_mask_DAo_inner_vel),data2.y_coor_vel(data2_mask_DAo_inner_vel),data2.z_coor_vel(data2_mask_DAo_inner_vel),20,data2.vel_m(data2_mask_DAo_inner_vel),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
+            figure('Name','Velocity before interpolation: outer DAo')
+            scatter3(data2.x_coor_vel(data2_mask_DAo_outer_vel),data2.y_coor_vel(data2_mask_DAo_outer_vel),data2.z_coor_vel(data2_mask_DAo_outer_vel),20,data2.vel_m(data2_mask_DAo_outer_vel),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
             figure('Name','WSS before interpolation: inner AAo')
             scatter3(data2.x_coor_wss(data2_mask_AAo_inner_wss),data2.y_coor_wss(data2_mask_AAo_inner_wss),data2.z_coor_wss(data2_mask_AAo_inner_wss),20,data2.wss_m(data2_mask_AAo_inner_wss),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
@@ -415,25 +419,25 @@ for n = 1:size(PATHNAME,2)
             figure('Name','WSS before interpolation: inner arch')
             scatter3(data2.x_coor_wss(data2_mask_arch_inner_wss),data2.y_coor_wss(data2_mask_arch_inner_wss),data2.z_coor_wss(data2_mask_arch_inner_wss),20,data2.wss_m(data2_mask_arch_inner_wss),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
-%             figure('Name','WSS before interpolation: outer arch')
-%             scatter3(data2.x_coor_wss(data2_mask_arch_outer_wss),data2.y_coor_wss(data2_mask_arch_outer_wss),data2.z_coor_wss(data2_mask_arch_outer_wss),20,data2.wss_m(data2_mask_arch_outer_wss),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
-%             figure('Name','WSS before interpolation: inner DAo')
-%             scatter3(data2.x_coor_wss(data2_mask_DAo_inner_wss),data2.y_coor_wss(data2_mask_DAo_inner_wss),data2.z_coor_wss(data2_mask_DAo_inner_wss),20,data2.wss_m(data2_mask_DAo_inner_wss),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
-%             figure('Name','WSS before interpolation: outer DAo')
-%             scatter3(data2.x_coor_wss(data2_mask_DAo_outer_wss),data2.y_coor_wss(data2_mask_DAo_outer_wss),data2.z_coor_wss(data2_mask_DAo_outer_wss),20,data2.wss_m(data2_mask_DAo_outer_wss),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
-        end
+            figure('Name','WSS before interpolation: outer arch')
+            scatter3(data2.x_coor_wss(data2_mask_arch_outer_wss),data2.y_coor_wss(data2_mask_arch_outer_wss),data2.z_coor_wss(data2_mask_arch_outer_wss),20,data2.wss_m(data2_mask_arch_outer_wss),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
+            figure('Name','WSS before interpolation: inner DAo')
+            scatter3(data2.x_coor_wss(data2_mask_DAo_inner_wss),data2.y_coor_wss(data2_mask_DAo_inner_wss),data2.z_coor_wss(data2_mask_DAo_inner_wss),20,data2.wss_m(data2_mask_DAo_inner_wss),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
+            figure('Name','WSS before interpolation: outer DAo')
+            scatter3(data2.x_coor_wss(data2_mask_DAo_outer_wss),data2.y_coor_wss(data2_mask_DAo_outer_wss),data2.z_coor_wss(data2_mask_DAo_outer_wss),20,data2.wss_m(data2_mask_DAo_outer_wss),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');axis ij;view([-180 -90]);
+            end
     end
     
     if plotFlag == 1
         figure('Name',strcat('To be registered aorta ',num2str(n)))
         plot3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,'r.')
         hold on
-  %      plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
+        %      plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
         plot3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,'b.')
-  %      plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'k.')
+        %      plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'k.')
         legend('to remain the same','to be transformed')
         axis equal; axis off;view([-180 -90]); axis ij
     end
@@ -479,7 +483,7 @@ for n = 1:size(PATHNAME,2)
     fclose(f);
     
     % and go! takes 4-5 mins.
-    % directory for cygwin as read from atlas_tool.cfg in C:\temp        
+    % directory for cygwin as read from atlas_tool.cfg in C:\temp
     system([path_cygwin '\bash runflirt.sh']);
     
     % load transformation mask
@@ -514,22 +518,22 @@ for n = 1:size(PATHNAME,2)
     % but also SCALING. We don't want our velocity and WSS vectors to be scaled.
     % That's why we work only with scalars in this code. Registration of the velocity
     % and WSS vectors is possible, but then only RIGID registration should be used.
-    % If you want this, then you should use the function 'make_atlas_point_cloud_vectors_rigid_registration',
-    % which can also be found in this tool. However, I expect that the interpolation works better
+    % If you want this, then this function should be adjusted to 'make_atlas_point_cloud_vectors_rigid_registration'.
+    % However, I expect that the interpolation works better
     % with affine registration. PvO
     
     if plotFlag == 1
         figure('Name','Registered')
         plot3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,'r.')
         hold on
-   %     plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
+        %     plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
         plot3(x_coor_vel,y_coor_vel,z_coor_vel,'b.')
-   %     plot3(x_coor_wss,y_coor_wss,z_coor_wss,'k.')
+        %     plot3(x_coor_wss,y_coor_wss,z_coor_wss,'k.')
         legend('Prob mask','Aorta')
         %legend('probability mask/atlas','individual aorta')
         axis equal; axis off;view([-180 -90]); axis ij
         pause(10)
-                
+        
         figure('Name','transformed WSS')
         patch('Faces',data2.F,'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
@@ -640,7 +644,7 @@ for n = 1:size(PATHNAME,2)
         L_figure = (squeeze(max(vel_matrix,[],3))~=0);
         imagesc(squeeze(max(vel_matrix,[],3)),'Alphadata',double(L_figure));
         colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
-       
+        
         figure('Name','interpolated to atlas WSS')
         patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',data2.wss_m ,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
@@ -684,109 +688,109 @@ for n = 1:size(PATHNAME,2)
         mean_vel_arch_inner = mean(data2.vel_m(geo_mask_arch_inner_vel));
         geo_mask_arch_inner_wss = inpolygon(geo.x_coor_wss, geo.y_coor_wss, region(:,1), region(:,2));
         mean_wss_arch_inner = mean(data2.wss_m(geo_mask_arch_inner_wss));
-%         load(strcat(PATHNAME_probability_mask,'\interpolation_error_ROI\mask4'))
-%         geo_mask_arch_outer_vel = inpolygon(geo.x_coor_vel, geo.y_coor_vel, region(:,1), region(:,2));
-%         mean_vel_arch_outer = mean(data2.vel_m(geo_mask_arch_outer_vel));
-%         geo_mask_arch_outer_wss = inpolygon(geo.x_coor_wss, geo.y_coor_wss, region(:,1), region(:,2));
-%         mean_wss_arch_outer = mean(data2.wss_m(geo_mask_arch_outer_wss));
-%         load(strcat(PATHNAME_probability_mask,'\interpolation_error_ROI\mask5'))
-%         geo_mask_DAo_inner_vel = inpolygon(geo.x_coor_vel, geo.y_coor_vel, region(:,1), region(:,2));
-%         mean_vel_DAo_inner = mean(data2.vel_m(geo_mask_DAo_inner_vel));
-%         geo_mask_DAo_inner_wss = inpolygon(geo.x_coor_wss, geo.y_coor_wss, region(:,1), region(:,2));
-%         mean_wss_DAo_inner = mean(data2.wss_m(geo_mask_DAo_inner_wss));
-%         load(strcat(PATHNAME_probability_mask,'\interpolation_error_ROI\mask6'))
-%         geo_mask_DAo_outer_vel = inpolygon(geo.x_coor_vel, geo.y_coor_vel, region(:,1), region(:,2));
-%         mean_vel_DAo_outer = mean(data2.vel_m(geo_mask_DAo_outer_vel));
-%         geo_mask_DAo_outer_wss = inpolygon(geo.x_coor_wss, geo.y_coor_wss, region(:,1), region(:,2));
-%         mean_wss_DAo_outer = mean(data2.wss_m(geo_mask_DAo_outer_wss));
-         mean_vel_total_after_interpolation(n,1) = mean(data2.vel_m)
-         mean_wss_total_after_interpolation(n,1) = mean(data2.wss_m)   
-
+        load(strcat(PATHNAME_probability_mask,'\interpolation_error_ROI\mask4'))
+        geo_mask_arch_outer_vel = inpolygon(geo.x_coor_vel, geo.y_coor_vel, region(:,1), region(:,2));
+        mean_vel_arch_outer = mean(data2.vel_m(geo_mask_arch_outer_vel));
+        geo_mask_arch_outer_wss = inpolygon(geo.x_coor_wss, geo.y_coor_wss, region(:,1), region(:,2));
+        mean_wss_arch_outer = mean(data2.wss_m(geo_mask_arch_outer_wss));
+        load(strcat(PATHNAME_probability_mask,'\interpolation_error_ROI\mask5'))
+        geo_mask_DAo_inner_vel = inpolygon(geo.x_coor_vel, geo.y_coor_vel, region(:,1), region(:,2));
+        mean_vel_DAo_inner = mean(data2.vel_m(geo_mask_DAo_inner_vel));
+        geo_mask_DAo_inner_wss = inpolygon(geo.x_coor_wss, geo.y_coor_wss, region(:,1), region(:,2));
+        mean_wss_DAo_inner = mean(data2.wss_m(geo_mask_DAo_inner_wss));
+        load(strcat(PATHNAME_probability_mask,'\interpolation_error_ROI\mask6'))
+        geo_mask_DAo_outer_vel = inpolygon(geo.x_coor_vel, geo.y_coor_vel, region(:,1), region(:,2));
+        mean_vel_DAo_outer = mean(data2.vel_m(geo_mask_DAo_outer_vel));
+        geo_mask_DAo_outer_wss = inpolygon(geo.x_coor_wss, geo.y_coor_wss, region(:,1), region(:,2));
+        mean_wss_DAo_outer = mean(data2.wss_m(geo_mask_DAo_outer_wss));
+        
+        mean_vel_total_after_interpolation(n,1) = mean(data2.vel_m)
+        mean_wss_total_after_interpolation(n,1) = mean(data2.wss_m)
+        
         if plotFlag == 1
-            figure('Name','Velocity before interpolation: inner AAo')
+            figure('Name','Velocity after interpolation: inner AAo')
             scatter3(geo.x_coor_vel(geo_mask_AAo_inner_vel),geo.y_coor_vel(geo_mask_AAo_inner_vel),geo.z_coor_vel(geo_mask_AAo_inner_vel),20,data2.vel_m(geo_mask_AAo_inner_vel),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-            figure('Name','Velocity before interpolation: outer AAo')
+            figure('Name','Velocity after interpolation: outer AAo')
             scatter3(geo.x_coor_vel(geo_mask_AAo_outer_vel),geo.y_coor_vel(geo_mask_AAo_outer_vel),geo.z_coor_vel(geo_mask_AAo_outer_vel),20,data2.vel_m(geo_mask_AAo_outer_vel),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-            figure('Name','Velocity before interpolation: inner arch')
+            figure('Name','Velocity after interpolation: inner arch')
             scatter3(geo.x_coor_vel(geo_mask_arch_inner_vel),geo.y_coor_vel(geo_mask_arch_inner_vel),geo.z_coor_vel(geo_mask_arch_inner_vel),20,data2.vel_m(geo_mask_arch_inner_vel),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-%             figure('Name','Velocity before interpolation: outer arch')
-%             scatter3(geo.x_coor_vel(geo_mask_arch_outer_vel),geo.y_coor_vel(geo_mask_arch_outer_vel),geo.z_coor_vel(geo_mask_arch_outer_vel),20,data2.vel_m(geo_mask_arch_outer_vel),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-%             figure('Name','Velocity before interpolation: inner DAo')
-%             scatter3(geo.x_coor_vel(geo_mask_DAo_inner_vel),geo.y_coor_vel(geo_mask_DAo_inner_vel),geo.z_coor_vel(geo_mask_DAo_inner_vel),20,data2.vel_m(geo_mask_DAo_inner_vel),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-%             figure('Name','Velocity before interpolation: outer DAo')
-%             scatter3(geo.x_coor_vel(geo_mask_DAo_outer_vel),geo.y_coor_vel(geo_mask_DAo_outer_vel),geo.z_coor_vel(geo_mask_DAo_outer_vel),20,data2.vel_m(geo_mask_DAo_outer_vel),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-            figure('Name','WSS before interpolation: inner AAo')
+            figure('Name','Velocity after interpolation: outer arch')
+            scatter3(geo.x_coor_vel(geo_mask_arch_outer_vel),geo.y_coor_vel(geo_mask_arch_outer_vel),geo.z_coor_vel(geo_mask_arch_outer_vel),20,data2.vel_m(geo_mask_arch_outer_vel),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+            figure('Name','Velocity after interpolation: inner DAo')
+            scatter3(geo.x_coor_vel(geo_mask_DAo_inner_vel),geo.y_coor_vel(geo_mask_DAo_inner_vel),geo.z_coor_vel(geo_mask_DAo_inner_vel),20,data2.vel_m(geo_mask_DAo_inner_vel),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+            figure('Name','Velocity after interpolation: outer DAo')
+            scatter3(geo.x_coor_vel(geo_mask_DAo_outer_vel),geo.y_coor_vel(geo_mask_DAo_outer_vel),geo.z_coor_vel(geo_mask_DAo_outer_vel),20,data2.vel_m(geo_mask_DAo_outer_vel),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+            figure('Name','WSS after interpolation: inner AAo')
             scatter3(geo.x_coor_wss(geo_mask_AAo_inner_wss),geo.y_coor_wss(geo_mask_AAo_inner_wss),geo.z_coor_wss(geo_mask_AAo_inner_wss),20,data2.wss_m(geo_mask_AAo_inner_wss),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-            figure('Name','WSS before interpolation: outer AAo')
+            figure('Name','WSS after interpolation: outer AAo')
             scatter3(geo.x_coor_wss(geo_mask_AAo_outer_wss),geo.y_coor_wss(geo_mask_AAo_outer_wss),geo.z_coor_wss(geo_mask_AAo_outer_wss),20,data2.wss_m(geo_mask_AAo_outer_wss),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-            figure('Name','WSS before interpolation: inner arch')
+            figure('Name','WSS after interpolation: inner arch')
             scatter3(geo.x_coor_wss(geo_mask_arch_inner_wss),geo.y_coor_wss(geo_mask_arch_inner_wss),geo.z_coor_wss(geo_mask_arch_inner_wss),20,data2.wss_m(geo_mask_arch_inner_wss),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-%             figure('Name','WSS before interpolation: outer arch')
-%             scatter3(geo.x_coor_wss(geo_mask_arch_outer_wss),geo.y_coor_wss(geo_mask_arch_outer_wss),geo.z_coor_wss(geo_mask_arch_outer_wss),20,data2.wss_m(geo_mask_arch_outer_wss),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-%             figure('Name','WSS before interpolation: inner DAo')
-%             scatter3(geo.x_coor_wss(geo_mask_DAo_inner_wss),geo.y_coor_wss(geo_mask_DAo_inner_wss),geo.z_coor_wss(geo_mask_DAo_inner_wss),20,data2.wss_m(geo_mask_DAo_inner_wss),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-%             figure('Name','WSS before interpolation: outer DAo')
-%             scatter3(geo.x_coor_wss(geo_mask_DAo_outer_wss),geo.y_coor_wss(geo_mask_DAo_outer_wss),geo.z_coor_wss(geo_mask_DAo_outer_wss),20,data2.wss_m(geo_mask_DAo_outer_wss),'filled');axis equal;caxis([0 1.5])
-%             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+            figure('Name','WSS after interpolation: outer arch')
+            scatter3(geo.x_coor_wss(geo_mask_arch_outer_wss),geo.y_coor_wss(geo_mask_arch_outer_wss),geo.z_coor_wss(geo_mask_arch_outer_wss),20,data2.wss_m(geo_mask_arch_outer_wss),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+            figure('Name','WSS after interpolation: inner DAo')
+            scatter3(geo.x_coor_wss(geo_mask_DAo_inner_wss),geo.y_coor_wss(geo_mask_DAo_inner_wss),geo.z_coor_wss(geo_mask_DAo_inner_wss),20,data2.wss_m(geo_mask_DAo_inner_wss),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+            figure('Name','WSS after interpolation: outer DAo')
+            scatter3(geo.x_coor_wss(geo_mask_DAo_outer_wss),geo.y_coor_wss(geo_mask_DAo_outer_wss),geo.z_coor_wss(geo_mask_DAo_outer_wss),20,data2.wss_m(geo_mask_DAo_outer_wss),'filled');axis equal;caxis([0 1.5])
+            xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
         end
         
         mean_vel_after_interpolation(n,1) = mean_vel_asc_inner;
         mean_vel_after_interpolation(n,2) = mean_vel_asc_outer;
         mean_vel_after_interpolation(n,3) = mean_vel_arch_inner;
-%         mean_vel_after_interpolation(n,4) = mean_vel_arch_outer;
-%         mean_vel_after_interpolation(n,5) = mean_vel_DAo_inner;
-%         mean_vel_after_interpolation(n,6) = mean_vel_DAo_outer;
+        mean_vel_after_interpolation(n,4) = mean_vel_arch_outer;
+        mean_vel_after_interpolation(n,5) = mean_vel_DAo_inner;
+        mean_vel_after_interpolation(n,6) = mean_vel_DAo_outer
         mean_wss_after_interpolation(n,1) = mean_wss_asc_inner;
         mean_wss_after_interpolation(n,2) = mean_wss_asc_outer;
         mean_wss_after_interpolation(n,3) = mean_wss_arch_inner;
-%         mean_wss_after_interpolation(n,4) = mean_wss_arch_outer;
-%         mean_wss_after_interpolation(n,5) = mean_wss_DAo_inner;
-%         mean_wss_after_interpolation(n,6) = mean_wss_DAo_outer;
+        mean_wss_after_interpolation(n,4) = mean_wss_arch_outer;
+        mean_wss_after_interpolation(n,5) = mean_wss_DAo_inner;
+        mean_wss_after_interpolation(n,6) = mean_wss_DAo_outer
         
         IE_inner_AAo_vel = abs(mean_vel_before_interpolation(n,1)-mean_vel_after_interpolation(n,1)) / ((mean_vel_before_interpolation(n,1)+mean_vel_after_interpolation(n,1))./2)*100;
         IE_outer_AAo_vel = abs(mean_vel_before_interpolation(n,2)-mean_vel_after_interpolation(n,2)) / ((mean_vel_before_interpolation(n,2)+mean_vel_after_interpolation(n,2))./2)*100;
         IE_inner_asc_vel = abs(mean_vel_before_interpolation(n,3)-mean_vel_after_interpolation(n,3)) / ((mean_vel_before_interpolation(n,3)+mean_vel_after_interpolation(n,3))./2)*100;
-%         IE_outer_asc_vel = abs(mean_vel_before_interpolation(n,4)-mean_vel_after_interpolation(n,4)) / ((mean_vel_before_interpolation(n,4)+mean_vel_after_interpolation(n,4))./2)*100;
-%         IE_inner_DAo_vel = abs(mean_vel_before_interpolation(n,5)-mean_vel_after_interpolation(n,5)) / ((mean_vel_before_interpolation(n,5)+mean_vel_after_interpolation(n,5))./2)*100;
-%         IE_outer_DAo_vel = abs(mean_vel_before_interpolation(n,6)-mean_vel_after_interpolation(n,6)) / ((mean_vel_before_interpolation(n,6)+mean_vel_after_interpolation(n,6))./2)*100;
+        IE_outer_asc_vel = abs(mean_vel_before_interpolation(n,4)-mean_vel_after_interpolation(n,4)) / ((mean_vel_before_interpolation(n,4)+mean_vel_after_interpolation(n,4))./2)*100;
+        IE_inner_DAo_vel = abs(mean_vel_before_interpolation(n,5)-mean_vel_after_interpolation(n,5)) / ((mean_vel_before_interpolation(n,5)+mean_vel_after_interpolation(n,5))./2)*100;
+        IE_outer_DAo_vel = abs(mean_vel_before_interpolation(n,6)-mean_vel_after_interpolation(n,6)) / ((mean_vel_before_interpolation(n,6)+mean_vel_after_interpolation(n,6))./2)*100;
         IE_inner_AAo_wss = abs(mean_wss_before_interpolation(n,1)-mean_wss_after_interpolation(n,1)) / ((mean_wss_before_interpolation(n,1)+mean_wss_after_interpolation(n,1))./2)*100;
         IE_outer_AAo_wss = abs(mean_wss_before_interpolation(n,2)-mean_wss_after_interpolation(n,2)) / ((mean_wss_before_interpolation(n,2)+mean_wss_after_interpolation(n,2))./2)*100;
         IE_inner_asc_wss = abs(mean_wss_before_interpolation(n,3)-mean_wss_after_interpolation(n,3)) / ((mean_wss_before_interpolation(n,3)+mean_wss_after_interpolation(n,3))./2)*100;
-%         IE_outer_asc_wss = abs(mean_wss_before_interpolation(n,4)-mean_wss_after_interpolation(n,4)) / ((mean_wss_before_interpolation(n,4)+mean_wss_after_interpolation(n,4))./2)*100;
-%         IE_inner_DAo_wss = abs(mean_wss_before_interpolation(n,5)-mean_wss_after_interpolation(n,5)) / ((mean_wss_before_interpolation(n,5)+mean_wss_after_interpolation(n,5))./2)*100;
-%         IE_outer_DAo_wss = abs(mean_wss_before_interpolation(n,6)-mean_wss_after_interpolation(n,6)) / ((mean_wss_before_interpolation(n,6)+mean_wss_after_interpolation(n,6))./2)*100;
+        IE_outer_asc_wss = abs(mean_wss_before_interpolation(n,4)-mean_wss_after_interpolation(n,4)) / ((mean_wss_before_interpolation(n,4)+mean_wss_after_interpolation(n,4))./2)*100;
+        IE_inner_DAo_wss = abs(mean_wss_before_interpolation(n,5)-mean_wss_after_interpolation(n,5)) / ((mean_wss_before_interpolation(n,5)+mean_wss_after_interpolation(n,5))./2)*100;
+        IE_outer_DAo_wss = abs(mean_wss_before_interpolation(n,6)-mean_wss_after_interpolation(n,6)) / ((mean_wss_before_interpolation(n,6)+mean_wss_after_interpolation(n,6))./2)*100;
         IE_total_vel = abs(mean_vel_total_before_interpolation(n,1)-mean_vel_total_after_interpolation(n,1)) / ((mean_vel_total_before_interpolation(n,1)+mean_vel_total_after_interpolation(n,1))./2)*100;
-        IE_total_wss = abs(mean_wss_total_before_interpolation(n,1)-mean_wss_total_after_interpolation(n,1)) / ((mean_wss_total_before_interpolation(n,1)+mean_wss_total_after_interpolation(n,1))./2)*100;        
-
-        disp(['IE velocity inner AAo = ' num2str(IE_inner_AAo_vel) ' %'])
-        disp(['IE velocity outer AAo = ' num2str(IE_outer_AAo_vel) ' %'])
-        disp(['IE velocity inner asc = ' num2str(IE_inner_asc_vel) ' %'])
-%         disp(['IE velocity outer asc = ' num2str(IE_outer_asc_vel) ' %'])
-%         disp(['IE velocity inner DAo = ' num2str(IE_inner_DAo_vel) ' %'])
-%         disp(['IE velocity outer DAo = ' num2str(IE_outer_DAo_vel) ' %'])
-        disp(['IE velocity total = ' num2str(IE_total_vel) ' %'])
+        IE_total_wss = abs(mean_wss_total_before_interpolation(n,1)-mean_wss_total_after_interpolation(n,1)) / ((mean_wss_total_before_interpolation(n,1)+mean_wss_total_after_interpolation(n,1))./2)*100;
+        
+        disp(['IE velocity inner AAo = ' num2str(round(IE_inner_AAo_vel)) ' %'])
+        disp(['IE velocity outer AAo = ' num2str(round(IE_outer_AAo_vel)) ' %'])
+        disp(['IE velocity inner asc = ' num2str(round(IE_inner_asc_vel)) ' %'])
+        disp(['IE velocity outer asc = ' num2str(round(IE_outer_asc_vel)) ' %'])
+        disp(['IE velocity inner DAo = ' num2str(round(IE_inner_DAo_vel)) ' %'])
+        disp(['IE velocity outer DAo = ' num2str(round(IE_outer_DAo_vel)) ' %'])
+        disp(['IE velocity total = ' num2str(round(IE_total_vel)) ' %'])
         disp(' ')
-        disp(['IE wall shear stress inner AAo = ' num2str(IE_inner_AAo_wss) ' %'])
-        disp(['IE wall shear stress outer AAo = ' num2str(IE_outer_AAo_wss) ' %'])
-        disp(['IE wall shear stress inner asc = ' num2str(IE_inner_asc_wss) ' %'])
-%         disp(['IE wall shear stress outer asc = ' num2str(IE_outer_asc_wss) ' %'])
-%         disp(['IE wall shear stress inner DAo = ' num2str(IE_inner_DAo_wss) ' %'])
-%         disp(['IE wall shear stress outer DAo = ' num2str(IE_outer_DAo_wss) ' %'])
-        disp(['IE WSS total = ' num2str(IE_total_wss) ' %'])
+        disp(['IE wall shear stress inner AAo = ' num2str(round(IE_inner_AAo_wss)) ' %'])
+        disp(['IE wall shear stress outer AAo = ' num2str(round(IE_outer_AAo_wss)) ' %'])
+        disp(['IE wall shear stress inner asc = ' num2str(round(IE_inner_asc_wss)) ' %'])
+        disp(['IE wall shear stress outer asc = ' num2str(round(IE_outer_asc_wss)) ' %'])
+        disp(['IE wall shear stress inner DAo = ' num2str(round(IE_inner_DAo_wss)) ' %'])
+        disp(['IE wall shear stress outer DAo = ' num2str(round(IE_outer_DAo_wss)) ' %'])
+        disp(['IE WSS total = ' num2str(round(IE_total_wss)) ' %'])
     end
     
-   % pause(10)
     close all
     
     VELx(:,n) = x_value_vel;
@@ -838,30 +842,30 @@ atlas.stdz_wss = sqrt(sum(std_z_wss,2)./size(PATHNAME,2));
 atlas.std_wss = sqrt(atlas.stdx_wss.^2 + atlas.stdy_wss.^2 + atlas.stdz_wss.^2); % WSS standard deviation magnitude
 
 %if plotFlag == 1
-    figure('Name','Mean atlas velocity')
-    atlas_matrix = zeros(size(atlas.mask));
-    L = (atlas.mask~=0);
-    atlas_matrix(L) = atlas.mean_vel;
-    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
-       
-    figure('Name','SD atlas velocity')    
-    atlas_matrix = zeros(size(atlas.mask));
-    L = (atlas.mask~=0);
-    [I,J] = find(L==1);
-    atlas_matrix(L) = atlas.std_vel;
-    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
-    
-    figure('Name','Mean atlas WSS')
-    patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
-    colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-        
-    figure('Name','SD atlas wss')
-    patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
-    axis equal;axis off; axis ij;caxis([0 1.5]);view([-180 -90])
+figure('Name','Mean atlas velocity')
+atlas_matrix = zeros(size(atlas.mask));
+L = (atlas.mask~=0);
+atlas_matrix(L) = atlas.mean_vel;
+L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1]);%view([180 -90])
+
+figure('Name','SD atlas velocity')
+atlas_matrix = zeros(size(atlas.mask));
+L = (atlas.mask~=0);
+[I,J] = find(L==1);
+atlas_matrix(L) = atlas.std_vel;
+L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1]);%view([180 -90])
+
+figure('Name','Mean atlas WSS')
+patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
+colorbar;caxis([0 1]);axis equal;axis off; axis ij;view([-180 -90])
+
+figure('Name','SD atlas wss')
+patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
+axis equal;axis off; axis ij;caxis([0 1]);view([-180 -90])
 %end
 
 if calculateRE_Flag == 1;
@@ -876,22 +880,25 @@ if calculateIE_Flag == 1;
     error_matrix_vel_total = abs( mean_vel_total_before_interpolation- mean_vel_total_after_interpolation) ./ ...
         ((mean_vel_total_before_interpolation+ mean_vel_total_after_interpolation)./2);
     error_matrix_wss_total = abs(mean_wss_total_before_interpolation-mean_wss_total_after_interpolation) ./ ...
-        ((mean_wss_total_before_interpolation+mean_wss_total_after_interpolation)./2);    
+        ((mean_wss_total_before_interpolation+mean_wss_total_after_interpolation)./2);
     disp(['Velocity: Mean interpolation error inner AAo = ' num2str(mean(error_matrix_vel(:,1),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,1),1)*100) '%'])
     disp(['Velocity: Mean interpolation error outer AAo = ' num2str(mean(error_matrix_vel(:,2),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,2),1)*100) '%'])
     disp(['Velocity: Mean interpolation error inner arch = ' num2str(mean(error_matrix_vel(:,3),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,3),1)*100) '%'])
-%     disp(['Velocity: Mean interpolation error outer arch = ' num2str(mean(error_matrix_vel(:,4),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,4),1)*100) '%'])
-%     disp(['Velocity: Mean interpolation error inner DAo = ' num2str(mean(error_matrix_vel(:,5),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,5),1)*100) '%'])
-%     disp(['Velocity: Mean interpolation error outer DAo = ' num2str(mean(error_matrix_vel(:,6),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,6),1)*100) '%'])
+    disp(['Velocity: Mean interpolation error outer arch = ' num2str(mean(error_matrix_vel(:,4),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,4),1)*100) '%'])
+    disp(['Velocity: Mean interpolation error inner DAo = ' num2str(mean(error_matrix_vel(:,5),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,5),1)*100) '%'])
+    disp(['Velocity: Mean interpolation error outer DAo = ' num2str(mean(error_matrix_vel(:,6),1)*100) ' +/- ' num2str(std(error_matrix_vel(:,6),1)*100) '%'])
+    disp(['Velocity: averaged over the six regions = ' num2str(((mean(error_matrix_vel(:,1),1)+mean(error_matrix_vel(:,2),1)+mean(error_matrix_vel(:,3),1)+mean(error_matrix_vel(:,4),1)+mean(error_matrix_vel(:,5),1)+mean(error_matrix_vel(:,6),1))/6)*100) '%'])
     disp(['Velocity: Mean interpolation error total = ' num2str(mean(error_matrix_vel_total)*100) ' +/- ' num2str(std(error_matrix_vel_total)*100) '%'])
     disp(' ')
     disp(['WSS: Mean interpolation error inner AAo = ' num2str(mean(error_matrix_wss(:,1),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,1),1)*100) '%'])
     disp(['WSS: Mean interpolation error outer AAo = ' num2str(mean(error_matrix_wss(:,2),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,2),1)*100) '%'])
     disp(['WSS: Mean interpolation error inner arch = ' num2str(mean(error_matrix_wss(:,3),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,3),1)*100) '%'])
-%     disp(['WSS: Mean interpolation error outer arch = ' num2str(mean(error_matrix_wss(:,4),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,4),1)*100) '%'])
-%     disp(['WSS: Mean interpolation error inner DAo = ' num2str(mean(error_matrix_wss(:,5),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,5),1)*100) '%'])
-%     disp(['WSS: Mean interpolation error outer DAo = ' num2str(mean(error_matrix_wss(:,6),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,6),1)*100) '%'])
+    disp(['WSS: Mean interpolation error outer arch = ' num2str(mean(error_matrix_wss(:,4),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,4),1)*100) '%'])
+    disp(['WSS: Mean interpolation error inner DAo = ' num2str(mean(error_matrix_wss(:,5),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,5),1)*100) '%'])
+    disp(['WSS: Mean interpolation error outer DAo = ' num2str(mean(error_matrix_wss(:,6),1)*100) ' +/- ' num2str(std(error_matrix_wss(:,6),1)*100) '%'])
+    disp(['Velocity: averaged over the six regions = ' num2str(((mean(error_matrix_wss(:,1),1)+mean(error_matrix_wss(:,2),1)+mean(error_matrix_wss(:,3),1)+mean(error_matrix_wss(:,4),1)+mean(error_matrix_wss(:,5),1)+mean(error_matrix_wss(:,6),1))/6)*100) '%'])
     disp(['WSS: Mean interpolation error total = ' num2str(mean(error_matrix_wss_total)*100) ' +/- ' num2str(std(error_matrix_wss_total)*100) '%'])
+    
 end
 
 %end
