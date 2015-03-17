@@ -293,7 +293,7 @@ catch
 end
 [FileName,FilePath,FilterIndex] = uigetfile(currDir,'Select the mag_struct file');
 ind_sep=findstr(FilePath,'\');
-PATHNAME=FilePath(1:ind_sep(end-1));
+PATHNAME=FilePath(1:ind_sep(end-1)-1);
 try
     cd(PATHNAME);
 catch
