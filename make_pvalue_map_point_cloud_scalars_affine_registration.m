@@ -1,4 +1,4 @@
-function [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration(PATHNAME1,PATHNAME2,probability_mask,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_velvolume_and_WSSarea_total,calculate_area_of_significance_wss,peak_systolicFlag)
+function [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration(PATHNAME1,PATHNAME2,PATHNAME_probability_mask,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_velvolume_and_WSSarea_total,calculate_area_of_significance_wss,peak_systolicFlag)
 
 %%% [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_p_value_volumeFlag,calculate_area_of_significance_wss,peak_systolicFlag)
 %
@@ -52,8 +52,10 @@ function [p_value_map] = make_pvalue_map_point_cloud_scalars_affine_registration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % For some reason Matlab gives an error if I don't initialize these parameters
-% However, these parameters are the same as in make_atlas)_point_cloud_affine_registration
-% where I don't need to initialize them. 
+% However, these parameters are the same as in make_atlas_point_cloud_affine_registration
+% where I don't need to initialize them. This is probably becuase of a whole bunch of other functions 
+% I use for visualization of the P-value maps.
+probability_mask = [];
 mrstruct_mask = [];
 mrStruct = [];
 Wss_point_cloud = [];
@@ -77,7 +79,7 @@ elseif (exist('c:\temp','dir')==0 || exist('c:\temp\atlas_tool.cfg','file')==0) 
     % get working directory and create cfg file with path
     path_flirt = uigetdir('c:\temp','Select your working directory for flirt');
     path_cygwin = uigetdir('c:\temp','Select your working directory for cygwin');
-    if ischar(path_flirt) || ischar(path_cygwin) 
+    if ischar(path_flirt) || ischar(path_cygwin)
         i_tmp = (path_flirt=='\'); %repalce control char backslash with slash (in order to be able to write the path)
         path_flirt(i_tmp) = '/';
         i_tmp = (path_cygwin=='\'); %repalce control char backslash with slash (in order to be able to write the path)
@@ -90,9 +92,11 @@ elseif (exist('c:\temp','dir')==0 || exist('c:\temp\atlas_tool.cfg','file')==0) 
     clear i_tmp fid working_path wid
 end
 
-if nargin < 3 || isempty(probability_mask)
-    [FILENAME,PATHNAME_prob] = uigetfile('.mat','Load probability mask');
-    load(strcat(PATHNAME_prob,FILENAME))
+if nargin < 3 || isempty(PATHNAME_probability_mask)
+    [FILENAME,PATHNAME_probability_mask] = uigetfile('.mat','Load probability mask');
+    load(strcat(PATHNAME_probability_mask,FILENAME))
+else
+    load([PATHNAME_probability_mask '\probability_mask' ])
 end
 
 if nargin < 4 || isempty(plotFlag)
@@ -108,7 +112,7 @@ if nargin < 6 || isempty(calculateIE_Flag)
 end
 
 if nargin < 7 || isempty(calculate_velvolume_and_WSSarea_total)
-     calculate_velvolume_and_WSSarea_total = 1;
+    calculate_velvolume_and_WSSarea_total = 1;
 end
 
 if nargin < 8 || isempty(calculate_area_of_significance_wss)
@@ -116,7 +120,7 @@ if nargin < 8 || isempty(calculate_area_of_significance_wss)
 end
 
 if nargin < 9 || isempty(peak_systolicFlag)
-    peak_systolicFlag = 0;
+    peak_systolicFlag = 1;
 end
 
 %%%% datasets to load
@@ -146,7 +150,7 @@ V = V .* (ones(size(V,1),1) * mask1_vox(1:3));
 clear F, clear V;
 
 for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
-
+    
     if n <= size(PATHNAME1,2)
         disp('Cohort #1')
         disp(['Aorta number ' num2str(n)])
@@ -161,44 +165,45 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         PATHNAME = PATHNAME2;
         PATHNAME2{n}
     end
-
+    
     if nargin < 1 || isempty(PATHNAME1)
         [FILENAME1,PATHNAME{n}] = uigetfile('.mat','Load mask');
         load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME1])
     else
         load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME1])
-    end     
+    end
     
     mask2 = mrstruct_mask.dataAy;
     mask2_vox = mrstruct_mask.vox;clear mrstruct_mask
-    
     L2 = (mask2 ~= 0);
+    
     % create velocity coordinates
-    [x2,y2,z2] = meshgrid((1:size(mask2,2)).* mask1_vox(2), ...
-        (1:size(mask2,1)).*mask1_vox(1),(1:size(mask2,3)).* mask1_vox(3));
-    data2.x_coor_vel = x2(L2);data2.y_coor_vel = y2(L2);data2.z_coor_vel = z2(L2);
-    clear x2, clear y2, clear z2
+    [x_,y_,z_] = meshgrid((1:size(mask2,2)).* mask2_vox(2), ...
+        (1:size(mask2,1)).*mask2_vox(1),(1:size(mask2,3)).* mask2_vox(3));
+    data2.x_coor_vel = x_(L2);data2.y_coor_vel = y_(L2);data2.z_coor_vel = z_(L2);
+    clear x_,clear y_,clear z_;
     contours = zeros(size(L2));
     contours(L2==0) = -1;
     contours(L2==1) = 1;
-    [data2.F,V] = isosurface(contours,0); % make a surface from the detected contours
-    data2.V = V .* (ones(size(V,1),1) * mask2_vox(1:3));
+    [F,V] = isosurface(contours,0); % make a surface from the detected contours
+    V = V .* (ones(size(V,1),1) * mask2_vox(1:3));
+    [data2.F,data2.V] = SmoothLaplacian(F,V,15); %laplacian smoothing for surface (Kevin Moerman)
     clear F, clear V
-
+    
     load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME2])
-    velocity = double(mrStruct.dataAy); clear mrStruct; % for interpolation velocity needs to be a double    
+    velocity = double(mrStruct.dataAy); clear mrStruct; % for interpolation velocity needs to be a double
     
     %%% Wall shear stress coordinates for both datasets
     geo.x_coor_wss = geo.V(:,1);
     geo.y_coor_wss = geo.V(:,2);
     geo.z_coor_wss = geo.V(:,3);
-
+    
     data2.x_coor_wss = data2.V(:,1);
     data2.y_coor_wss = data2.V(:,2);
     data2.z_coor_wss = data2.V(:,3);
-
+    
     load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME3])
-    WSS = Wss_point_cloud; clear Wss_point_cloud    
+    WSS = Wss_point_cloud; clear Wss_point_cloud
     
     % Find max velocity
     for t = 1:size(velocity,5)
@@ -218,6 +223,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     clear mean_velo
     %%% What follows is a horrible piece of code, so if you're reading this and feel like cleaning it up, please do,
     %%% I'll buy you a beer next time we meet. PvO
+    
     if peak_systolicFlag == 1
         data2.x_value_vel = velocity(:,:,:,1,time);
         data2.y_value_vel = velocity(:,:,:,2,time);
@@ -225,7 +231,11 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         data2.x_value_vel = data2.x_value_vel(L2);
         data2.y_value_vel = data2.y_value_vel(L2);
         data2.z_value_vel = data2.z_value_vel(L2);
-        if size(WSS,2) > 5
+        if size(WSS,2) == 1
+            data2.x_value_wss = WSS(:,1);
+            data2.y_value_wss = WSS(:,2);
+            data2.z_value_wss = WSS(:,3);        
+        elseif size(WSS,2) > 5
             data2.x_value_wss = WSS{time}(:,1);
             data2.y_value_wss = WSS{time}(:,2);
             data2.z_value_wss = WSS{time}(:,3);
@@ -328,22 +338,23 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     % Velocity and WSS magnitude (scalar)
     data2.vel_m = sqrt(data2.x_value_vel.^2 + data2.y_value_vel.^2 + data2.z_value_vel.^2);
     data2.wss_m = sqrt(data2.x_value_wss.^2 + data2.y_value_wss.^2 + data2.z_value_wss.^2);
-
+    
     if plotFlag == 1
         figure('Name','data2 velocity')
-        patch('Faces',data2.F,'Vertices',data2.V, ...
-            'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
-        hold on
-        scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,50,data2.vel_m,'filled')
-        colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
+        vel_matrix = zeros(size(mask2));
+        L = (mask2~=0);
+        vel_matrix(L) = data2.vel_m;
+        L_figure = (squeeze(max(vel_matrix,[],3))~=0);
+        imagesc(squeeze(max(vel_matrix,[],3)),'Alphadata',double(L_figure));
+        colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
         
         figure('Name','data2 WSS')
         patch('Faces',data2.F,'Vertices',data2.V, ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
     end
-
-     if calculateIE_Flag == 1;
+    
+    if calculateIE_Flag == 1;
         if ~exist(strcat(PATHNAME{n},'interpolation_error_ROI\mask1.mat'),'file')
             
             mkdir(PATHNAME{n},'interpolation_error_ROI')
@@ -453,14 +464,12 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         figure('Name',strcat('To be registered aorta ',num2str(n)))
         plot3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,'r.')
         hold on
-        plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
         plot3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,'b.')
-        plot3(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,'k.')
         legend('to remain the same','to be transformed')
         axis equal; axis off;view([-180 -90]); axis ij
     end
-
-     %%% Registration
+    
+    %%% Registration
     PSF = fspecial('gaussian',1,1);
     mask1_to_register = mask1;
     mask1_to_register = imfilter(mask1_to_register,PSF,'conv');
@@ -501,7 +510,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     fclose(f);
     
     % and go! takes 4-5 mins.
-    % directory for cygwin as read from atlas_tool.cfg in C:\temp        
+    % directory for cygwin as read from atlas_tool.cfg in C:\temp
     system([path_cygwin '\bash runflirt.sh']);
     
     % load transformation mask
@@ -539,33 +548,26 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     % If you want this, then you should use the function 'make_atlas_point_cloud_vectors_rigid_registration',
     % which can also be found in this tool. However, I expect that the interpolation works better
     % with affine registration. PvO
-
+    
     if plotFlag == 1
         figure('Name','Registered')
         plot3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,'r.')
         hold on
-        %  plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
+        %     plot3(geo.x_coor_wss,geo.y_coor_wss,geo.z_coor_wss,'g.')
         plot3(x_coor_vel,y_coor_vel,z_coor_vel,'b.')
-        %  plot3(x_coor_wss,y_coor_wss,z_coor_wss,'k.')
+        %     plot3(x_coor_wss,y_coor_wss,z_coor_wss,'k.')
         legend('Prob mask','Aorta')
         %legend('probability mask/atlas','individual aorta')
         axis equal; axis off;view([-180 -90]); axis ij
         pause(10)
-
-        figure('Name','transformed velocity')
-        patch('Faces',data2.F,'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
-            'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
-        hold on
-        scatter3(x_coor_vel,y_coor_vel,z_coor_vel,50,data2.vel_m,'filled')
-        colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
         
         figure('Name','transformed WSS')
         patch('Faces',data2.F,'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-    end
-
-   if calculateRE_Flag == 1
+    end    
+    
+    if calculateRE_Flag == 1
         offset = 100;
         
         % Transform point cloud back to matrix by rounding the coordinates
@@ -630,70 +632,74 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         disp(['RE: Difference between aorta and atlas geometry = ' num2str(diff_percentage(n,1))]);
         disp(' ')
     end
-
+    
     %%% Interpolate velocities to co-registered coordinates
     interpolation_function = TriScatteredInterp([x_coor_vel y_coor_vel z_coor_vel],data2.x_value_vel,'nearest');
     x_value_vel = interpolation_function([geo.x_coor_vel geo.y_coor_vel geo.z_coor_vel]);
     x_value_vel(isnan(x_value_vel)) = 0;
-
+    
     interpolation_function = TriScatteredInterp([x_coor_vel y_coor_vel z_coor_vel],data2.y_value_vel,'nearest');
     y_value_vel = interpolation_function([geo.x_coor_vel geo.y_coor_vel geo.z_coor_vel]);
     y_value_vel(isnan(y_value_vel)) = 0;
-
+    
     interpolation_function = TriScatteredInterp([x_coor_vel y_coor_vel z_coor_vel],data2.z_value_vel,'nearest');
     z_value_vel = interpolation_function([geo.x_coor_vel geo.y_coor_vel geo.z_coor_vel]);
     z_value_vel(isnan(z_value_vel)) = 0;
-
+    
     data2.vel_m = sqrt(x_value_vel.^2+y_value_vel.^2+z_value_vel.^2);
-
+    
     %%% Interpolate WSS to co-registered coordinates
     interpolation_function = TriScatteredInterp([x_coor_wss y_coor_wss z_coor_wss],data2.x_value_wss,'nearest');
     x_value_wss = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
     x_value_wss(isnan(x_value_wss)) = 0;
-
+    
     interpolation_function = TriScatteredInterp([x_coor_wss y_coor_wss z_coor_wss],data2.y_value_wss,'nearest');
     y_value_wss = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
     y_value_wss(isnan(y_value_wss)) = 0;
-
+    
     interpolation_function = TriScatteredInterp([x_coor_wss y_coor_wss z_coor_wss],data2.z_value_wss,'nearest');
     z_value_wss = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
     z_value_wss(isnan(z_value_wss)) = 0;
-
+    
     data2.wss_m = sqrt(x_value_wss.^2+y_value_wss.^2+z_value_wss.^2);
-
+    
     if plotFlag == 1
         figure('Name','interpolated to atlas velocity')
-        scatter3(geo.x_coor_vel,geo.y_coor_vel,geo.z_coor_vel,50,data2.vel_m,'filled')
-        colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-
+        vel_matrix = zeros(size(mask1));
+        L = (mask1~=0);
+        vel_matrix(L) = data2.vel_m;
+        L_figure = (squeeze(max(vel_matrix,[],3))~=0);
+        imagesc(squeeze(max(vel_matrix,[],3)),'Alphadata',double(L_figure));
+        colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
+        
         figure('Name','interpolated to atlas WSS')
-        patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
+        patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',data2.wss_m ,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
     end
-
+    
     if calculateIE_Flag == 1;
-
+        
         if ~exist(strcat(PATHNAME_probability_mask,'interpolation_error_ROI\mask1.mat'),'file')
-
+            
             F2=figure('Name','Atlas shape: Paused after finishing a region so press space when finished!');
             patch('Faces',geo.F,'Vertices',[geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss],'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',0.25);
             view([-180 -90]);axis ij;axis equal;axis off
-
+            
             for i = 1:6
                 %Polygon and mask for AAo
                 polyAAo = impoly;
                 wait(polyAAo);
                 region = getPosition(polyAAo);
-
+                
                 %          disp('saving, pausing')
                 mkdir(PATHNAME_probability_mask,'interpolation_error_ROI')
                 save(strcat([PATHNAME_probability_mask 'interpolation_error_ROI\mask' num2str(i)]),'region');
                 pause
             end
-
+            
             close(F2)
         end
-
+        
         load(strcat(PATHNAME_probability_mask,'interpolation_error_ROI\mask1'))
         geo_mask_AAo_inner_vel = inpolygon(geo.x_coor_vel, geo.y_coor_vel, region(:,1), region(:,2));
         mean_vel_asc_inner = mean(data2.vel_m(geo_mask_AAo_inner_vel));
@@ -724,7 +730,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         mean_vel_DAo_outer = mean(data2.vel_m(geo_mask_DAo_outer_vel));
         geo_mask_DAo_outer_wss = inpolygon(geo.x_coor_wss, geo.y_coor_wss, region(:,1), region(:,2));
         mean_wss_DAo_outer = mean(data2.wss_m(geo_mask_DAo_outer_wss));
-
+        
         if plotFlag == 1
             figure('Name','Velocity before interpolation: inner AAo')
             scatter3(geo.x_coor_vel(geo_mask_AAo_inner_vel),geo.y_coor_vel(geo_mask_AAo_inner_vel),geo.z_coor_vel(geo_mask_AAo_inner_vel),20,data2.vel_m(geo_mask_AAo_inner_vel),'filled');axis equal;caxis([0 1.5])
@@ -763,7 +769,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
             scatter3(geo.x_coor_wss(geo_mask_DAo_outer_wss),geo.y_coor_wss(geo_mask_DAo_outer_wss),geo.z_coor_wss(geo_mask_DAo_outer_wss),20,data2.wss_m(geo_mask_DAo_outer_wss),'filled');axis equal;caxis([0 1.5])
             xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
         end
-
+        
         mean_vel_after_interpolation(n,1) = mean_vel_asc_inner;
         mean_vel_after_interpolation(n,2) = mean_vel_asc_outer;
         mean_vel_after_interpolation(n,3) = mean_vel_arch_inner;
@@ -776,7 +782,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         mean_wss_after_interpolation(n,4) = mean_wss_arch_outer;
         mean_wss_after_interpolation(n,5) = mean_wss_DAo_inner;
         mean_wss_after_interpolation(n,6) = mean_wss_DAo_outer;
-
+        
         IE_inner_AAo_vel = abs(mean_vel_before_interpolation(n,1)-mean_vel_after_interpolation(n,1)) / ((mean_vel_before_interpolation(n,1)+mean_vel_after_interpolation(n,1))./2)*100;
         IE_outer_AAo_vel = abs(mean_vel_before_interpolation(n,2)-mean_vel_after_interpolation(n,2)) / ((mean_vel_before_interpolation(n,2)+mean_vel_after_interpolation(n,2))./2)*100;
         IE_inner_asc_vel = abs(mean_vel_before_interpolation(n,3)-mean_vel_after_interpolation(n,3)) / ((mean_vel_before_interpolation(n,3)+mean_vel_after_interpolation(n,3))./2)*100;
@@ -789,7 +795,7 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         IE_outer_asc_wss = abs(mean_wss_before_interpolation(n,4)-mean_wss_after_interpolation(n,4)) / ((mean_wss_before_interpolation(n,4)+mean_wss_after_interpolation(n,4))./2)*100;
         IE_inner_DAo_wss = abs(mean_wss_before_interpolation(n,5)-mean_wss_after_interpolation(n,5)) / ((mean_wss_before_interpolation(n,5)+mean_wss_after_interpolation(n,5))./2)*100;
         IE_outer_DAo_wss = abs(mean_wss_before_interpolation(n,6)-mean_wss_after_interpolation(n,6)) / ((mean_wss_before_interpolation(n,6)+mean_wss_after_interpolation(n,6))./2)*100;
-
+        
         disp(['IE velocity inner AAo = ' num2str(IE_inner_AAo_vel) ' %'])
         disp(['IE velocity outer AAo = ' num2str(IE_outer_AAo_vel) ' %'])
         disp(['IE velocity inner asc = ' num2str(IE_inner_asc_vel) ' %'])
@@ -804,10 +810,10 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         disp(['IE wall shear stress inner DAo = ' num2str(IE_inner_DAo_wss) ' %'])
         disp(['IE wall shear stress outer DAo = ' num2str(IE_outer_DAo_wss) ' %'])
     end
-
-    pause(10)
+    
+    pause(1)
     close all
-
+    
     if sswitch == 1;
         disp('VEL1')
         VEL1(:,n) = data2.vel_m;
@@ -990,10 +996,10 @@ if calculate_area_of_significance_wss == 1;
     [I2,J2] = find(heat_desc1 == 0);
     percentage_significant_higher = size(I2,1) / size(heat_desc1,1) * 100;
     percentage_significant_lower = size(I1,1) / size(heat_desc1,1) * 100;
-       
+    
     disp(['Percentage of red significance inner DAo = ' num2str(percentage_significant_higher) '%'])
     disp(['Percentage of blue significance inner DAo = ' num2str(percentage_significant_lower) '%'])
-        
+    
     heat_desc2 = p_value_wss(atlas_mask_DAo_outer);
     [I1,J1] = find(heat_desc2 == 1);
     [I2,J2] = find(heat_desc2 == 0);
@@ -1007,10 +1013,10 @@ if calculate_area_of_significance_wss == 1;
     [I1,J1] = find(heat_total == 1);
     [I2,J2] = find(heat_total == 0);
     percentage_significant_higher = size(I2,1) / size(heat_total,1) * 100;
-    percentage_significant_lower = size(I1,1) / size(heat_total,1) * 100;    
-          
+    percentage_significant_lower = size(I1,1) / size(heat_total,1) * 100;
+    
     disp(['Percentage of red significance TOTAL aorta = ' num2str(percentage_significant_higher) '%'])
-    disp(['Percentage of blue significance TOTAL aorta = ' num2str(percentage_significant_lower) '%'])        
+    disp(['Percentage of blue significance TOTAL aorta = ' num2str(percentage_significant_lower) '%'])
     
     if plotFlag == 1
         figure('Name','higher/lower: inner AAo')
@@ -1039,16 +1045,16 @@ if calculate_velvolume_and_WSSarea_total == 1
     [I,J] = find(L1~=0);
     total_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     
-    [I,J] = find(new_mask_red==1);
+    [I,J] = find(smooth3(new_mask_red==1));
     red_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     percentage_red_volume = red_volume / total_volume * 100;
-    [I,J] = find(new_mask_blue==1);
+    [I,J] = find(smooth3(new_mask_blue==1));
     blue_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     percentage_blue_volume = blue_volume / total_volume * 100;
     
     disp(['Red volume percentage of total aorta = ' num2str(round(percentage_red_volume)) ' % (' num2str(round(red_volume./1000)) ' cm3)'])
     disp(['Blue volume percentage of total aorta = ' num2str(round(percentage_blue_volume)) ' % (' num2str(round(blue_volume./1000)) ' cm3)'])
-%    disp(['Total percentage of total aorta = ' num2str(total_percentage) ' % (' num2str(round(total_volume./1000)) ' cm3)'])
+    %    disp(['Total percentage of total aorta = ' num2str(total_percentage) ' % (' num2str(round(total_volume./1000)) ' cm3)'])
     disp(' ')
     
     [I1,J1] = find(p_value_wss == 1);
@@ -1081,15 +1087,22 @@ p12=patch('Faces',F2,'Vertices',V2,'EdgeColor','none','FaceColor',[0 0 1],'FaceA
 axis equal; axis off;axis ij;caxis([0 4])
 view([-180 -90])
 
+aspectRatio = 1./mask1_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
+camlight(-45,0); lighting phong
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-30),['Red volume: ' num2str(round(percentage_significant_red)) ' %' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-20),['Blue volume: ' num2str(round(percentage_significant_blue)) ' %' ])
+
 % set up results folder
-dir_orig = pwd;
-dir_new = 'C:\temp\'; cd(dir_new); %cd('..')
-%dir_new = pwd;
-mkdir('results_pvalue_map')
-dir_new
-dir_new = strcat(dir_new,'results_pvalue_map');
+mkdir([PATHNAME_probability_mask '\results_pvalue_map'])
+dir_new = [PATHNAME_probability_mask '\results_pvalue_map'];
 saveas(gcf,[dir_new '\pvalue_map_velocity.fig'])
-disp('Results saved to C:\temp')
+disp(['Results saved ' PATHNAME_probability_mask])
+
+axis xy; view([-180 90]);camlight(90,0);%axis vis3d
+print(f1,'-djpeg','-r600',strcat(dir_new,'\pvalue_map_velocity_front.jpg'));
+axis ij; view([0 90]);camlight(90,0);%axis vis3d
+print(f1,'-djpeg','-r600',strcat(dir_new,'\pvalue_map_velocity_back.jpg'));
 
 aspectRatio = 1./mask1_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
@@ -1177,7 +1190,7 @@ set(f1,'toolbar','figure');
 
 %savefig(f2,strcat(dir_new,'\heat_map'))
 print(f1,'-dtiff','-r600',strcat(dir_new,'\pvalue_map_velocity.tif'));
-cd(dir_orig);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% P-value map WSS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1197,6 +1210,14 @@ axis equal; axis ij; axis off;
 view([-180 -90])
 saveas(gcf,[dir_new '\pvalue_map_wss.fig'])
 aspectRatio = 1./mask1_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
+text(min(V(:,1))-40,max(V(:,2))-10,['Red area: ' num2str(round(percentage_significant_red)) '%' ])
+text(min(V(:,1))-40,max(V(:,2)),['Blue area: ' num2str(round(percentage_significant_blue)) '%' ])
+print(f2,'-djpeg','-r600',strcat(dir_new,'\pvalue_map_wss_front.jpg'));
+axis equal; axis ij; axis off;%axis vis3d
+view([0 90]);
+print(f2,'-djpeg','-r600',strcat(dir_new,'\pvalue_map_wss_back.jpg'));
+aspectRatio = 1./mask2_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 
 uicontrol('Style','text',...
@@ -1275,8 +1296,5 @@ p_value_map.p_value_wss = p_value_wss;
 
 % save results in results folder
 save(strcat(dir_new,'\p_value_map'),'p_value_map');
-%savefig(f2,strcat(dir_new,'\heat_map'))
-print(f2,'-dtiff','-r600',strcat(dir_new,'\p_value_wss.tif'));
-cd(dir_orig)
 disp('Results saved to C:\temp')
 end
