@@ -1045,10 +1045,10 @@ if calculate_velvolume_and_WSSarea_total == 1
     [I,J] = find(L1~=0);
     total_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     
-    [I,J] = find(smooth3(new_mask_red==1));
+    [I,J] = find((smooth3(new_mask_red)>0));
     red_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     percentage_red_volume = red_volume / total_volume * 100;
-    [I,J] = find(smooth3(new_mask_blue==1));
+    [I,J] = find((smooth3(new_mask_blue)>0));
     blue_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     percentage_blue_volume = blue_volume / total_volume * 100;
     
@@ -1090,8 +1090,8 @@ view([-180 -90])
 aspectRatio = 1./mask1_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
 camlight(-45,0); lighting phong
-text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-30),['Red volume: ' num2str(round(percentage_significant_red)) ' %' ])
-text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-20),['Blue volume: ' num2str(round(percentage_significant_blue)) ' %' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-30),['Red volume: ' num2str(round(percentage_red_volume)) ' %' ])
+text(min(x(:)./mask2_vox(1)),max(y(:)./mask2_vox(2)-20),['Blue volume: ' num2str(round(percentage_blue_volume)) ' %' ])
 
 % set up results folder
 mkdir([PATHNAME_probability_mask '\results_pvalue_map'])
