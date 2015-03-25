@@ -292,10 +292,8 @@ catch
     return;
 end
 [FileName,FilePath,FilterIndex] = uigetfile(currDir,'Select the mag_struct file');
-ind_sep=findstr(FilePath,'\');
-PATHNAME=FilePath(1:ind_sep(end-1)-1);
 try
-    cd(PATHNAME);
+    cd(FilePath);
 catch
     warndlg('File not found!');
     return;
@@ -306,7 +304,7 @@ calculateIE_Flag = get(handles.IE_calc,'Value');
 calculate_area_of_higherlowerFlag = get(handles.velVolume_wssArea_calc,'Value');
 peak_systolicFlag = get(handles.signArea_calc,'Value');
 images_for_surgeryFlag = get(handles.peakSyst_comp,'Value');
-heat_map_traffic_light_scalars_affine_registration(AtlasPath,PATHNAME,plotFlag,calculateIE_Flag,calculate_area_of_higherlowerFlag,peak_systolicFlag,images_for_surgeryFlag)
+heat_map_traffic_light_scalars_affine_registration(AtlasPath,FilePath(1:end-1),plotFlag,calculateIE_Flag,calculate_area_of_higherlowerFlag,peak_systolicFlag,images_for_surgeryFlag)
 h = msgbox('Heat maps were calculated');
 
 
