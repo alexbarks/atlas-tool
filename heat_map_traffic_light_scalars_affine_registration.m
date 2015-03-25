@@ -114,7 +114,7 @@ else
 %     MrstructPath = strcat(PATHNAME,'\mrstruct');
     MrstructPath = PATHNAME;
     ind_sep=findstr(MrstructPath,'\');
-    PATHNAME = MrstructPath(1:ind_sep(end-1)-1);
+    PATHNAME = MrstructPath(1:ind_sep(end)-1);
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
