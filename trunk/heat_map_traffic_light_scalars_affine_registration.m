@@ -111,7 +111,10 @@ if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
     FILENAME4 = 'mag_struct';
     MrstructPath = PATHNAME;%strcat(PATHNAME,'\mrstruct')
 else
-    MrstructPath = strcat(PATHNAME,'\mrstruct');
+%     MrstructPath = strcat(PATHNAME,'\mrstruct');
+    MrstructPath = PATHNAME;
+    ind_sep=findstr(MrstructPath,'\');
+    PATHNAME = MrstructPath(1:ind_sep(end-1)-1);
     FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
@@ -1498,7 +1501,7 @@ if images_for_surgeryFlag
     view([-180 -90]);
     % set up results folder
     dir_orig = pwd;
-    dir_new = PATHNAME; %cd(dir_new); %cd('..')
+    dir_new = PATHNAME; cd(dir_new); %cd('..')
     %dir_new = pwd;
     mkdir('images_for_surgery');
     dir_new = strcat(dir_new,'\images_for_surgery');
