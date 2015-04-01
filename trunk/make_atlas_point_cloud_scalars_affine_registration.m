@@ -111,6 +111,14 @@ FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
 mask1 = probability_mask.matrix;
 mask1_vox = probability_mask.vox;clear probability_mask
 
+if plotFlag == 1
+    figure('Name','Geometry')
+    L_figure = (squeeze(max(mask1,[],3))~=0);
+    imagesc(squeeze(max(mask1,[],3)),'Alphadata',double(L_figure));
+    colorbar
+    axis tight; axis equal; axis off
+end
+
 L1 = (mask1 ~= 0);
 % create all coordinates
 [x,y,z] = meshgrid((1:size(mask1,2)).* mask1_vox(2), ...
@@ -196,6 +204,8 @@ for n = 1:size(PATHNAME,2)
     
     %%% What follows is a horrible piece of code, so if you're reading this and feel like cleaning it up, please do,
     %%% I'll buy you a beer next time we meet. PvO
+    peak_systolicFlag
+    size(WSS,2)
     if peak_systolicFlag == 1
         data2.x_value_vel = velocity(:,:,:,1,time);
         data2.y_value_vel = velocity(:,:,:,2,time);
@@ -203,7 +213,11 @@ for n = 1:size(PATHNAME,2)
         data2.x_value_vel = data2.x_value_vel(L2);
         data2.y_value_vel = data2.y_value_vel(L2);
         data2.z_value_vel = data2.z_value_vel(L2);
-        if size(WSS,2) > 5
+        if size(WSS,2) == 1
+            data2.x_value_wss = WSS(:,1);
+            data2.y_value_wss = WSS(:,2);
+            data2.z_value_wss = WSS(:,3);            
+        elseif size(WSS,2) > 5
             data2.x_value_wss = WSS{time}(:,1);
             data2.y_value_wss = WSS{time}(:,2);
             data2.z_value_wss = WSS{time}(:,3);
@@ -789,8 +803,7 @@ for n = 1:size(PATHNAME,2)
         disp(['IE wall shear stress inner DAo = ' num2str(round(IE_inner_DAo_wss)) ' %'])
         disp(['IE wall shear stress outer DAo = ' num2str(round(IE_outer_DAo_wss)) ' %'])
         disp(['IE WSS total = ' num2str(round(IE_total_wss)) ' %'])
-    end
-    
+    end  
     close all
     
     VELx(:,n) = x_value_vel;
@@ -848,7 +861,7 @@ L = (atlas.mask~=0);
 atlas_matrix(L) = atlas.mean_vel;
 L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
 imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1]);%view([180 -90])
+colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
 
 figure('Name','SD atlas velocity')
 atlas_matrix = zeros(size(atlas.mask));
@@ -861,7 +874,7 @@ colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1]);%view([180 -90])
 
 figure('Name','Mean atlas WSS')
 patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
-colorbar;caxis([0 1]);axis equal;axis off; axis ij;view([-180 -90])
+colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
 
 figure('Name','SD atlas wss')
 patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
