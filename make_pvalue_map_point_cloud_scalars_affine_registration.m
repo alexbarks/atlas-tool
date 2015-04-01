@@ -59,6 +59,7 @@ probability_mask = [];
 mrstruct_mask = [];
 mrStruct = [];
 Wss_point_cloud = [];
+Diameter_point_cloud = [];
 Rotation_Translation = [];
 
 % create, or lookup default path cache for flirt and cygwin (in c:\temp)
@@ -128,6 +129,7 @@ end
 FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
 FILENAME2 = 'vel_struct';               % 2: Load velocity
 FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
+FILENAME4 = 'Diameter_point_cloud_aorta';    % 4: Load diameter
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Probability mask
@@ -339,6 +341,19 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     data2.vel_m = sqrt(data2.x_value_vel.^2 + data2.y_value_vel.^2 + data2.z_value_vel.^2);
     data2.wss_m = sqrt(data2.x_value_wss.^2 + data2.y_value_wss.^2 + data2.z_value_wss.^2);
     
+    load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME4])
+    Diameter = Diameter_point_cloud.Diameter;   
+    data2.F_diam = Diameter_point_cloud.faces;
+    data2.V_diam = Diameter_point_cloud.vertices;clear Diameter_point_cloud
+
+    data2.x_coor_diam = data2.V_diam(:,1);
+    data2.y_coor_diam = data2.V_diam(:,2);
+    data2.z_coor_diam = data2.V_diam(:,3);     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%% PvO: Due to scaling differences in mimics_to_Wss and mimics_to_diameter the coordinates for WSS and diameter
+    %%%%% are NOT the same. This is incorrect and needs to fixed in the near future!
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     if plotFlag == 1
         figure('Name','data2 velocity')
         vel_matrix = zeros(size(mask2));
@@ -352,6 +367,11 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         patch('Faces',data2.F,'Vertices',data2.V, ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
+        
+        figure('Name','data2 Diameter')
+        patch('Faces',data2.F_diam,'Vertices',data2.V_diam, ...
+            'EdgeColor','none','FaceVertexCData',Diameter,'FaceColor','interp','FaceAlpha',1);
+        colorbar;caxis([0 5]);axis equal;axis off; axis ij;view([-180 -90])
     end
     
     if calculateIE_Flag == 1;
@@ -537,6 +557,14 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     x_coor_wss = yxz_coor_wss_new(2,:)';
     y_coor_wss = yxz_coor_wss_new(1,:)';
     z_coor_wss = yxz_coor_wss_new(3,:)';clear yxz_coor_wss_new
+    
+    %%% Diameter coordinates
+    yxz_coor_diam = [data2.y_coor_diam data2.x_coor_diam data2.z_coor_diam];
+    yxz_coor_diam(:,4) = 1;
+    yxz_coor_diam_new = inv(worldmat)*yxz_coor_diam'; clear yxz_coor_diameter
+    x_coor_diam = yxz_coor_diam_new(2,:)';
+    y_coor_diam = yxz_coor_diam_new(1,:)';
+    z_coor_diam = yxz_coor_diam_new(3,:)';clear yxz_coor_diameter_new
     toc
     disp('..Done registering...')
     
@@ -565,6 +593,11 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         patch('Faces',data2.F,'Vertices',[x_coor_wss y_coor_wss z_coor_wss], ...
             'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
+        
+        figure('Name','transformed Diameter')
+        patch('Faces',data2.F_diam,'Vertices',[x_coor_diam y_coor_diam z_coor_diam], ...
+            'EdgeColor','none','FaceVertexCData',Diameter,'FaceColor','interp','FaceAlpha',1);
+        colorbar;caxis([0 5]);axis equal;axis off; axis ij;view([-180 -90])  
     end    
     
     if calculateRE_Flag == 1
@@ -634,34 +667,22 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
     end
     
     %%% Interpolate velocities to co-registered coordinates
-    interpolation_function = TriScatteredInterp([x_coor_vel y_coor_vel z_coor_vel],data2.x_value_vel,'nearest');
-    x_value_vel = interpolation_function([geo.x_coor_vel geo.y_coor_vel geo.z_coor_vel]);
-    x_value_vel(isnan(x_value_vel)) = 0;
-    
-    interpolation_function = TriScatteredInterp([x_coor_vel y_coor_vel z_coor_vel],data2.y_value_vel,'nearest');
-    y_value_vel = interpolation_function([geo.x_coor_vel geo.y_coor_vel geo.z_coor_vel]);
-    y_value_vel(isnan(y_value_vel)) = 0;
-    
-    interpolation_function = TriScatteredInterp([x_coor_vel y_coor_vel z_coor_vel],data2.z_value_vel,'nearest');
-    z_value_vel = interpolation_function([geo.x_coor_vel geo.y_coor_vel geo.z_coor_vel]);
-    z_value_vel(isnan(z_value_vel)) = 0;
-    
-    data2.vel_m = sqrt(x_value_vel.^2+y_value_vel.^2+z_value_vel.^2);
+    interpolation_function = TriScatteredInterp([x_coor_vel y_coor_vel z_coor_vel],data2.vel_m,'nearest');
+    value_vel = interpolation_function([geo.x_coor_vel geo.y_coor_vel geo.z_coor_vel]);
+    value_vel(isnan(value_vel)) = 0;   
+    data2.vel_m = value_vel;
     
     %%% Interpolate WSS to co-registered coordinates
-    interpolation_function = TriScatteredInterp([x_coor_wss y_coor_wss z_coor_wss],data2.x_value_wss,'nearest');
-    x_value_wss = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
-    x_value_wss(isnan(x_value_wss)) = 0;
+    interpolation_function = TriScatteredInterp([x_coor_wss y_coor_wss z_coor_wss],data2.wss_m,'nearest');
+    value_wss = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
+    value_wss(isnan(value_wss)) = 0;
+    data2.wss_m = value_wss;
     
-    interpolation_function = TriScatteredInterp([x_coor_wss y_coor_wss z_coor_wss],data2.y_value_wss,'nearest');
-    y_value_wss = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
-    y_value_wss(isnan(y_value_wss)) = 0;
-    
-    interpolation_function = TriScatteredInterp([x_coor_wss y_coor_wss z_coor_wss],data2.z_value_wss,'nearest');
-    z_value_wss = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
-    z_value_wss(isnan(z_value_wss)) = 0;
-    
-    data2.wss_m = sqrt(x_value_wss.^2+y_value_wss.^2+z_value_wss.^2);
+    %%% Interpolate diameter to co-registered coordinates
+    interpolation_function = TriScatteredInterp([x_coor_diam y_coor_diam z_coor_diam],Diameter,'nearest');
+    diameter = interpolation_function([geo.x_coor_wss geo.y_coor_wss geo.z_coor_wss]);
+    diameter(isnan(diameter)) = 0;    
+    data2.diameter = diameter;    
     
     if plotFlag == 1
         figure('Name','interpolated to atlas velocity')
@@ -675,6 +696,10 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         figure('Name','interpolated to atlas WSS')
         patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',data2.wss_m ,'FaceColor','interp','FaceAlpha',1);
         colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
+        
+        figure('Name','interpolated to atlas diameter')
+        patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none','FaceVertexCData',data2.diameter ,'FaceColor','interp','FaceAlpha',1);
+        colorbar;caxis([0 5]);axis equal;axis off; axis ij;view([-180 -90])        
     end
     
     if calculateIE_Flag == 1;
@@ -818,10 +843,12 @@ for n = 1:(size(PATHNAME1,2)+size(PATHNAME2,2))
         disp('VEL1')
         VEL1(:,n) = data2.vel_m;
         WSS1(:,n) = data2.wss_m;
+        Diameter1(:,n) = data2.diameter;        
     elseif sswitch == 2;
         disp('VEL2')
         VEL2(:,n) = data2.vel_m;
         WSS2(:,n) = data2.wss_m;
+        Diameter2(:,n) = data2.diameter;        
     end
     disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 end
@@ -902,6 +929,36 @@ for i=1:size(WSS1,1)
         p_value_wss(i,1) = 2;
     elseif p > alpha && mean(cohort2_wss) < mean(cohort1_wss)
         p_value_wss(i,1) = 3;
+    end
+end
+toc
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% Diameter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+alpha = 0.05;
+cohort1_diameter = zeros([size(PATHNAME1,2) 1]);
+cohort2_diameter = zeros([size(PATHNAME2,2) 1]);
+p_value_diameter = zeros([size(Diameter1,1) 1]);
+disp('...Busy creating P-value map for Diameter...This may take a while...')
+tic
+for i=1:size(Diameter1,1)
+    for n1 = 1:size(PATHNAME1,2)
+        cohort1_diameter(n1,1) = (Diameter1(i,n1));
+    end
+    for n2 = 1:size(PATHNAME2,2)
+        cohort2_diameter(n2,1) = (Diameter2(i,n2));
+    end
+    
+    [p,h] = ranksum(cohort1_diameter,cohort2_diameter,alpha);
+    if p < alpha && nanmean(cohort2_diameter) > nanmean(cohort1_diameter)
+        p_value_diameter(i,1) = 0;
+    elseif p < alpha && nanmean(cohort2_diameter) < nanmean(cohort1_diameter)
+        p_value_diameter(i,1) = 1;
+    elseif p > alpha && nanmean(cohort2_diameter) > nanmean(cohort1_diameter)
+        p_value_diameter(i,1) = 2;
+    elseif p > alpha && nanmean(cohort2_diameter) < nanmean(cohort1_diameter)
+        p_value_diameter(i,1) = 3;
     end
 end
 toc
@@ -1052,19 +1109,28 @@ if calculate_velvolume_and_WSSarea_total == 1
     blue_volume = mask1_vox(1)*mask1_vox(2)*mask1_vox(3)*size(I,1);
     percentage_blue_volume = blue_volume / total_volume * 100;
     
-    disp(['Red volume percentage of total aorta = ' num2str(round(percentage_red_volume)) ' % (' num2str(round(red_volume./1000)) ' cm3)'])
-    disp(['Blue volume percentage of total aorta = ' num2str(round(percentage_blue_volume)) ' % (' num2str(round(blue_volume./1000)) ' cm3)'])
+    disp(['Red velocity volume percentage of total aorta = ' num2str(round(percentage_red_volume)) ' % (' num2str(round(red_volume./1000)) ' cm3)'])
+    disp(['Blue velocity volume percentage of total aorta = ' num2str(round(percentage_blue_volume)) ' % (' num2str(round(blue_volume./1000)) ' cm3)'])
     %    disp(['Total percentage of total aorta = ' num2str(total_percentage) ' % (' num2str(round(total_volume./1000)) ' cm3)'])
     disp(' ')
     
     [I1,J1] = find(p_value_wss == 1);
     [I2,J2] = find(p_value_wss == 0);
-    percentage_significant_red = size(I2,1) / size(p_value_wss,1) * 100;
-    percentage_significant_blue = size(I1,1) / size(p_value_wss,1) * 100;
+    percentage_significant_red_wss = size(I2,1) / size(p_value_wss,1) * 100;
+    percentage_significant_blue_wss = size(I1,1) / size(p_value_wss,1) * 100;
     
-    disp(['Red percentage = ' num2str(round(percentage_significant_red)) '%'])
-    disp(['Blue percentage = ' num2str(round(percentage_significant_blue)) '%'])
+    disp(['Red WSS percentage = ' num2str(round(percentage_significant_red_wss)) '%'])
+    disp(['Blue WSS percentage = ' num2str(round(percentage_significant_blue_wss)) '%'])
     disp(' ')
+    
+    [I1,J1] = find(p_value_diameter == 1);
+    [I2,J2] = find(p_value_diameter == 0);
+    percentage_significant_red_diam = size(I2,1) / size(p_value_diameter,1) * 100;
+    percentage_significant_blue_diam = size(I1,1) / size(p_value_diameter,1) * 100;
+    
+    disp(['Red diameter percentage = ' num2str(round(percentage_significant_red_diam)) '%'])
+    disp(['Blue diameter percentage = ' num2str(round(percentage_significant_blue_diam)) '%'])
+    disp(' ')    
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1196,7 +1262,7 @@ print(f1,'-dtiff','-r600',strcat(dir_new,'\pvalue_map_velocity.tif'));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 count3 = 0;
 angles(1) = 0;
-f2 = figure('Name','Heat map');
+f2 = figure('Name','WSS Heat map');
 contours = zeros(size(L1));
 contours(L1==0) = -1;
 contours(L1==1) = 1;
@@ -1211,8 +1277,8 @@ view([-180 -90])
 saveas(gcf,[dir_new '\pvalue_map_wss.fig'])
 aspectRatio = 1./mask1_vox;
 set(gca,'dataaspectRatio',aspectRatio(1:3))
-text(min(V(:,1))-40,max(V(:,2))-10,['Red area: ' num2str(round(percentage_significant_red)) '%' ])
-text(min(V(:,1))-40,max(V(:,2)),['Blue area: ' num2str(round(percentage_significant_blue)) '%' ])
+text(min(V(:,1))-40,max(V(:,2))-10,['Red area: ' num2str(round(percentage_significant_red_wss)) '%' ])
+text(min(V(:,1))-40,max(V(:,2)),['Blue area: ' num2str(round(percentage_significant_blue_wss)) '%' ])
 print(f2,'-djpeg','-r600',strcat(dir_new,'\pvalue_map_wss_front.jpg'));
 axis equal; axis ij; axis off;%axis vis3d
 view([0 90]);
@@ -1287,12 +1353,111 @@ uicontrol('Style','checkbox',...
 
 set(f2,'toolbar','figure');
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% P-value map Diameter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+count3 = 0;
+angles(1) = 0;
+f2 = figure('Name','Diameter Heat map');
+contours = zeros(size(L1));
+contours(L1==0) = -1;
+contours(L1==1) = 1;
+[F,V] = isosurface(smooth3(contours),0); % make a surface from the detected contours
+%patch('Faces',F,'Vertices',[V(:,1) V(:,2) V(:,3)],'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.1);
+%hold on
+p31=patch('Faces',geo.F,'Vertices',[geo.V(:,1)./mask1_vox(1) geo.V(:,2)./mask1_vox(2) geo.V(:,3)./mask1_vox(3)],'EdgeColor','none', 'FaceVertexCData',p_value_diameter,'FaceColor','interp','FaceAlpha',1);
+hold on
+colormap(color2)
+caxis([0 4]);
+axis equal; axis ij; axis off;
+view([-180 -90])
+saveas(gcf,[dir_new '\pvalue_map_diameter.fig'])
+aspectRatio = 1./mask1_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
+text(min(V(:,1))-40,max(V(:,2))-10,['Red area: ' num2str(round(percentage_significant_red_diam)) '%' ])
+text(min(V(:,1))-40,max(V(:,2)),['Blue area: ' num2str(round(percentage_significant_blue_diam)) '%' ])
+print(f2,'-djpeg','-r600',strcat(dir_new,'\pvalue_map_diameter_front.jpg'));
+axis equal; axis ij; axis off;%axis vis3d
+view([0 90]);
+print(f2,'-djpeg','-r600',strcat(dir_new,'\pvalue_map_diameter_back.jpg'));
+aspectRatio = 1./mask2_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
+
+uicontrol('Style','text',...
+    'Position',[10 375 120 20],...
+    'String','Rotate')
+uicontrol('Style', 'slider',...
+    'Min',-90,'Max',90,'Value',0,...
+    'Position', [10 350 120 20],...
+    'SliderStep',[1/180 10/180],...
+    'Callback', {@rotater3,gca});
+
+uicontrol('Style','text',...
+    'Position',[15 300 120 20],...
+    'String','Show Heat Map')
+uicontrol('Style','checkbox',...
+    'Value',1, 'Position', [15 300 20 20], ...
+    'Callback', {@show_heat_mappp,gca});
+
+    function move_slice3(hObj,event,ax)
+        sliceobj = findobj(s2);
+        delete(sliceobj)
+        slice = round(get(hObj,'Value'));
+        s2 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
+    end
+
+    function show_heat_mappp(hObj,event,ax)
+        show = round(get(hObj,'Value'));
+        if show == 1
+            patchobj = findobj(p2);
+            set(patchobj,'HandleVisibility','on','Visible','on');
+        elseif show == 0
+            patchobj = findobj(p2);
+            set(patchobj,'HandleVisibility','off','Visible','off');
+        end
+    end
+
+    function show_anatomy3(hObj,event,ax)
+        show = round(get(hObj,'Value'));
+        if show == 1
+            patchobj = findobj(s2);
+            set(patchobj,'HandleVisibility','on','Visible','on');
+        elseif show == 0
+            patchobj = findobj(s2);
+            set(patchobj,'HandleVisibility','off','Visible','off');
+        end
+    end
+
+    function change_contrast3(hObj,event,ax)
+        contrast = round(get(hObj,'Value'));
+        caxis([0 contrast])
+    end
+
+    function rotater3(hObj,event,ax)
+        count3 = count3 + 1;
+        dtheta3 = get(hObj,'Value');
+        dphi = 0;
+        
+        if count3 == 1;
+            dtheta4 = dtheta3*3;
+        else
+            dtheta4 = (dtheta3 - angles(count3-1))*3;
+        end
+        
+        camorbit(dtheta4,dphi,'data',[0 1 0])
+        angles(count3) = dtheta3;
+    end
+
+set(f2,'toolbar','figure');
+
 p_value_map.red_vel = new_mask_red;
 p_value_map.blue_vel = new_mask_blue;
 p_value_map.gray_vel = new_mask_gray;
 p_value_map.vertices = [V(:,1) V(:,2) V(:,3)];
 p_value_map.faces = F;
 p_value_map.p_value_wss = p_value_wss;
+p_value_map.diameter = p_value_diameter;
 
 % save results in results folder
 save(strcat(dir_new,'\p_value_map'),'p_value_map');
