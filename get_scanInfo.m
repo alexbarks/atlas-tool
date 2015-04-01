@@ -1,11 +1,11 @@
 clc, clear, close all
 
-[num,txt,raw] = xlsread('C:\1_Chicago\Data\MIMICS\17_Followup\controls_v2','C79:C136')
+%[num,txt,raw] = xlsread('C:\1_Chicago\Data\MIMICS\BAVcohorts\controls_v2','C85:C140')
+[num,txt,raw] = xlsread('C:\1_Chicago\Data\MIMICS\BAVcohorts\Total_BAV_cohort_Pim_NEW','B1:B232')
 
 size(txt)
 
-directory = 'L:\cv_mri\Aorta-4D_Flow\controls'
-%directory = 'L:\cv_mri\Aorta-4D_Flow\BAV'
+directory = 'L:\cv_mri\Aorta-4D_Flow\BAV'
 
 for n = 1:size(txt,1)
     n
@@ -39,45 +39,45 @@ MRsystem{n} = cell2mat(RAW(21,2));
 cd ..
 end
 
-% [num,txt,raw] = xlsread('C:\1_Chicago\Data\MIMICS\17_Followup\Followups_v4','B71:B118')
-% 
-% size(txt)
-% 
-% directory = 'L:\cv_mri\Aorta-4D_Flow\BAV'
-% 
-% size1 = n
-% pause
-% for n = 1:size(txt,1)
-%     m = n+size1
-% %path = [directory '\' txt(n) '\3dpc']
-% path = [directory '\' char(txt(n)) '\3dpc']
-% cd(path)
-% filename = dir('scanInfo_*.xls');
-% [NUM,TXT,RAW]=xlsread(filename(1).name,'scanInfo');
-% sex1 = RAW(2,2);
-% sex(m,1) = sex1{1};
-% age1 = RAW(4,2);
-% age(m,1) = str2num(age1{1}(2:3));
-% resolution = RAW(13,2);
-% resolution1(m,1) = resolution{1};
-% resolution = RAW(14,2);
-% resolution2(m,1) = resolution{1};
-% resolution = RAW(15,2);
-% resolution3(m,1) = resolution{1};
-% FOV = RAW(11,2);
-% FOV1(m,1) = FOV{1};
-% FOV = RAW(12,2);
-% FOV2(m,1) = FOV{1};
-% FOV3(m,1) = resolution{1} * 30;
-% TR(m,1) = cell2mat(RAW(16,2))/8;
-% TE(m,1) = cell2mat(RAW(17,2));
-% temp_res(m,1) = TR(m,1)*8;
-% time_frames(m,1) = cell2mat(RAW(18,2));
-% flip_angle(m,1) = cell2mat(RAW(19,2));
-% Venc(m,1) = cell2mat(RAW(22,2));
-% MRsystem{m} = cell2mat(RAW(21,2));
-% cd ..
-% end
+[num,txt,raw] = xlsread('C:\1_Chicago\Data\MIMICS\BAVcohorts\controls_v2','C85:C140')
+
+size(txt)
+
+directory = 'L:\cv_mri\Aorta-4D_Flow\controls'
+
+size1 = n
+pause
+for n = 1:size(txt,1)
+    m = n+size1
+%path = [directory '\' txt(n) '\3dpc']
+path = [directory '\' char(txt(n)) '\3dpc']
+cd(path)
+filename = dir('scanInfo_*.xls');
+[NUM,TXT,RAW]=xlsread(filename(1).name,'scanInfo');
+sex1 = RAW(2,2);
+sex(m,1) = sex1{1};
+age1 = RAW(4,2);
+age(m,1) = str2num(age1{1}(2:3));
+resolution = RAW(13,2);
+resolution1(m,1) = resolution{1};
+resolution = RAW(14,2);
+resolution2(m,1) = resolution{1};
+resolution = RAW(15,2);
+resolution3(m,1) = resolution{1};
+FOV = RAW(11,2);
+FOV1(m,1) = FOV{1};
+FOV = RAW(12,2);
+FOV2(m,1) = FOV{1};
+FOV3(m,1) = resolution{1} * 30;
+TR(m,1) = cell2mat(RAW(16,2))/8;
+TE(m,1) = cell2mat(RAW(17,2));
+temp_res(m,1) = TR(m,1)*8;
+time_frames(m,1) = cell2mat(RAW(18,2));
+flip_angle(m,1) = cell2mat(RAW(19,2));
+Venc(m,1) = cell2mat(RAW(22,2));
+MRsystem{m} = cell2mat(RAW(21,2));
+cd ..
+end
 % 
 % [num,txt,raw] = xlsread('C:\1_Chicago\Data\MIMICS\17_Followup\Followups_v4','B119:B148')
 % 
