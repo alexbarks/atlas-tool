@@ -4,16 +4,23 @@ This is a rough version of the atlas_tool instruction manual:
 1. (Easy way to compute and register WSS: run 'atlas_batch.m' with everything uncommented) In essence this is doing the following:
 
 	a) mimics_to_Wss(MrstructPath,MimicsSegPath,1,1,0,1,0,0,0)
+		- THINGS TO CONSIDER (OR FIX) BEFORE RUNNING WSS ANALYSIS
+			o viscosity (default value is 3.2cP)
+			o size of inward facing normal (see hardcoded value under calculate_wss.m)
+			
 		- MrstructPath,MimicsSegPath are pulled from PATHNAME, which is formatted the following way:
 			MrstructPath = strcat(PATHNAME{n},'\mrstruct\');
 		    MimicsSegPath = strcat(PATHNAME{n},'\results_022\');
+		
 		- Pathname is the study folder for each individual subject, ie
 			PATHNAME{1} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\1_20120420_132106';
 			PATHNAME{2} = 'L:\data\NU\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls\2_20120426_132244';
+		
 		- note that output is saved uinder the mrStruct folder as 
 			'mask_struct_aorta.mat'     - this is 0's and 1's where the mimics seg exists (this is the same as the output from mimics2ensight_tool)
 			'Wss_struct_aorta.mat'      - this is the WSS in the matrix format, which can be input into ensight (if every timestep is calculated, which will happen if ensight flag is on)
 			'Wss_point_cloud_aorta.mat' - This is the WSS point cloud (similar to the matrix, but more accurate, and used for the matlab analysis steps)
+
 	b) [probability_mask] = make_geometry_point_cloud(PATHNAME,1,1);
 		- output is the probability mask - note that this has already been chosen for the ideal threshold for the geometry (i.e. zeros and ones)
 	c) [atlas] = make_atlas_point_cloud_scalars_affine_registration(PATHNAME,'',0,1,0,0)
@@ -53,4 +60,12 @@ CALCULATION OF A HEATMAP (if have already computed an atlas previously)
 	* can also run just as a command, but watch out for the systoleFlag (set to 1 if no inputs)	  
 	  
    test commit to see if emilie is a user
-		
+   
+
+FEATURE LIST (TO DO)
+- create robust tool to load previous WSS_point_clouds and histograms
+- create functionality to assign direction vector for WSS analysis
+- implement new feature to automatically calculate inward facing normal
+- make it all user friendly!
+   
+  
