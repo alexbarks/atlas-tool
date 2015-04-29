@@ -22,14 +22,24 @@ This is a rough version of the atlas_tool instruction manual:
 	d) then atlas output from above needs to be saved
 
 2. Things that can go wrong:
-	a) need to make sure that rotation matrix is appropriately applied, this is not inherently obvious (to alex). Need to come up with some general guidelines to id failed registrations, etc. Watch out for peak systole switch. 
-	
+	a) need to make sure that rotation matrix is appropriately applied, this is not inherently obvious (to alex). Need to come up with some general guidelines to id failed registrations, etc. Watch out for peak systole switch. Alex thinks it doesn't work when user doesn't have permissions to write to the folder (see error below)
+		
+		Error using save_nii>write_nii (line 149)
+		Cannot open file mask1.nii.
+
+		Error in save_nii (line 83)
+		write_nii(nii, filetype, fileprefix, old_RGB);
+
+		Error in heat_map_traffic_light_scalars_affine_registration (line 510)
+		save_nii(cnii,'mask1.nii');
+		
 	b) Also watch for the fact that you need to have the flirt and cygwin locations working (Alex has noted where they exist on his computer
+	
 	   * flirt folder  /cygdrive/d/research/matlabcode/matlab_registration/flirt/ (make sure to have file separation at the end)
+	   
 	   * cygwin64 'c:\cygwin64\bin\bash runflirt.sh'
 	   
-	
-	
+		
 CALCULATION OF A HEATMAP (if have already computed an atlas previously)
 1. compute WSS using 'mimics_to_Wss.m'
    * example usage (note have to simplify mrstruct naming so it will work with step 2):
