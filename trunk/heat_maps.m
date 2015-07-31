@@ -118,7 +118,7 @@ wss_ensight_Flag = get(handles.checkbox_ensight,'Value');
 % end
 hematocritFlag = get(handles.checkbox_hematocrit,'Value');
 multipleMasksFlag = get(handles.checkbox_masks,'Value');
-mimics_to_Wss([MrstructPath '\'],[MimicsSegPath '\'],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag)
+mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag)
 h = msgbox('Wall shear stress was calculated and saved in the mrstruct folder');
 
 
