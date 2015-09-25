@@ -973,7 +973,7 @@ if calculate_area_of_higherlowerFlag == 1;
             %mask = inpolygon(x, y, AAo(:,1), AAo(:,2));
             
             disp('saving, pausing')
-            save(strcat([PATHNAME 'heat_map_higher_lower_masks\mask' num2str(i)]),'region');
+            save(strcat([PATHNAME '\heat_map_higher_lower_masks\mask' num2str(i)]),'region');
             pause
         end
     end
