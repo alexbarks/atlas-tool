@@ -67,5 +67,5 @@ FEATURE LIST (TO DO)
 - create functionality to assign direction vector for WSS analysis
 - implement new feature to automatically calculate inward facing normal
 - make it all user friendly!
-   
+   - testing...
   
