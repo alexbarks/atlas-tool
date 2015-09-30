@@ -1,6 +1,6 @@
 clc, clear, close all
 
-% % MARFAN pts
+% % MARFAN patients
 % PATHNAME{1} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\Marfans\AB20120210';
 % PATHNAME{2} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\Marfans\AM20150325';
 % PATHNAME{3} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\Marfans\AR20150428';
