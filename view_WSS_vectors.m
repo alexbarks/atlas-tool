@@ -285,6 +285,13 @@ switch choice
     case 'Load existing'
         
         [FileName,MrstructPath,FilterIndex] = uigetfile(currDir,'Select the ROI you want to load');
+        masks=ls(MrstructPath);
+        for i=3:12
+            load(strcat(MrstructPath,masks(i,:)));
+            hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+            clear region
+        end
+        
         load(strcat(MrstructPath,FileName));
         
         polyAAo = impoly(gca,region);
