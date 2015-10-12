@@ -319,7 +319,10 @@ switch choice
         currDir=pwd;
         cd(MrstructPath)
         % save in an Excel sheet
-        col = char(str2num(FileName(end-4))+'A');
+%         col = char(str2num(FileName(end-4))+'A');
+        indMask = strfind(FileName, 'mask');
+        indMat = strfind(FileName, '.mat');
+        col = char(str2num(FileName(indMask+4:indMat-1))+'A');
         xlRange = strcat([col '2:' col '10']);
         xlswrite('wss_indices.xls',new_indices,xlRange);
         cd(currDir)
