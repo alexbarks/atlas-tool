@@ -1003,10 +1003,11 @@ disp(['Percentage lower than controls inner AAo = ' num2str(round(percentage_sig
 disp(' ')
 
 if calculate_area_of_higherlowerFlag == 1;
-    if ~exist(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask1.mat'),'file')
+    if exist(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask1.mat'),'file')~=2
         
         patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
         view([-180 -90]);axis ij;axis equal;axis off
+        title('Draw regions from proximal to distal, inner then outer locations')
         
         mkdir(PATHNAME,'heat_map_higher_lower_masks')
         
@@ -1376,26 +1377,24 @@ vertices = [x y z];
 sel_blue = sum([sel_blue(data2.F(:,1)) sel_blue(data2.F(:,2)) sel_blue(data2.F(:,3))],2)>1;
 sel_red = sum([sel_red(data2.F(:,1)) sel_red(data2.F(:,2)) sel_red(data2.F(:,3))],2)>1;
 sel_gray = sum([sel_gray(data2.F(:,1)) sel_gray(data2.F(:,2)) sel_gray(data2.F(:,3))],2)>1;
-% %
-% area_blue = triangleArea3d(vertices(data2.F(sel_blue,1),:),vertices(data2.F(sel_blue,2),:),vertices(data2.F(sel_blue,3),:));
-% area_red = triangleArea3d(vertices(data2.F(sel_red,1),:),vertices(data2.F(sel_red,2),:),vertices(data2.F(sel_red,3),:));
-% area_gray = triangleArea3d(vertices(data2.F(sel_gray,1),:),vertices(data2.F(sel_gray,2),:),vertices(data2.F(sel_gray,3),:));
-% area_total = triangleArea3d(vertices(data2.F(:,1),:),vertices(data2.F(:,2),:),vertices(data2.F(:,3),:));
-% %hold on
-% % figure('Name','Area map')
-% % p5=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none','CData',area_total.*sel_red,'FaceColor','flat','FaceAlpha',1);
-% area_total = (sum(area_blue)+sum(area_red)+sum(area_gray)); % mm2
-% area_red_total = sum(area_red);% mm2
-% area_blue_total = sum(area_blue);% mm2
-% 
-% disp(['Total area = ' num2str(area_total/100) ' cm2'])
-% disp(['Red area = ' num2str(area_red_total/100) ' cm2'])
-% disp(['Blue area = ' num2str(area_blue_total/100) ' cm2'])
-% 
-% area_red_total_perc = area_red_total/area_total*100;
-% area_blue_total_perc = area_blue_total/area_total*100;
-% %return
-% %
+area_blue = triangleArea3d(vertices(data2.F(sel_blue,1),:),vertices(data2.F(sel_blue,2),:),vertices(data2.F(sel_blue,3),:));
+area_red = triangleArea3d(vertices(data2.F(sel_red,1),:),vertices(data2.F(sel_red,2),:),vertices(data2.F(sel_red,3),:));
+area_gray = triangleArea3d(vertices(data2.F(sel_gray,1),:),vertices(data2.F(sel_gray,2),:),vertices(data2.F(sel_gray,3),:));
+area_total = triangleArea3d(vertices(data2.F(:,1),:),vertices(data2.F(:,2),:),vertices(data2.F(:,3),:));
+%hold on
+% figure('Name','Area map')
+% p5=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none','CData',area_total.*sel_red,'FaceColor','flat','FaceAlpha',1);
+area_total = (sum(area_blue)+sum(area_red)+sum(area_gray)); % mm2
+area_red_total = sum(area_red);% mm2
+area_blue_total = sum(area_blue);% mm2
+
+disp(['Total area = ' num2str(area_total/100) ' cm2'])
+disp(['Red area = ' num2str(area_red_total/100) ' cm2'])
+disp(['Blue area = ' num2str(area_blue_total/100) ' cm2'])
+
+area_red_total_perc = area_red_total/area_total*100;
+area_blue_total_perc = area_blue_total/area_total*100;
+%return
 gray_colormap = colormap(gray);
 color2(1,:) = [0 0 1];
 color2(2,:) = [1 0 0];
