@@ -1,3 +1,9 @@
+function view_WSS_vectors
+
+global mrstruct_mask
+global Wss_point_cloud
+global mrStruct
+
 clc, clear%, close all
 currDir = pwd;
 [FileName,MrstructPath,FilterIndex] = uigetfile(currDir,'Select the mag_struct file of your patient');
@@ -82,11 +88,48 @@ wss_m = sqrt(WSS(:,1).^2 + WSS(:,2).^2 + WSS(:,3).^2);
 % print(f,'-djpeg','-r600',strcat(MrstructPath,'\systWSS'));
 
 % Regional analysis
-figure, patch('Faces',F,'Vertices',V, ...
+% figure, patch('Faces',F,'Vertices',V, ...
+%     'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
+mask2_vox = mrstruct_mask.vox;
+x = V(:,1)/mask2_vox(1);
+y = V(:,2)/mask2_vox(2);
+z = V(:,3)/mask2_vox(3);
+figure, patch('Faces',F,'Vertices',[x y z], ...
     'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
 axis equal;axis off; axis ij
 view([-180 -90])
+
+gray_colormap = colormap(gray);
+color3(1,:) = [0 0 1];
+color3(2,:) = [1 0 0];
+color3(3,:) = [0.5 0.5 0.5];
+color3(4:64,:) = gray_colormap(4:64,:);
+colormap(color3);
+caxis([0 64]);
+axis equal; axis ij; axis off;
+aspectRatio = 1./mask2_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
+view([-180 -90]);
+load mag_struct
+magnitude = flipdim(double(mrStruct.dataAy(:,:,:,3)),3);
+magnitude(magnitude == 0) = 3;
+magnitude(magnitude == 1) = 3;
+magnitude(magnitude == 2) = 3;
+hold on
+s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
 title({'Draw 1)proximal AAo inner, 2)proximal AAo outer, 3)distal AAo inner, 4)distal AAo outer,';'5)arch inner, 6)arch outer, 7)proximal DAo inner, 8)proximal DAo outer,';'9)distal DAo inner and 10)distal DAo outer regions';'then double-click and press space'})
+
+uicontrol('Style','text',...
+    'Position',[10 200 120 70],...
+    'String','Please choose using the slider the magnitude slice')
+uicontrol('Style','text',...
+    'Position',[10 75 120 20],...
+    'String','Slice slider')
+sl1 = uicontrol('Style', 'slider',...
+    'Min',1,'Max',size(magnitude,3),'Value',size(magnitude,3)/2,...
+    'Position', [10 50 120 20],...
+    'SliderStep',[1/(size(magnitude,3)-1) 10/(size(magnitude,3)-1)],...
+    'Callback', {@move_slice3,gca});
 
 mkdir(strcat(MrstructPath, '..'),'regional_masks')
 
@@ -328,4 +371,13 @@ switch choice
         cd(currDir)
         h1 = msgbox('WSS indices in the new ROI were calculated and saved in the regional_masks folder');
         
+end
+
+function move_slice3(hObj,event,ax) % Emilie: for manual interaction to chose magnitude slice on which RPA can be visualized
+	sliceobj = findobj(s4);
+	delete(sliceobj)
+	slice = round(get(hObj,'Value'));
+	s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
+end
+
 end
