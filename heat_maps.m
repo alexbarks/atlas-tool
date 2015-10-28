@@ -86,7 +86,7 @@ catch
     warndlg('File not found!');
     return;
 end
-[FileName,MimicsSegPath,FilterIndex] = uigetfile([MrstructPath '\..\*'],'Select the Mimics all-mask file');
+[FileName,MimicsSegPath,FilterIndex] = uigetfile([MrstructPath '\..\*'],'Select the Mimics aorta text file or the already computed Ao_grayvalues_mask_struct mat file');
 try
     cd(MimicsSegPath);
 catch
@@ -118,7 +118,12 @@ wss_ensight_Flag = get(handles.checkbox_ensight,'Value');
 % end
 hematocritFlag = get(handles.checkbox_hematocrit,'Value');
 multipleMasksFlag = get(handles.checkbox_masks,'Value');
-mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag)
+if(isequal(FileName(end-3:end),'.txt'))
+    mimicsFileFlag = 1;
+elseif(isequal(FileName(end-3:end),'.mat'))
+    mimicsFileFlag = 0;
+end
+mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag,mimicsFileFlag)
 h = msgbox('Wall shear stress was calculated and saved in the mrstruct folder');
 
 
