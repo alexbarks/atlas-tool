@@ -108,7 +108,7 @@ colormap(color3);
 caxis([0 64]);
 axis equal; axis ij; axis off;
 aspectRatio = 1./mask2_vox;
-set(gca,'dataaspectRatio',aspectRatio(1:3))
+% set(gca,'dataaspectRatio',aspectRatio(1:3))
 view([-180 -90]);
 load mag_struct
 magnitude = flipdim(double(mrStruct.dataAy(:,:,:,3)),3);
@@ -154,34 +154,35 @@ switch choice
         
         % compute WSS in the 10 regional ROIs
         load(strcat(MrstructPath,'..','\regional_masks\mask1'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+%         mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_proxAAo_inner = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask2'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_proxAAo_outer = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask3'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_distAAo_inner = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask4'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_distAAo_outer = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask5'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_arch_inner = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask6'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_arch_outer = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask7'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_proxDAo_inner = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask8'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_proxDAo_outer = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask9'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_distDAo_inner = wss_m(mask_wss);
         load(strcat(MrstructPath,'..','\regional_masks\mask10'));
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask_distDAo_outer = wss_m(mask_wss);
         
         save(strcat(MrstructPath,'..','\regional_masks\wss_values'),'wss_mask_proxAAo_inner','wss_mask_proxAAo_outer','wss_mask_distAAo_inner','wss_mask_distAAo_outer','wss_mask_arch_inner','wss_mask_arch_outer','wss_mask_proxDAo_inner','wss_mask_proxDAo_outer',...
@@ -344,7 +345,8 @@ switch choice
         save(strcat(MrstructPath,FileName),'region');
         pause
         
-        mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+%         mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
         wss_mask = wss_m(mask_wss);
         save(strcat([MrstructPath 'wss_values_new' FileName]),'wss_mask');
         
