@@ -288,7 +288,8 @@ function heatMaps_creation_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 currDir = pwd;
-atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls';
+% atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls';
+atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\PimsProjectWrapUp\7_AgeMatching\data\control_atlases';
 [FileName,AtlasPath,FilterIndex] = uigetfile(atlas_folder,'Select the atlas.mat file');  % donner chemin par defaut
 try
     cd(AtlasPath);
