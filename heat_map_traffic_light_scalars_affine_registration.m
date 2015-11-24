@@ -1553,6 +1553,37 @@ save(strcat(dir_new,'\heat_map'),'heat_map');
 %savefig(f2,strcat(dir_new,'\heat_map'))
 %cd(dir_orig)
 
+% Emilie: segmented red areas (ISMRM abstract)
+% figure, patch('Faces',data2.F,'Vertices',[x y z], ...
+%     'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
+% axis equal;axis off; axis ij
+% view([-180 -90])
+% colormap(color2);
+% caxis([0 64]);
+% axis equal; axis ij; axis off;
+% polyAAo = impoly;
+% wait(polyAAo);
+% region = getPosition(polyAAo);
+% mask_wss = inpolygon(x,y, region(:,1), region(:,2));
+% new_heatmap = heat_mapp.*mask_wss;
+% new_heatmap(~mask_wss)=3;
+% new_sel_blue = (new_heatmap == 0);
+% new_sel_red = (new_heatmap == 1);
+% new_sel_gray = (new_heatmap == 2);
+% new_sel_blue = sum([new_sel_blue(data2.F(:,1)) new_sel_blue(data2.F(:,2)) new_sel_blue(data2.F(:,3))],2)>1;
+% new_sel_red = sum([new_sel_red(data2.F(:,1)) new_sel_red(data2.F(:,2)) new_sel_red(data2.F(:,3))],2)>1;
+% new_sel_gray = sum([new_sel_gray(data2.F(:,1)) new_sel_gray(data2.F(:,2)) new_sel_gray(data2.F(:,3))],2)>1;
+% new_area_blue = triangleArea3d(vertices(data2.F(new_sel_blue,1),:),vertices(data2.F(new_sel_blue,2),:),vertices(data2.F(new_sel_blue,3),:));
+% new_area_red = triangleArea3d(vertices(data2.F(new_sel_red,1),:),vertices(data2.F(new_sel_red,2),:),vertices(data2.F(new_sel_red,3),:));
+% new_area_gray = triangleArea3d(vertices(data2.F(new_sel_gray,1),:),vertices(data2.F(new_sel_gray,2),:),vertices(data2.F(new_sel_gray,3),:));
+% new_area_total = (sum(new_area_blue)+sum(new_area_red)+sum(new_area_gray)); % mm2
+% new_area_red_total = sum(new_area_red);% mm2
+% new_area_blue_total = sum(new_area_blue);% mm2
+% 
+% disp(['New total area = ' num2str(new_area_total/100) ' cm2'])
+% disp(['New red area = ' num2str(new_area_red_total/100) ' cm2'])
+% disp(['New blue area = ' num2str(new_area_blue_total/100) ' cm2'])
+
 if images_for_surgeryFlag
     f3 = figure('Name','Heat map');
     x = data2.x_coor_wss/mask2_vox(1);
