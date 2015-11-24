@@ -22,7 +22,7 @@ function varargout = heat_maps(varargin)
 
 % Edit the above text to modify the response to help heat_maps
 
-% Last Modified by GUIDE v2.5 13-Feb-2015 18:13:30
+% Last Modified by GUIDE v2.5 23-Nov-2015 18:43:23
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -357,3 +357,11 @@ function peakSyst_comp_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of peakSyst_comp
+
+
+% --- Executes on button press in WSS_visu.
+function WSS_visu_Callback(hObject, eventdata, handles)
+% hObject    handle to WSS_visu (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+view_WSS_vectors
