@@ -100,7 +100,7 @@ for n = 1:size(PATHNAME,2)
     TimeFlag=1;
     
     tic
-    mimics_to_Wss([MrstructPath],[MimicsSegPath],1,1,1,1,TimeFlag,0,0,0);
+    mimics_to_Wss([MrstructPath],[MimicsSegPath],1,1,1,1,TimeFlag,0,0,0,0);
     toc
     
     close all
