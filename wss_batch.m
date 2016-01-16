@@ -1,4 +1,4 @@
-clc, clear, close all
+function wss_batch(folder_name)
 
 % % MARFAN patients
 % PATHNAME{1} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\Marfans\AB20120210';
@@ -67,13 +67,14 @@ clc, clear, close all
 % PATHNAME{4} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\LDS\MM20150225';
 % PATHNAME{5} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\LDS\SW20141111';
 
-PATHNAME{1} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\JB';
+% PATHNAME{1} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\JB';
 
-% % scan all folders of the present directory
-% folders = ls;
-% for i=1:size(folders,1)-2
-%     PATHNAME{i}=fullfile(pwd,folders(i+2,:));
-% end
+% scan all folders of the present directory
+cd(folder_name)
+folders = ls;
+for i=1:size(folders,1)-2
+    PATHNAME{i}=fullfile(pwd,folders(i+2,:));
+end
 
 currDir = pwd;
 % Calculate WSS
@@ -100,7 +101,7 @@ for n = 1:size(PATHNAME,2)
     TimeFlag=1;
     
     tic
-    mimics_to_Wss([MrstructPath],[MimicsSegPath],1,1,1,1,TimeFlag,0,0,0,0);
+    mimics_to_Wss([MrstructPath],[MimicsSegPath],1,1,1,1,TimeFlag,0,0,0,1);
     toc
     
     close all

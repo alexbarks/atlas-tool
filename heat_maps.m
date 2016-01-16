@@ -78,53 +78,66 @@ function WSS_calc_Callback(hObject, eventdata, handles)
 % hObject    handle to WSS_calc (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
 currDir = pwd;
-[FileName,MrstructPath,FilterIndex] = uigetfile(currDir,'Select the mag_struct file');
-try
-    cd(MrstructPath);
-catch
-    warndlg('File not found!');
-    return;
+choice = questdlg('Do you want to process an individual patient or batch several?', ...
+	'WSS calculation', ...
+	'Individual','Batch','Individual');
+% Handle response
+switch choice
+    case 'Individual'
+        
+        [FileName,MrstructPath,FilterIndex] = uigetfile(currDir,'Select the mag_struct file');
+        try
+            cd(MrstructPath);
+        catch
+            warndlg('File not found!');
+            return;
+        end
+        [FileName,MimicsSegPath,FilterIndex] = uigetfile([MrstructPath '\..\*'],'Select the Mimics aorta text file or the already computed Ao_grayvalues_mask_struct mat file');
+        try
+            cd(MimicsSegPath);
+        catch
+            warndlg('File not found!');
+            return;
+        end
+        cd(currDir)
+        WssFraction = get(handles.WssFraction,'Value');
+        WssThresh = get(handles.WssThresh,'Value');
+        plotFlag = get(handles.checkbox_plot,'Value');
+        saveFlag = get(handles.checkbox_saveHist,'Value');
+        WSS_syst = get(handles.WSS_sysTime,'Value');
+        WSS_syst_avg = get(handles.WSS_syst_avg,'Value');
+        WSS_allTimes = get(handles.WSS_allTimes,'Value');
+        % TimeFlag: 0 if only peak systole; 1 if average over 5 systolic phases; 2 if
+        % all phases
+        if WSS_syst == 1
+            TimeFlag = 0;
+        elseif WSS_syst_avg == 1
+            TimeFlag = 1;
+        elseif WSS_allTimes == 1
+            TimeFlag = 2;
+        end
+        wss_ensight_Flag = get(handles.checkbox_ensight,'Value');
+        % % If WSS calculation for systole only force to 0 >> taken into account in
+        % mimics_to_Wss
+        % if (WSS_allTimes == 0 && wss_ensight_Flag == 1)
+        %     wss_ensight_Flag = 0;
+        % end
+        hematocritFlag = get(handles.checkbox_hematocrit,'Value');
+        multipleMasksFlag = get(handles.checkbox_masks,'Value');
+        if(isequal(FileName(end-3:end),'.txt'))
+            mimicsFileFlag = 1;
+        elseif(isequal(FileName(end-3:end),'.mat'))
+            mimicsFileFlag = 0;
+        end
+        mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag,mimicsFileFlag)
+        h = msgbox('Wall shear stress was calculated and saved in the mrstruct folder');
+   
+    case 'Batch'
+        folder_name = uigetdir(currDir,'Select the folder containing all patient individual folders');
+        wss_batch(folder_name);
 end
-[FileName,MimicsSegPath,FilterIndex] = uigetfile([MrstructPath '\..\*'],'Select the Mimics aorta text file or the already computed Ao_grayvalues_mask_struct mat file');
-try
-    cd(MimicsSegPath);
-catch
-    warndlg('File not found!');
-    return;
-end
-cd(currDir)
-WssFraction = get(handles.WssFraction,'Value');
-WssThresh = get(handles.WssThresh,'Value');
-plotFlag = get(handles.checkbox_plot,'Value');
-saveFlag = get(handles.checkbox_saveHist,'Value');
-WSS_syst = get(handles.WSS_sysTime,'Value');
-WSS_syst_avg = get(handles.WSS_syst_avg,'Value');
-WSS_allTimes = get(handles.WSS_allTimes,'Value');
-% TimeFlag: 0 if only peak systole; 1 if average over 5 systolic phases; 2 if
-% all phases
-if WSS_syst == 1
-    TimeFlag = 0;
-elseif WSS_syst_avg == 1
-    TimeFlag = 1;
-elseif WSS_allTimes == 1
-    TimeFlag = 2;
-end
-wss_ensight_Flag = get(handles.checkbox_ensight,'Value');
-% % If WSS calculation for systole only force to 0 >> taken into account in
-% mimics_to_Wss
-% if (WSS_allTimes == 0 && wss_ensight_Flag == 1)
-%     wss_ensight_Flag = 0;
-% end
-hematocritFlag = get(handles.checkbox_hematocrit,'Value');
-multipleMasksFlag = get(handles.checkbox_masks,'Value');
-if(isequal(FileName(end-3:end),'.txt'))
-    mimicsFileFlag = 1;
-elseif(isequal(FileName(end-3:end),'.mat'))
-    mimicsFileFlag = 0;
-end
-mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag,mimicsFileFlag)
-h = msgbox('Wall shear stress was calculated and saved in the mrstruct folder');
 
 
 % --- Executes on button press in checkbox_plot.
