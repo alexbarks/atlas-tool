@@ -94,7 +94,7 @@ switch choice
             warndlg('File not found!');
             return;
         end
-        [FileName,MimicsSegPath,FilterIndex] = uigetfile([MrstructPath '\..\*'],'Select the Mimics aorta text file or the already computed Ao_grayvalues_mask_struct mat file');
+        [FileName,MimicsSegPath,FilterIndex] = uigetfile([MrstructPath '\..\*'],'Select the Mimics aorta or PA text file, or the already computed _grayvalues_mask_struct mat file');
         try
             cd(MimicsSegPath);
         catch
@@ -131,7 +131,7 @@ switch choice
         elseif(isequal(FileName(end-3:end),'.mat'))
             mimicsFileFlag = 0;
         end
-        mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag,mimicsFileFlag)
+        mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag,mimicsFileFlag,FileName)
         h = msgbox('Wall shear stress was calculated and saved in the mrstruct folder');
    
     case 'Batch'
