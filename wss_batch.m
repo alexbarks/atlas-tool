@@ -104,6 +104,6 @@ for n = 1:size(PATHNAME,2)
     mimics_to_Wss([MrstructPath],[MimicsSegPath],1,1,1,1,TimeFlag,0,0,0,1);
     toc
     
-    close all
+%     close all
     
 end
