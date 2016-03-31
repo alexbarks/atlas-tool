@@ -1,4 +1,4 @@
-function wss_batch(folder_name)
+function wss_batch(folder_name, TimeFlag)
 
 % % MARFAN patients
 % PATHNAME{1} = 'C:\Users\Emily\Desktop\Marfan_MRstructs\Marfans\AB20120210';
@@ -98,7 +98,7 @@ for n = 1:size(PATHNAME,2)
     MimicsSegPath = strcat(PATHNAME{n},'\');
     
     % TimeFlag: 1 (5 systolic phases);  0 (peak systole)
-    TimeFlag=1;
+    %TimeFlag=1;
     
     tic
     mimics_to_Wss([MrstructPath],[MimicsSegPath],1,1,1,1,TimeFlag,0,0,0,1);

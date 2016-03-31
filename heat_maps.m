@@ -136,7 +136,19 @@ switch choice
    
     case 'Batch'
         folder_name = uigetdir(currDir,'Select the folder containing all patient individual folders');
-        wss_batch(folder_name);
+        WSS_syst = get(handles.WSS_sysTime,'Value');
+        WSS_syst_avg = get(handles.WSS_syst_avg,'Value');
+        WSS_allTimes = get(handles.WSS_allTimes,'Value');
+        % TimeFlag: 0 if only peak systole; 1 if average over 5 systolic phases; 2 if
+        % all phases
+        if WSS_syst == 1
+            TimeFlag = 0;
+        elseif WSS_syst_avg == 1
+            TimeFlag = 1;
+        elseif WSS_allTimes == 1
+            TimeFlag = 2;
+        end
+        wss_batch(folder_name, TimeFlag);
 end
 
 
