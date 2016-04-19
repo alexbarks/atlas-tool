@@ -22,7 +22,7 @@ function varargout = WSS_quantif_2views(varargin)
 
 % Edit the above text to modify the response to help WSS_quantif_2views
 
-% Last Modified by GUIDE v2.5 04-Apr-2016 16:07:08
+% Last Modified by GUIDE v2.5 19-Apr-2016 12:48:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -203,7 +203,7 @@ cmap = colormap;
 cmap(1,1) = 0; 
 cmap(1,2) = 0;
 cmap(1,3) = 0;
-colormap(cmap)
+% colormap(cmap)
 set(handles.text_colorbar, 'String', 'WSS (Pa)');
 
 % 3D plot
@@ -212,13 +212,38 @@ y = V(:,2)/mask2_vox(2);
 z = V(:,3)/mask2_vox(3);
 axes(handles.axes_3d), patch('Faces',F,'Vertices',[x y z], ...
     'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
+%%%
+count = 0;
+angles(1) = 0;
+load mag_struct
+magnitude = flipdim(double(mrStruct.dataAy(:,:,:,3)),3);
+magnitude(magnitude == 0) = 3;
+magnitude(magnitude == 1) = 3;
+magnitude(magnitude == 2) = 3;
+hold on
+s = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
+set(s,'HandleVisibility','off','Visible','off');
+colormap(handles.axes_3d,gray)
+view([180 -90])
+% caxis([0 64]);
+aspectRatio = 1./mask2_vox;
+set(gca,'dataaspectRatio',aspectRatio(1:3))
+%camlight(-45,0); lighting phong
+%%%%
+set(handles.slider_anat3dView, 'Value',size(magnitude,3)/2);
+set(handles.slider_anat3dView, 'Max',size(magnitude,3));
+set(handles.slider_anat3dView, 'SliderStep',[1/(size(magnitude,3)-1) 10/(size(magnitude,3)-1)]);
+%%%
 axis equal;axis off; axis ij
-% view([-180 -90])
-h_cam3d=rotate3d(handles.axes_3d);
-set(h_cam3d,'enable','on');
-set(h_cam3d,'rotateStyle','orbit');
+% h_cam3d=rotate3d(handles.axes_3d);
+% set(h_cam3d,'enable','on');
+% set(h_cam3d,'rotateStyle','orbit');
 
 setappdata(handles.figure1, 'ROIcount', 0);
+setappdata(handles.figure1, 'magnImages', magnitude);
+setappdata(handles.figure1, 'hMagnImages', s);
+setappdata(handles.figure1, 'nbRot', count);
+setappdata(handles.figure1, 'anglesRot', angles);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -924,3 +949,94 @@ setPosition(h_roi{2,k},posROI{2,k});
 % Set handles
 setappdata(handles.figure1, 'hROI', h_roi);
 setappdata(handles.figure1, 'posROI', posROI);
+
+
+% --- Executes on slider movement.
+function slider_3dView_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_3dView (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+count = getappdata(handles.figure1, 'nbRot');
+angles = getappdata(handles.figure1, 'anglesRot');
+
+count = count + 1;
+dtheta = get(handles.slider_3dView,'Value');
+dphi = 0;
+if count == 1;
+    dtheta2 = dtheta*3;
+else
+    dtheta2 = (dtheta - angles(count-1))*3;
+end
+axes(handles.axes_3d);
+camorbit(dtheta2,dphi,'data',[0 1 0])
+angles(count) = dtheta;
+        
+setappdata(handles.figure1, 'nbRot', count);
+setappdata(handles.figure1, 'anglesRot', angles);
+
+
+% --- Executes during object creation, after setting all properties.
+function slider_3dView_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_3dView (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on button press in checkbox_anat3dView.
+function checkbox_anat3dView_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_anat3dView (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_anat3dView
+
+show = round(get(handles.checkbox_anat3dView,'Value'));
+s = getappdata(handles.figure1, 'hMagnImages');
+if (show == 1)
+    set(handles.slider_anat3dView, 'Enable', 'on');
+    patchobj = findobj(s);
+    set(patchobj,'HandleVisibility','on','Visible','on');
+elseif (show == 0)
+    set(handles.slider_anat3dView, 'Enable', 'off');
+    patchobj = findobj(s);
+    set(patchobj,'HandleVisibility','off','Visible','off');
+end
+
+
+% --- Executes on slider movement.
+function slider_anat3dView_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_anat3dView (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+s = getappdata(handles.figure1, 'hMagnImages');
+magnitude = getappdata(handles.figure1, 'magnImages');
+sliceobj = findobj(s);
+delete(sliceobj)
+slice = round(get(handles.slider_anat3dView,'Value'));
+s = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
+setappdata(handles.figure1, 'hMagnImages', s);
+
+
+% --- Executes during object creation, after setting all properties.
+function slider_anat3dView_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_anat3dView (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
