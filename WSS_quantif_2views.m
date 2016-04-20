@@ -27,11 +27,11 @@ function varargout = WSS_quantif_2views(varargin)
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
-                   'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @WSS_quantif_2views_OpeningFcn, ...
-                   'gui_OutputFcn',  @WSS_quantif_2views_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
-                   'gui_Callback',   []);
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @WSS_quantif_2views_OpeningFcn, ...
+    'gui_OutputFcn',  @WSS_quantif_2views_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
     gui_State.gui_Callback = str2func(varargin{1});
 end
@@ -200,7 +200,7 @@ set(gca,'dataaspectRatio',mask2_vox([3 2 1]))
 axis off
 %Set Colormap to have black be the lowest value (zero)
 cmap = colormap;
-cmap(1,1) = 0; 
+cmap(1,1) = 0;
 cmap(1,2) = 0;
 cmap(1,3) = 0;
 % colormap(cmap)
@@ -247,7 +247,7 @@ setappdata(handles.figure1, 'anglesRot', angles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = WSS_quantif_2views_OutputFcn(hObject, eventdata, handles) 
+function varargout = WSS_quantif_2views_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -268,10 +268,10 @@ proj = get(handles.popupmenu_proj, 'Value');
 axes(eval(['handles.axes_proj' num2str(proj)]))
 
 ROIcount = getappdata(handles.figure1, 'ROIcount');
-if ROIcount >= 8
-    warndlg('Already 8 ROIs!', 'Too many ROIs');
-    return;
-end
+% if ROIcount >= 8
+%     warndlg('Already 8 ROIs!', 'Too many ROIs');
+%     return;
+% end
 if isappdata(handles.figure1, 'hROI')
     h_roi = getappdata(handles.figure1, 'hROI');
 end
@@ -296,13 +296,13 @@ switch proj
         axes(handles.axes_proj2)
         h_roi{2,ROIcount+1} = impoly(gca,posROI{2,ROIcount+1});
         axes(handles.axes_proj3)
-        h_roi{3,ROIcount+1} = impoly(gca,posROI{3,ROIcount+1});          
+        h_roi{3,ROIcount+1} = impoly(gca,posROI{3,ROIcount+1});
     case 2
         h_roi{2,ROIcount+1}  = impoly;
         posROI{2,ROIcount+1}   = getPosition(h_roi{2,ROIcount+1});
         zi      = posROI{2,ROIcount+1}(:,1);
         yi      = posROI{2,ROIcount+1}(:,2);
-        zmax    = max(zi); 
+        zmax    = max(zi);
         zmin    = min(zi);
         ymax    = max(yi);
         ymin    = min(yi);
@@ -371,6 +371,26 @@ elseif ROIcount+1 == 8
     setColor(h_roi{2,8}, [.5 .5 .5])
     setColor(h_roi{3,8}, [.5 .5 .5])
     set(handles.text_ROI8,'Visible', 'on');
+elseif ROIcount+1 == 9
+    setColor(h_roi{1,9}, [1 153/255 0])
+    setColor(h_roi{2,9}, [1 153/255 0])
+    setColor(h_roi{3,9}, [1 153/255 0])
+    set(handles.text_ROI9,'Visible', 'on');
+elseif ROIcount+1 == 10
+    setColor(h_roi{1,10}, [51/255 153/255 51/255])
+    setColor(h_roi{2,10}, [51/255 153/255 51/255])
+    setColor(h_roi{3,10}, [51/255 153/255 51/255])
+    set(handles.text_ROI10,'Visible', 'on');
+elseif ROIcount+1 == 11
+    setColor(h_roi{1,11}, [102/255 0 102/255])
+    setColor(h_roi{2,11}, [102/255 0 102/255])
+    setColor(h_roi{3,11}, [102/255 0 102/255])
+    set(handles.text_ROI11,'Visible', 'on');
+elseif ROIcount+1 == 12
+    setColor(h_roi{1,12}, [0 153/255 153/255])
+    setColor(h_roi{2,12}, [0 153/255 153/255])
+    setColor(h_roi{3,12}, [0 153/255 153/255])
+    set(handles.text_ROI12,'Visible', 'on');
 end
 
 % Add callbacks for when impolys are adjusted
@@ -447,6 +467,23 @@ else
         setColor(h_roi{2,8}, [.5 .5 .5])
         setColor(h_roi{3,8}, [.5 .5 .5])
         set(handles.text_ROI8,'Visible', 'on');
+    elseif size(posROI,2) == 12
+        setColor(h_roi{1,9}, [1 153/255 0])
+        setColor(h_roi{2,9}, [1 153/255 0])
+        setColor(h_roi{3,9}, [1 153/255 0])
+        set(handles.text_ROI9,'Visible', 'on');
+        setColor(h_roi{1,10}, [51/255 153/255 51/255])
+        setColor(h_roi{2,10}, [51/255 153/255 51/255])
+        setColor(h_roi{3,10}, [51/255 153/255 51/255])
+        set(handles.text_ROI10,'Visible', 'on');
+        setColor(h_roi{1,11}, [102/255 0 102/255])
+        setColor(h_roi{2,11}, [102/255 0 102/255])
+        setColor(h_roi{3,11}, [102/255 0 102/255])
+        set(handles.text_ROI11,'Visible', 'on');
+        setColor(h_roi{1,12}, [0 153/255 153/255])
+        setColor(h_roi{2,12}, [0 153/255 153/255])
+        setColor(h_roi{3,12}, [0 153/255 153/255])
+        set(handles.text_ROI12,'Visible', 'on');
     end
 end
 
@@ -582,7 +619,7 @@ cpos(2) = 16;
 set(c3,'Position',cpos);
 set(c1,'YColor', 'white');
 cmap = colormap;
-cmap(1,1) = 0; 
+cmap(1,1) = 0;
 cmap(1,2) = 0;
 cmap(1,3) = 0;
 colormap(cmap)
@@ -633,7 +670,7 @@ cpos(2) = 16;
 set(c3,'Position',cpos);
 set(c1,'YColor', 'white');
 cmap = colormap;
-cmap(1,1) = 0; 
+cmap(1,1) = 0;
 cmap(1,2) = 0;
 cmap(1,3) = 0;
 colormap(cmap)
@@ -682,7 +719,7 @@ cpos(2) = 16;
 set(c3,'Position',cpos);
 set(c1,'YColor', 'white');
 cmap = colormap;
-cmap(1,1) = 0; 
+cmap(1,1) = 0;
 cmap(1,2) = 0;
 cmap(1,3) = 0;
 colormap(cmap)
@@ -974,7 +1011,7 @@ end
 axes(handles.axes_3d);
 camorbit(dtheta2,dphi,'data',[0 1 0])
 angles(count) = dtheta;
-        
+
 setappdata(handles.figure1, 'nbRot', count);
 setappdata(handles.figure1, 'anglesRot', angles);
 
