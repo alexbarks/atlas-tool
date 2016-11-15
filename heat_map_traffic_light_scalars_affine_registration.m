@@ -153,6 +153,7 @@ Rotation_Translation = [];
 
 load(strcat(AtlasPath,'\',FILENAME_atlas))
 mask1 = atlas.mask;
+gray_colormap = colormap(gray);
 
 if plotFlag == 1
     
@@ -1002,115 +1003,170 @@ disp(['Percentage higher than controls inner AAo = ' num2str(round(percentage_si
 disp(['Percentage lower than controls inner AAo = ' num2str(round(percentage_significant_lower_than_controls)) '%'])
 disp(' ')
 
+color2(1,:) = [0 0 1];
+color2(2,:) = [1 0 0];
+color2(3,:) = [0.5 0.5 0.5];
+color2(4:64,:) = gray_colormap(4:64,:);
+
 if calculate_area_of_higherlowerFlag == 1;
+    
+    vertices = [data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss];
+    figure, patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
+        'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
+    axis equal;axis off; axis ij
+    view([-180 -90])
+    colormap(color2);
+    caxis([0 64]);
+    
     if exist(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask1.mat'),'file')~=2
-        
-        patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
-        view([-180 -90]);axis ij;axis equal;axis off
         title('Draw regions from proximal to distal, inner then outer locations')
-        
         mkdir(PATHNAME,'heat_map_higher_lower_masks')
-        
-        for i = 1:6
+        nbROIs = inputdlg('How many ROIs for calculation of higher and lower WSS areas?', 'Number of ROIs', 1, {'3'});
+        nbROIs = (round(str2num(nbROIs{1})));        
+        for i = 1:nbROIs
             %Polygon and mask for AAo
             polyAAo = impoly;
             wait(polyAAo);
             region = getPosition(polyAAo);
             %mask = inpolygon(x, y, AAo(:,1), AAo(:,2));
-            
             disp('saving, pausing')
             save(strcat([PATHNAME '\heat_map_higher_lower_masks\mask' num2str(i)]),'region');
             pause
         end
     end
-    load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask1'));
-    atlas_mask_AAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask2'));
-    atlas_mask_AAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask3'));
-    atlas_mask_arch_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask4'));
-    atlas_mask_arch_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask5'));
-    atlas_mask_DAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-    load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask6'));
-    atlas_mask_DAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
     
-    heat_asc1 = heat_mapp(atlas_mask_AAo_inner);
-    [I1,J1] = find(heat_asc1 == 0);
-    [I2,J2] = find(heat_asc1 == 1);
-    percentage_significant_higher_than_controls = size(I2,1) / size(heat_asc1,1) * 100;
-    percentage_significant_lower_than_controls = size(I1,1) / size(heat_asc1,1) * 100;
+    currDir=pwd;
+    cd(strcat(PATHNAME,'\heat_map_higher_lower_masks\'));
+    nbROIs=size(ls('mask*.mat'),1);
     
-    disp(['Percentage higher than controls inner AAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-    disp(['Percentage lower than controls inner AAo = ' num2str(percentage_significant_lower_than_controls) '%'])
+    % save in Excel
+    indices{1,1} = 'ROI #';
+    indices{2,1} = 'total area (cm2)';
+    indices{3,1} = 'red area (cm2)';
+    indices{4,1} = 'blue area (cm2)';
     
-    heat_asc2 = heat_mapp(atlas_mask_AAo_outer);
-    [I1,J1] = find(heat_asc2 == 0);
-    [I2,J2] = find(heat_asc2 == 1);
-    percentage_significant_higher_than_controls = size(I2,1) / size(heat_asc2,1) * 100;
-    percentage_significant_lower_than_controls = size(I1,1) / size(heat_asc2,1) * 100;
-    
-    disp(['Percentage higher than controls outer AAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-    disp(['Percentage lower than controls outer AAo = ' num2str(percentage_significant_lower_than_controls) '%'])
-    
-    heat_arch1 = heat_mapp(atlas_mask_arch_inner);
-    [I1,J1] = find(heat_arch1 == 0);
-    [I2,J2] = find(heat_arch1 == 1);
-    percentage_significant_higher_than_controls = size(I2,1) / size(heat_arch1,1) * 100;
-    percentage_significant_lower_than_controls = size(I1,1) / size(heat_arch1,1) * 100;
-    
-    disp(['Percentage higher than controls inner arch = ' num2str(percentage_significant_higher_than_controls) '%'])
-    disp(['Percentage lower than controls inner arch = ' num2str(percentage_significant_lower_than_controls) '%'])
-    
-    heat_arch2 = heat_mapp(atlas_mask_arch_outer);
-    [I1,J1] = find(heat_arch2 == 0);
-    [I2,J2] = find(heat_arch2 == 1);
-    percentage_significant_higher_than_controls = size(I2,1) / size(heat_arch2,1) * 100;
-    percentage_significant_lower_than_controls = size(I1,1) / size(heat_arch2,1) * 100;
-    
-    disp(['Percentage higher than controls outer arch = ' num2str(percentage_significant_higher_than_controls) '%'])
-    disp(['Percentage lower than controls outer arch = ' num2str(percentage_significant_lower_than_controls) '%'])
-    
-    heat_desc1 = heat_mapp(atlas_mask_DAo_inner);
-    [I1,J1] = find(heat_desc1 == 0);
-    [I2,J2] = find(heat_desc1 == 1);
-    percentage_significant_higher_than_controls = size(I2,1) / size(heat_desc1,1) * 100;
-    percentage_significant_lower_than_controls = size(I1,1) / size(heat_desc1,1) * 100;
-    
-    disp(['Percentage higher than controls inner DAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-    disp(['Percentage lower than controls inner DAo = ' num2str(percentage_significant_lower_than_controls) '%'])
-    
-    heat_desc2 = heat_mapp(atlas_mask_DAo_outer);
-    [I1,J1] = find(heat_desc2 == 0);
-    [I2,J2] = find(heat_desc2 == 1);
-    percentage_significant_higher_than_controls = size(I2,1) / size(heat_desc2,1) * 100;
-    percentage_significant_lower_than_controls = size(I1,1) / size(heat_desc2,1) * 100;
-    
-    disp(['Percentage higher than controls outer DAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-    disp(['Percentage lower than controls outer DAo = ' num2str(percentage_significant_lower_than_controls) '%'])
-    
-    if plotFlag == 1
-        figure('Name','higher/lower: inner AAo')
-        scatter3(data2.x_coor_wss(atlas_mask_AAo_inner),data2.y_coor_wss(atlas_mask_AAo_inner),data2.z_coor_wss(atlas_mask_AAo_inner),20,heat_asc1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-        xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-        figure('Name','higher/lower: outer AAo')
-        scatter3(data2.x_coor_wss(atlas_mask_AAo_outer),data2.y_coor_wss(atlas_mask_AAo_outer),data2.z_coor_wss(atlas_mask_AAo_outer),20,heat_asc2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-        xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-        figure('Name','higher/lower: inner arch')
-        scatter3(data2.x_coor_wss(atlas_mask_arch_inner),data2.y_coor_wss(atlas_mask_arch_inner),data2.z_coor_wss(atlas_mask_arch_inner),20,heat_arch1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-        xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-        figure('Name','higher/lower: outer arch')
-        scatter3(data2.x_coor_wss(atlas_mask_arch_outer),data2.y_coor_wss(atlas_mask_arch_outer),data2.z_coor_wss(atlas_mask_arch_outer),20,heat_arch2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-        xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-        figure('Name','higher/lower: inner DAo')
-        scatter3(data2.x_coor_wss(atlas_mask_DAo_inner),data2.y_coor_wss(atlas_mask_DAo_inner),data2.z_coor_wss(atlas_mask_DAo_inner),20,heat_desc1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-        xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-        figure('Name','higher/lower: outer DAo')
-        scatter3(data2.x_coor_wss(atlas_mask_DAo_outer),data2.y_coor_wss(atlas_mask_DAo_outer),data2.z_coor_wss(atlas_mask_DAo_outer),20,heat_desc2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-        xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
+    for i=1:nbROIs
+        load(strcat(PATHNAME, '\heat_map_higher_lower_masks\mask', num2str(i)));
+        hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+        mask = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+        new_heatmap = heat_mapp.*mask;
+        new_heatmap(~mask)=3;
+        new_sel_blue = (new_heatmap == 0);
+        new_sel_red = (new_heatmap == 1);
+        new_sel_gray = (new_heatmap == 2);
+        new_sel_blue = sum([new_sel_blue(data2.F(:,1)) new_sel_blue(data2.F(:,2)) new_sel_blue(data2.F(:,3))],2)>1;
+        new_sel_red = sum([new_sel_red(data2.F(:,1)) new_sel_red(data2.F(:,2)) new_sel_red(data2.F(:,3))],2)>1;
+        new_sel_gray = sum([new_sel_gray(data2.F(:,1)) new_sel_gray(data2.F(:,2)) new_sel_gray(data2.F(:,3))],2)>1;
+        new_area_blue = triangleArea3d(vertices(data2.F(new_sel_blue,1),:),vertices(data2.F(new_sel_blue,2),:),vertices(data2.F(new_sel_blue,3),:));
+        new_area_red = triangleArea3d(vertices(data2.F(new_sel_red,1),:),vertices(data2.F(new_sel_red,2),:),vertices(data2.F(new_sel_red,3),:));
+        new_area_gray = triangleArea3d(vertices(data2.F(new_sel_gray,1),:),vertices(data2.F(new_sel_gray,2),:),vertices(data2.F(new_sel_gray,3),:));
+        new_area_total = (sum(new_area_blue)+sum(new_area_red)+sum(new_area_gray)); % mm2
+        new_area_red_total = sum(new_area_red);% mm2
+        new_area_blue_total = sum(new_area_blue);% mm2
+        
+        disp(['total area ' num2str(i) ' = ' num2str(new_area_total/100) ' cm2'])
+        disp(['red area ' num2str(i) '= ' num2str(new_area_red_total/100) ' cm2'])
+        disp(['blue area ' num2str(i) ' = ' num2str(new_area_blue_total/100) ' cm2'])
+        
+        % save in the Excel file
+        indices{1,i+1} = i;
+        indices{2,i+1} = num2str(new_area_total/100);
+        indices{3,i+1} = num2str(new_area_red_total/100);
+        indices{4,i+1} = num2str(new_area_blue_total/100);
+
+        clear new_heatmap mask new_sel_blue new_sel_red new_sel_gray new_area_blue new_area_red new_area_gray new_area_total new_area_red_total new_area_blue_total region
     end
+    xlswrite('higher_lower_areas',indices);
+    cd(currDir);
 end
+
+%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask1'));
+%     atlas_mask_AAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask2'));
+%     atlas_mask_AAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask3'));
+%     atlas_mask_arch_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask4'));
+%     atlas_mask_arch_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask5'));
+%     atlas_mask_DAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask6'));
+%     atlas_mask_DAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
+%     
+%     heat_asc1 = heat_mapp(atlas_mask_AAo_inner);
+%     [I1,J1] = find(heat_asc1 == 0);
+%     [I2,J2] = find(heat_asc1 == 1);
+%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_asc1,1) * 100;
+%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_asc1,1) * 100;
+%     
+%     disp(['Percentage higher than controls inner AAo = ' num2str(percentage_significant_higher_than_controls) '%'])
+%     disp(['Percentage lower than controls inner AAo = ' num2str(percentage_significant_lower_than_controls) '%'])
+%     
+%     heat_asc2 = heat_mapp(atlas_mask_AAo_outer);
+%     [I1,J1] = find(heat_asc2 == 0);
+%     [I2,J2] = find(heat_asc2 == 1);
+%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_asc2,1) * 100;
+%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_asc2,1) * 100;
+%     
+%     disp(['Percentage higher than controls outer AAo = ' num2str(percentage_significant_higher_than_controls) '%'])
+%     disp(['Percentage lower than controls outer AAo = ' num2str(percentage_significant_lower_than_controls) '%'])
+%     
+%     heat_arch1 = heat_mapp(atlas_mask_arch_inner);
+%     [I1,J1] = find(heat_arch1 == 0);
+%     [I2,J2] = find(heat_arch1 == 1);
+%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_arch1,1) * 100;
+%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_arch1,1) * 100;
+%     
+%     disp(['Percentage higher than controls inner arch = ' num2str(percentage_significant_higher_than_controls) '%'])
+%     disp(['Percentage lower than controls inner arch = ' num2str(percentage_significant_lower_than_controls) '%'])
+%     
+%     heat_arch2 = heat_mapp(atlas_mask_arch_outer);
+%     [I1,J1] = find(heat_arch2 == 0);
+%     [I2,J2] = find(heat_arch2 == 1);
+%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_arch2,1) * 100;
+%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_arch2,1) * 100;
+%     
+%     disp(['Percentage higher than controls outer arch = ' num2str(percentage_significant_higher_than_controls) '%'])
+%     disp(['Percentage lower than controls outer arch = ' num2str(percentage_significant_lower_than_controls) '%'])
+%     
+%     heat_desc1 = heat_mapp(atlas_mask_DAo_inner);
+%     [I1,J1] = find(heat_desc1 == 0);
+%     [I2,J2] = find(heat_desc1 == 1);
+%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_desc1,1) * 100;
+%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_desc1,1) * 100;
+%     
+%     disp(['Percentage higher than controls inner DAo = ' num2str(percentage_significant_higher_than_controls) '%'])
+%     disp(['Percentage lower than controls inner DAo = ' num2str(percentage_significant_lower_than_controls) '%'])
+%     
+%     heat_desc2 = heat_mapp(atlas_mask_DAo_outer);
+%     [I1,J1] = find(heat_desc2 == 0);
+%     [I2,J2] = find(heat_desc2 == 1);
+%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_desc2,1) * 100;
+%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_desc2,1) * 100;
+%     
+%     disp(['Percentage higher than controls outer DAo = ' num2str(percentage_significant_higher_than_controls) '%'])
+%     disp(['Percentage lower than controls outer DAo = ' num2str(percentage_significant_lower_than_controls) '%'])
+%     
+%     if plotFlag == 1
+%         figure('Name','higher/lower: inner AAo')
+%         scatter3(data2.x_coor_wss(atlas_mask_AAo_inner),data2.y_coor_wss(atlas_mask_AAo_inner),data2.z_coor_wss(atlas_mask_AAo_inner),20,heat_asc1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
+%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
+%         figure('Name','higher/lower: outer AAo')
+%         scatter3(data2.x_coor_wss(atlas_mask_AAo_outer),data2.y_coor_wss(atlas_mask_AAo_outer),data2.z_coor_wss(atlas_mask_AAo_outer),20,heat_asc2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
+%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
+%         figure('Name','higher/lower: inner arch')
+%         scatter3(data2.x_coor_wss(atlas_mask_arch_inner),data2.y_coor_wss(atlas_mask_arch_inner),data2.z_coor_wss(atlas_mask_arch_inner),20,heat_arch1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
+%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
+%         figure('Name','higher/lower: outer arch')
+%         scatter3(data2.x_coor_wss(atlas_mask_arch_outer),data2.y_coor_wss(atlas_mask_arch_outer),data2.z_coor_wss(atlas_mask_arch_outer),20,heat_arch2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
+%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
+%         figure('Name','higher/lower: inner DAo')
+%         scatter3(data2.x_coor_wss(atlas_mask_DAo_inner),data2.y_coor_wss(atlas_mask_DAo_inner),data2.z_coor_wss(atlas_mask_DAo_inner),20,heat_desc1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
+%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
+%         figure('Name','higher/lower: outer DAo')
+%         scatter3(data2.x_coor_wss(atlas_mask_DAo_outer),data2.y_coor_wss(atlas_mask_DAo_outer),data2.z_coor_wss(atlas_mask_DAo_outer),20,heat_desc2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
+%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
+%     end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%  TRAFFIC LIGHT MAP
@@ -1395,11 +1451,6 @@ disp(['Blue area = ' num2str(area_blue_total/100) ' cm2'])
 area_red_total_perc = area_red_total/area_total*100;
 area_blue_total_perc = area_blue_total/area_total*100;
 %return
-gray_colormap = colormap(gray);
-color2(1,:) = [0 0 1];
-color2(2,:) = [1 0 0];
-color2(3,:) = [0.5 0.5 0.5];
-color2(4:64,:) = gray_colormap(4:64,:);
 colormap(color2);
 caxis([0 64]);
 axis equal; axis ij; axis off;
@@ -1553,7 +1604,7 @@ save(strcat(dir_new,'\heat_map'),'heat_map');
 %savefig(f2,strcat(dir_new,'\heat_map'))
 %cd(dir_orig)
 
-% Emilie: segmented red areas (ISMRM abstract)
+% % Emilie: segmented red areas (ISMRM abstract)
 % figure, patch('Faces',data2.F,'Vertices',[x y z], ...
 %     'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
 % axis equal;axis off; axis ij
@@ -1578,7 +1629,7 @@ save(strcat(dir_new,'\heat_map'),'heat_map');
 % 
 % end
 % load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask1'));
-% % hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+% hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
 % mask_AAo = inpolygon(x,y, region(:,1), region(:,2));
 % new_heatmap = heat_mapp.*mask_AAo;
 % new_heatmap(~mask_AAo)=3;
@@ -1597,11 +1648,12 @@ save(strcat(dir_new,'\heat_map'),'heat_map');
 % 
 % disp(['total area = ' num2str(new_area_total/100) ' cm2'])
 % disp(['red area = ' num2str(new_area_red_total/100) ' cm2'])
-% disp(['New blue area = ' num2str(new_area_blue_total/100) ' cm2'])
+% % disp(['New blue area = ' num2str(new_area_blue_total/100) ' cm2'])
 % area_all(1)=new_area_red_total/100;
 % area_all(2)=new_area_total/100;
 % 
 % load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask2'));
+% hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
 % mask_arch = inpolygon(x,y, region(:,1), region(:,2));
 % clear new_heatmap
 % new_heatmap = heat_mapp.*mask_arch;
@@ -1625,6 +1677,7 @@ save(strcat(dir_new,'\heat_map'),'heat_map');
 % area_all(4)=new_area_total/100;
 % 
 % load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask3'));
+% hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
 % mask_DAo = inpolygon(x,y, region(:,1), region(:,2));
 % clear new_heatmap
 % new_heatmap = heat_mapp.*mask_DAo;
@@ -1653,7 +1706,6 @@ if images_for_surgeryFlag
     y = data2.y_coor_wss/mask2_vox(2);
     z = data2.z_coor_wss/mask2_vox(3);
     p3=patch('Faces',data2.F,'Vertices',[x y z],'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
-    gray_colormap = colormap(gray);
     color3(1,:) = [0 0 1];
     color3(2,:) = [1 0 0];
     color3(3,:) = [0.5 0.5 0.5];
