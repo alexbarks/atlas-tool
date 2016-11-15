@@ -22,7 +22,7 @@ function varargout = WSS_quantif_2views(varargin)
 
 % Edit the above text to modify the response to help WSS_quantif_2views
 
-% Last Modified by GUIDE v2.5 19-Apr-2016 12:48:44
+% Last Modified by GUIDE v2.5 15-Nov-2016 16:25:25
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -244,6 +244,7 @@ setappdata(handles.figure1, 'magnImages', magnitude);
 setappdata(handles.figure1, 'hMagnImages', s);
 setappdata(handles.figure1, 'nbRot', count);
 setappdata(handles.figure1, 'anglesRot', angles);
+set(gcf, 'toolbar', 'figure')
 
 
 % --- Outputs from this function are returned to the command line.
@@ -347,50 +348,80 @@ elseif ROIcount+1 == 3
     setColor(h_roi{3,3}, 'g')
     set(handles.text_ROI3,'Visible', 'on');
 elseif ROIcount+1 == 4
-    setColor(h_roi{1,4}, 'c')
-    setColor(h_roi{2,4}, 'c')
-    setColor(h_roi{3,4}, 'c')
+%     setColor(h_roi{1,4}, 'c')
+%     setColor(h_roi{2,4}, 'c')
+%     setColor(h_roi{3,4}, 'c')
+    setColor(h_roi{1,4}, 'y')
+    setColor(h_roi{2,4}, 'y')
+    setColor(h_roi{3,4}, 'y')
     set(handles.text_ROI4,'Visible', 'on');
+    set(handles.text_ROI4,'ForegroundColor', 'y');
 elseif ROIcount+1 == 5
-    setColor(h_roi{1,5}, 'm')
-    setColor(h_roi{2,5}, 'm')
-    setColor(h_roi{3,5}, 'm')
+%     setColor(h_roi{1,5}, 'm')
+%     setColor(h_roi{2,5}, 'm')
+%     setColor(h_roi{3,5}, 'm')
     set(handles.text_ROI5,'Visible', 'on');
+    set(handles.text_ROI5,'ForegroundColor', 'b');
 elseif ROIcount+1 == 6
-    setColor(h_roi{1,6}, 'y')
-    setColor(h_roi{2,6}, 'y')
-    setColor(h_roi{3,6}, 'y')
+%     setColor(h_roi{1,6}, 'y')
+%     setColor(h_roi{2,6}, 'y')
+%     setColor(h_roi{3,6}, 'y')
+    setColor(h_roi{1,6}, 'r')
+    setColor(h_roi{2,6}, 'r')
+    setColor(h_roi{3,6}, 'r')
     set(handles.text_ROI6,'Visible', 'on');
+    set(handles.text_ROI6,'ForegroundColor', 'r');
 elseif ROIcount+1 == 7
-    setColor(h_roi{1,7}, 'w')
-    setColor(h_roi{2,7}, 'w')
-    setColor(h_roi{3,7}, 'w')
+%     setColor(h_roi{1,7}, 'w')
+%     setColor(h_roi{2,7}, 'w')
+%     setColor(h_roi{3,7}, 'w')
+    setColor(h_roi{1,7}, 'g')
+    setColor(h_roi{2,7}, 'g')
+    setColor(h_roi{3,7}, 'g')
     set(handles.text_ROI7,'Visible', 'on');
+    set(handles.text_ROI7,'ForegroundColor', 'g');
 elseif ROIcount+1 == 8
-    setColor(h_roi{1,8}, [.5 .5 .5])
-    setColor(h_roi{2,8}, [.5 .5 .5])
-    setColor(h_roi{3,8}, [.5 .5 .5])
+%     setColor(h_roi{1,8}, [.5 .5 .5])
+%     setColor(h_roi{2,8}, [.5 .5 .5])
+%     setColor(h_roi{3,8}, [.5 .5 .5])
+    setColor(h_roi{1,8}, 'y')
+    setColor(h_roi{2,8}, 'y')
+    setColor(h_roi{3,8}, 'y')
     set(handles.text_ROI8,'Visible', 'on');
+    set(handles.text_ROI8,'ForegroundColor', 'y');
 elseif ROIcount+1 == 9
-    setColor(h_roi{1,9}, [1 153/255 0])
-    setColor(h_roi{2,9}, [1 153/255 0])
-    setColor(h_roi{3,9}, [1 153/255 0])
+%     setColor(h_roi{1,9}, [1 153/255 0])
+%     setColor(h_roi{2,9}, [1 153/255 0])
+%     setColor(h_roi{3,9}, [1 153/255 0])
     set(handles.text_ROI9,'Visible', 'on');
+    set(handles.text_ROI9,'ForegroundColor', 'b');
 elseif ROIcount+1 == 10
-    setColor(h_roi{1,10}, [51/255 153/255 51/255])
-    setColor(h_roi{2,10}, [51/255 153/255 51/255])
-    setColor(h_roi{3,10}, [51/255 153/255 51/255])
+%     setColor(h_roi{1,10}, [51/255 153/255 51/255])
+%     setColor(h_roi{2,10}, [51/255 153/255 51/255])
+%     setColor(h_roi{3,10}, [51/255 153/255 51/255])
+    setColor(h_roi{1,10}, 'r')
+    setColor(h_roi{2,10}, 'r')
+    setColor(h_roi{3,10}, 'r')
     set(handles.text_ROI10,'Visible', 'on');
+    set(handles.text_ROI10,'ForegroundColor', 'r');
 elseif ROIcount+1 == 11
-    setColor(h_roi{1,11}, [102/255 0 102/255])
-    setColor(h_roi{2,11}, [102/255 0 102/255])
-    setColor(h_roi{3,11}, [102/255 0 102/255])
+%     setColor(h_roi{1,11}, [102/255 0 102/255])
+%     setColor(h_roi{2,11}, [102/255 0 102/255])
+%     setColor(h_roi{3,11}, [102/255 0 102/255])
+    setColor(h_roi{1,11}, 'g')
+    setColor(h_roi{2,11}, 'g')
+    setColor(h_roi{3,11}, 'g')
     set(handles.text_ROI11,'Visible', 'on');
+    set(handles.text_ROI11,'ForegroundColor', 'g');
 elseif ROIcount+1 == 12
-    setColor(h_roi{1,12}, [0 153/255 153/255])
-    setColor(h_roi{2,12}, [0 153/255 153/255])
-    setColor(h_roi{3,12}, [0 153/255 153/255])
+%     setColor(h_roi{1,12}, [0 153/255 153/255])
+%     setColor(h_roi{2,12}, [0 153/255 153/255])
+%     setColor(h_roi{3,12}, [0 153/255 153/255])
+    setColor(h_roi{1,12}, 'y')
+    setColor(h_roi{2,12}, 'y')
+    setColor(h_roi{3,12}, 'y')
     set(handles.text_ROI12,'Visible', 'on');
+    set(handles.text_ROI12,'ForegroundColor', 'y');
 end
 
 % Add callbacks for when impolys are adjusted
@@ -422,15 +453,18 @@ for i = 1:size(posROI,2)
     h_roi{2,i} = impoly(gca, posROI{2,i});
     axes(handles.axes_proj3)
     h_roi{3,i} = impoly(gca, posROI{3,i});
+    setappdata(handles.figure1, 'posROI', posROI);
+    setappdata(handles.figure1, 'hROI', h_roi);
+    setappdata(handles.figure1, 'ROIcount', size(posROI,2));
     % Add Callbacks for loaded ROIs
     addNewPositionCallback(h_roi{1,i},@(pos) redrawRoi23(pos, [], handles, i));
     addNewPositionCallback(h_roi{2,i},@(pos) redrawRoi13(pos, [], handles, i));
     addNewPositionCallback(h_roi{3,i},@(pos) redrawRoi12(pos, [], handles, i));
 end
 
-setappdata(handles.figure1, 'posROI', posROI);
-setappdata(handles.figure1, 'hROI', h_roi);
-setappdata(handles.figure1, 'ROIcount', size(posROI,2));
+% setappdata(handles.figure1, 'posROI', posROI);
+% setappdata(handles.figure1, 'hROI', h_roi);
+% setappdata(handles.figure1, 'ROIcount', size(posROI,2));
 
 % Color code loaded ROIs according to colorROI fcn
 if size(posROI,2) < 6
@@ -446,17 +480,23 @@ else
     setColor(h_roi{2,3}, 'g')
     setColor(h_roi{3,3}, 'g')
     set(handles.text_ROI3,'Visible', 'on');
-    setColor(h_roi{1,4}, 'c')
-    setColor(h_roi{2,4}, 'c')
-    setColor(h_roi{3,4}, 'c')
+%     setColor(h_roi{1,4}, 'c')
+%     setColor(h_roi{2,4}, 'c')
+%     setColor(h_roi{3,4}, 'c')
+    setColor(h_roi{1,4}, 'y')
+    setColor(h_roi{2,4}, 'y')
+    setColor(h_roi{3,4}, 'y')
     set(handles.text_ROI4,'Visible', 'on');
-    setColor(h_roi{1,5}, 'm')
-    setColor(h_roi{2,5}, 'm')
-    setColor(h_roi{3,5}, 'm')
+%     setColor(h_roi{1,5}, 'm')
+%     setColor(h_roi{2,5}, 'm')
+%     setColor(h_roi{3,5}, 'm')
     set(handles.text_ROI5,'Visible', 'on');
-    setColor(h_roi{1,6}, 'y')
-    setColor(h_roi{2,6}, 'y')
-    setColor(h_roi{3,6}, 'y')
+%     setColor(h_roi{1,6}, 'y')
+%     setColor(h_roi{2,6}, 'y')
+%     setColor(h_roi{3,6}, 'y')
+    setColor(h_roi{1,6}, 'r')
+    setColor(h_roi{2,6}, 'r')
+    setColor(h_roi{3,6}, 'r')
     set(handles.text_ROI6,'Visible', 'on');
     if size(posROI,2) == 8
         setColor(h_roi{1,7}, 'w')
@@ -468,21 +508,38 @@ else
         setColor(h_roi{3,8}, [.5 .5 .5])
         set(handles.text_ROI8,'Visible', 'on');
     elseif size(posROI,2) == 12
-        setColor(h_roi{1,9}, [1 153/255 0])
-        setColor(h_roi{2,9}, [1 153/255 0])
-        setColor(h_roi{3,9}, [1 153/255 0])
+        setColor(h_roi{1,7}, 'g')
+        setColor(h_roi{2,7}, 'g')
+        setColor(h_roi{3,7}, 'g')
+        set(handles.text_ROI7,'Visible', 'on');
+        setColor(h_roi{1,8}, 'y')
+        setColor(h_roi{2,8}, 'y')
+        setColor(h_roi{3,8}, 'y')
+        set(handles.text_ROI8,'Visible', 'on');
+%         setColor(h_roi{1,9}, [1 153/255 0])
+%         setColor(h_roi{2,9}, [1 153/255 0])
+%         setColor(h_roi{3,9}, [1 153/255 0])
         set(handles.text_ROI9,'Visible', 'on');
-        setColor(h_roi{1,10}, [51/255 153/255 51/255])
-        setColor(h_roi{2,10}, [51/255 153/255 51/255])
-        setColor(h_roi{3,10}, [51/255 153/255 51/255])
+%         setColor(h_roi{1,10}, [51/255 153/255 51/255])
+%         setColor(h_roi{2,10}, [51/255 153/255 51/255])
+%         setColor(h_roi{3,10}, [51/255 153/255 51/255])
+        setColor(h_roi{1,10}, 'r')
+        setColor(h_roi{2,10}, 'r')
+        setColor(h_roi{3,10}, 'r')
         set(handles.text_ROI10,'Visible', 'on');
-        setColor(h_roi{1,11}, [102/255 0 102/255])
-        setColor(h_roi{2,11}, [102/255 0 102/255])
-        setColor(h_roi{3,11}, [102/255 0 102/255])
+%         setColor(h_roi{1,11}, [102/255 0 102/255])
+%         setColor(h_roi{2,11}, [102/255 0 102/255])
+%         setColor(h_roi{3,11}, [102/255 0 102/255])
+        setColor(h_roi{1,11}, 'g')
+        setColor(h_roi{2,11}, 'g')
+        setColor(h_roi{3,11}, 'g')
         set(handles.text_ROI11,'Visible', 'on');
-        setColor(h_roi{1,12}, [0 153/255 153/255])
-        setColor(h_roi{2,12}, [0 153/255 153/255])
-        setColor(h_roi{3,12}, [0 153/255 153/255])
+%         setColor(h_roi{1,12}, [0 153/255 153/255])
+%         setColor(h_roi{2,12}, [0 153/255 153/255])
+%         setColor(h_roi{3,12}, [0 153/255 153/255])
+        setColor(h_roi{1,12}, 'y')
+        setColor(h_roi{2,12}, 'y')
+        setColor(h_roi{3,12}, 'y')
         set(handles.text_ROI12,'Visible', 'on');
     end
 end
@@ -1076,4 +1133,25 @@ function slider_anat3dView_CreateFcn(hObject, eventdata, handles)
 % Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on button press in checkbox_colorbar.
+function checkbox_colorbar_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_colorbar (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_colorbar
+
+colbar = round(get(handles.checkbox_colorbar,'Value'));
+if (colbar == 1)
+    colormap(handles.axes_proj1,jet)
+    cmap = colormap;
+    cmap(1,1) = 0;
+    cmap(1,2) = 0;
+    cmap(1,3) = 0;
+    colormap(cmap)
+elseif (colbar == 0)
+    colormap(handles.axes_proj1,gray)
 end
