@@ -131,6 +131,7 @@ switch choice
             mimicsFileFlag = 1;
         elseif(isequal(FileName(end-3:end),'.mat'))
             mimicsFileFlag = 0;
+            MimicsSegPath=[MimicsSegPath FileName];
         end
         mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag,mimicsFileFlag,FileName,intracranial)
         h = msgbox('Wall shear stress was calculated and saved in the mrstruct folder');
