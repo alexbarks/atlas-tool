@@ -147,7 +147,22 @@ for n = 1:size(PATHNAME,2)
         [FILENAME,PATHNAME{n}] = uigetfile('.mat','Load probability mask');
         load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME1])
     else
-        load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME1])
+        currDir=pwd;
+        cd(PATHNAME{n})
+        folders = ls;
+        if exist('mrstruct','dir')==7
+            MrstructPath = strcat(PATHNAME{n},'\mrstruct\');
+        else
+            for i=3:size(folders,1)
+                [a,b]=find(folders(i,1:8)=='mrstruct');
+                if sum(a)==8
+                    MrstructPath=strcat(PATHNAME{n},'\',folders(i,:),'\');
+                    break
+                end
+            end
+        end
+        cd(currDir);
+        load([MrstructPath FILENAME1])
     end
     
     mask2 = mrstruct_mask.dataAy;
@@ -167,7 +182,7 @@ for n = 1:size(PATHNAME,2)
     [data2.F,data2.V] = SmoothLaplacian(F,V,15); %laplacian smoothing for surface (Kevin Moerman)
     clear F, clear V
     
-    load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME2])
+    load([MrstructPath FILENAME2])
     velocity = double(mrStruct.dataAy); clear mrStruct; % for interpolation velocity needs to be a double
     
     vx = velocity(:,:,:,1,:);vy = velocity(:,:,:,2,:);vz = velocity(:,:,:,3,:);    
@@ -182,7 +197,7 @@ for n = 1:size(PATHNAME,2)
     data2.y_coor_wss = data2.V(:,2);
     data2.z_coor_wss = data2.V(:,3);
     
-    load([PATHNAME{n} filesep 'mrstruct' filesep FILENAME3])
+    load([MrstructPath FILENAME3])
     WSS = Wss_point_cloud; clear Wss_point_cloud
     
     % Find max velocity
@@ -813,6 +828,8 @@ for n = 1:size(PATHNAME,2)
     WSSy(:,n) = y_value_wss;
     WSSz(:,n) = z_value_wss;
     
+    clear MrstructPath
+    
     disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 end
 
@@ -878,7 +895,7 @@ colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
 
 figure('Name','SD atlas wss')
 patch('Faces',geo.F,'Vertices',geo.V,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
-axis equal;axis off; axis ij;caxis([0 1]);view([-180 -90])
+axis equal;axis off; axis ij;caxis([0 1.5]);view([-180 -90])
 %end
 
 if calculateRE_Flag == 1;

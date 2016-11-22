@@ -81,9 +81,25 @@ end
 
 FILENAME = 'mask_struct_aorta';
 
+currDir=pwd;
+cd(PATHNAME{1})
+folders = ls;
+if exist('mrstruct','dir')==7
+    MrstructPath = strcat(PATHNAME{1},'\mrstruct\');
+else
+    for i=3:size(folders,1)
+        [a,b]=find(folders(i,1:8)=='mrstruct');
+        if sum(a)==8
+            MrstructPath=strcat(PATHNAME{1},'\',folders(i,:),'\');
+            break
+        end
+    end
+end
+cd(currDir);
+
 disp(['...Busy loading data_done aorta ' num2str(1)])
 tic
-load(strcat(PATHNAME{1},'\mrstruct\',FILENAME));
+load(strcat(MrstructPath,FILENAME));
 toc
 mask1 = mrstruct_mask.dataAy;
 mask1_vox = mrstruct_mask.vox;clear mrstruct_mask
@@ -104,7 +120,24 @@ for n = 2:size(PATHNAME,2)
         [FILENAME,PATHNAME{n}] = uigetfile('.mat','Load probability mask');
         load(strcat(PATHNAME{n},FILENAME));
     else
-        load(strcat(PATHNAME{n},'\mrstruct\',FILENAME));
+
+        currDir=pwd;
+        cd(PATHNAME{n})
+        folders = ls;
+        if exist('mrstruct','dir')==7
+            MrstructPath = strcat(PATHNAME{n},'\mrstruct\');
+        else
+            for i=3:size(folders,1)
+                [a,b]=find(folders(i,1:8)=='mrstruct');
+                if sum(a)==8
+                    MrstructPath=strcat(PATHNAME{n},'\',folders(i,:),'\');
+                    break
+                end
+            end
+        end
+        cd(currDir);
+
+        load(strcat(MrstructPath,FILENAME));
     end
     toc
     disp(['Done loading data_done aorta '  num2str(n)])
@@ -306,6 +339,7 @@ for n = 2:size(PATHNAME,2)
     
     pause(8)
     close all
+    clear MrstructPath
 end
 
 if plotFlag == 1
@@ -328,7 +362,23 @@ diff_matrix = zeros(size(PATHNAME,2));
 
 for n = 1:size(PATHNAME,2)
     
-    load(strcat(PATHNAME{n},'\mrstruct\',FILENAME))
+    currDir=pwd;
+    cd(PATHNAME{n})
+    folders = ls;
+    if exist('mrstruct','dir')==7
+        MrstructPath = strcat(PATHNAME{n},'\mrstruct\');
+    else
+        for i=3:size(folders,1)
+            [a,b]=find(folders(i,1:8)=='mrstruct');
+            if sum(a)==8
+                MrstructPath=strcat(PATHNAME{n},'\',folders(i,:),'\');
+                break
+            end
+        end
+    end
+    cd(currDir);
+    
+    load(strcat(MrstructPath,FILENAME))
     mask2 = mrstruct_mask.dataAy;
     mask2_vox =  mrstruct_mask.vox;
     
@@ -503,6 +553,7 @@ for n = 1:size(PATHNAME,2)
         
         close all
     end
+    clear MrstructPath
 end
 
 diff = squeeze(mean(diff_matrix,1))
