@@ -14,8 +14,40 @@ catch
     return;
 end
 
-load mask_struct_aorta.mat
-load Wss_point_cloud_aorta
+if (exist('mask_struct_aorta.mat') == 2)
+    load mask_struct_aorta.mat
+else
+    folders = ls;
+    for i=3:size(folders,1)
+        [a,b]=find(folders(i,1:12)=='mask_struct_');
+        if sum(a)==12
+            load(folders(i,:));
+            break
+        end
+    end
+    if ~(exist(folders(i,:)) == 2)
+        [all_name, all_path] = uigetfile('*.mat','Start by loading the mask_struct_ file','Multiselect','Off');
+        load(strcat(all_path,all_name));
+    end
+    clear folders a all_path all_name
+end
+
+if (exist('Wss_point_cloud_aorta.mat') == 2)
+    load Wss_point_cloud_aorta.mat
+else
+    folders = ls;
+    for i=3:size(folders,1)
+        [a,b]=find(folders(i,1:16)=='Wss_point_cloud_');
+        if sum(a)==16
+            load(folders(i,:));
+            break
+        end
+    end
+    if ~(exist(folders(i,:)) == 2)
+        [all_name, all_path] = uigetfile('*.mat','Please load the Wss_point_cloud_ file','Multiselect','Off');
+        load(strcat(all_path,all_name));
+    end
+end
 
 mask2 = mrstruct_mask.dataAy;
 mask2_vox = mrstruct_mask.vox;
