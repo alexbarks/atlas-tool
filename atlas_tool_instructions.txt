@@ -1,3 +1,30 @@
+**********************************************************************
+NOTE (AJB) -- All instructions below are from 'new workflow' circa EB
+**********************************************************************
+
+To compute WSS via GUI interface:
+- run 'heat_maps.m'
+- saved data is under mrstruct folder and includes 
+	o global WSS quantificaiton
+	o WSS figure with quiver plot
+	
+To compute WSS in ~10 ROIs:
+- run 'viewWSSverctors.m'
+- not sure how saved
+
+To compute WSS using MIP tool approach? (note that it doesn't compute WSS via the MIP rather it is only for viz)
+- created for Kenichiro to do PA's; but also usefule for tissue study
+- run 'WSS_quantif_2views.m'
+- saved data will be in  patient folder under 'regional masks'
+	o projection images
+	o masks
+	o excel sheet with measruements
+
+
+
+**********************************************************************
+NOTE (AJB) -- All instructions below are from 'old workflow' circa PvO
+**********************************************************************
 This is a rough version of the atlas_tool instruction manual:
 
 
