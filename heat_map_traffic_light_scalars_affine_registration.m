@@ -155,30 +155,43 @@ Rotation_Translation = [];
 load(strcat(AtlasPath,'\',FILENAME_atlas))
 mask1 = atlas.mask;
 gray_colormap = colormap(gray);
+close all
 
 if plotFlag == 1
     
     atlas_matrix = zeros(size(atlas.mask));
     L = (atlas.mask~=0);
     atlas_matrix(L) = atlas.mean_vel;
-    figure('Name','mean velocity atlas')
-    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    figure('Name', 'Velocity atlas')
+    subplot(1,2,1); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);%view([180 -90])
-    
+    axis tight;axis equal;axis ij;axis off;caxis([0 1.2]);
+    title('mean velocity atlas')
+
     atlas_matrix(L) = atlas.std_vel;
-    figure('Name','mean velocity atlas')
-    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    subplot(1,2,2); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);%view([180 -90])
+    axis tight;axis equal;axis ij;axis off;caxis([0 1.2]);
+    title('std velocity atlas')
+    h_cb = colorbar;
+    pos_cb = get(h_cb,'Position');
+    set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
-    figure('Name','Mean atlas WSS')
-    patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
-    axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
+%     figure('Name','std velocity atlas')
+%     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+%     colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);%view([180 -90])
     
-    figure('Name','std atlas WSS')
-    patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);colorbar;
+    figure('Name', 'WSS atlas')
+    subplot(1,2,1);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
     axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
+    title('mean WSS atlas')
+    subplot(1,2,2);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);
+    axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
+    title('std WSS atlas')
+    h_cb = colorbar;
+    pos_cb = get(h_cb,'Position');
+    set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
 end
 
 if calculateIE_Flag == 1;
@@ -331,8 +344,8 @@ end
 
 if plotFlag == 1
     figure('Name','Mean velocity')
-    plot(1:size(velocity,5),mean_velo,'-ro','LineWidth',5,...
-        'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',16);
+    plot(1:size(velocity,5),mean_velo,'-ko','LineWidth',4,...
+        'MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',14);
 end
 
 [I,time] = find(mean_velo==max(mean_velo));
@@ -471,28 +484,29 @@ if plotFlag == 1
     atlas_matrix = zeros(size(mask2));
     L = (mask2~=0);
     atlas_matrix(L) = data2.vel_m;
-    figure('Name','data2 velocity')
+    
+    figure('Name', 'Patient velocity')
+    subplot(1,2,1)
     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);%view([180 -90])
-    
-%     figure(305)
-%      patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
-%         'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',1);
-%     axis equal; axis off
-%     pause
-    
-    figure('Name','Original velocity')
+    axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);
+    title('data2 velocity')
+    subplot(1,2,2)
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
         'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.25);
     hold on
     c = [];
     a = [2 20];
     [F,V,C]=quiver3Dpatch(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,data2.y_value_vel,data2.x_value_vel,data2.z_value_vel,c,a);
-    patch('Faces',F,'Vertices',V,'CData',C,'FaceColor','flat','EdgeColor','none','FaceAlpha',0.75);colorbar
-    caxis([0 1]);axis equal;view([0 -90]);axis off
+    patch('Faces',F,'Vertices',V,'CData',C,'FaceColor','flat','EdgeColor','none','FaceAlpha',0.75);
+    caxis([0 1.2]);axis equal;view([0 -90]);axis off
+    title('Original velocity')
+    h_cb = colorbar;
+    pos_cb = get(h_cb,'Position');
+    set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
-    figure('Name','data2 WSS vectors')
+    figure('Name', 'Patient WSS')
+    subplot(1,2,1)
     a = [2 15];
     c = [ ];
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
@@ -501,22 +515,39 @@ if plotFlag == 1
     [F2,V2,C2]=quiver3Dpatch(data2.x_coor_wss,data2.y_coor_wss,data2.z_coor_wss,data2.x_value_wss ...
         ,data2.y_value_wss,data2.z_value_wss,c,a);
     patch('Faces',F2,'Vertices',V2,'CData',C2,'FaceColor','flat','EdgeColor','none','FaceAlpha',1);
-    c2=colorbar;caxis([0 1.5])
+    caxis([0 1.5])
     axis equal;axis off; axis ij
     view([-180 -90])
-    pause(5)
-    
-    figure('Name','data2 WSS')
+%     pause(5)    
+    title('data2 WSS vectors')
+    subplot(1,2,2)
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
         'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
-    colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
+    caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
+    title('data2 WSS')
+    h_cb = colorbar;
+    pos_cb = get(h_cb,'Position');
+    set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
-    figure('Name','To be registered')
+    figure('Name', 'Registration step')
+    subplot(2,3,1)
     plot3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,'r.')
     hold on
     plot3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,'b.')
-    legend('to remain the same','to be transformed')
     axis equal; axis ij; axis off; view([-180 -90])
+    subplot(2,3,2)
+    plot3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,'r.')
+    hold on
+    plot3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,'b.')
+    axis equal; axis ij; axis off; view([-180 -90]); camorbit(-90,0,'data',[0 1 0])
+    legend('to remain the same','to be transformed')
+    title('before registration')
+    subplot(2,3,3)
+    plot3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,'r.')
+    hold on
+    plot3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,'b.')
+    axis equal; axis ij; axis off; view([-180 0])
+    
 end
 
 %%% Velocities
@@ -598,12 +629,24 @@ data2.z_coor_wss_new = yxz_coor_wss_new(3,:)'; clear yxz_coor_wss_new
 toc
 
 if plotFlag == 1
-    figure('Name','Registered')
+    subplot(2,3,4)
     plot3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,'r.')
     hold on
     plot3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,'b.')
-    legend('remains the same','transformed')
     axis equal; axis ij; axis off; view([-180 -90])
+    subplot(2,3,5)
+    plot3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,'r.')
+    hold on
+    plot3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,'b.')
+    axis equal; axis ij; axis off; view([-180 -90]); camorbit(-90,0,'data',[0 1 0])
+    legend('remains the same','transformed')
+    title('registered')
+    subplot(2,3,6)
+    plot3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,'r.')
+    hold on
+    plot3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,'b.')
+    axis equal; axis ij; axis off; view([-180 0])
+    
 end
 
 offset = 100;
