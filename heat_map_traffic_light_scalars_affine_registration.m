@@ -143,6 +143,7 @@ end
 
 global mrstruct_mask
 global mrStruct
+global mrstruct % this is to correct line 294 error, i.e. diff names for mrstruct_mask (TODO: don't declare lots of global vars) 
 global Wss_point_cloud
 global atlas
 global angles
@@ -290,10 +291,18 @@ if calculateIE_Flag == 1;
     end
 end
 
-load(strcat(MrstructPath,'\',FILENAME1))
-mask2 = mrstruct_mask.dataAy;
-mask2_vox = mrstruct_mask.vox;
-clear mrstruct_mask
+load(strcat(MrstructPath,'\',FILENAME1)) % ugly handling of mrStruct variants (TODO: clean up)
+if ~isempty(mrstruct_mask)
+    mask2     = mrstruct_mask.dataAy;
+    mask2_vox = mrstruct_mask.vox;
+elseif ~isempty(mrStruct)
+    mask2     = mrStruct.dataAy;
+    mask2_vox = mrStruct.vox;
+else
+    mask2     = mrstruct.dataAy; % lower case 'S'
+    mask2_vox = mrstruct.vox;
+end
+clear mrstruct_mask mrStruct mrstruct
 
 L2 = (mask2 ~= 0);
 % create velocity coordinates
@@ -1720,7 +1729,7 @@ if images_for_surgeryFlag
     dir_orig = pwd;
     dir_new = PATHNAME; %cd(dir_new); %cd('..')
     %dir_new = pwd;
-    mkdir('images_for_surgery');
+    mkdir([dir_new filesep 'images_for_surgery']);
     dir_new = strcat(dir_new,'\images_for_surgery');
     load(strcat(MrstructPath,'\',FILENAME4))
     magnitude = flipdim(double(mrStruct.dataAy(:,:,:,time)),3);

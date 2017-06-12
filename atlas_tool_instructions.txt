@@ -20,6 +20,23 @@ To compute WSS using MIP tool approach? (note that it doesn't compute WSS via th
 	o masks
 	o excel sheet with measruements
 
+To compute heatmap
+- run heat_maps and select 'Creation of heatmaps' 
+	+ TODO get rid of traffic lights?
+	o select atlas
+	+ TODO hard code atlas selection for peak_systole (or 5 timesteps)
+	+ TODO alex runs into error with calgary data bc of mrstruc_mask naming conventions (error line 294 heat_map_traffic_light_scalars_affine_registration) -- is this a one-off problem or systemic?
+	o CALGARY: watch out for peak systole (note seems like Julio did peak systole)
+	+ CALGARY: WARNING - need to perform segmentation uniformly (LVOT?), also watch out for registration errors
+	+ HIERARCHY of QUALITY TODO: 
+		1. agree on segmentation approach (include LVOT, etc)
+			o make sure the code for creating the mask_struct_aorta is the same between sites
+		2. use the correct atlas (systolic, 5 timesteps, age-matched)
+		3. watch out for registration errors (create window for QA?)
+		4. create a uniform report
+	+ TODO: add in QA for rotation/coreg.
+	+ TODO: reduce the number of output windows, consolidate saved data, also put rotation_translation.mat somewhere appropriate in the file system
+	
 
 
 **********************************************************************
