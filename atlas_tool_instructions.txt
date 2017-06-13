@@ -3,7 +3,9 @@ NOTE (AJB) -- All instructions below are from 'new workflow' circa EB & 2017
 ****************************************************************************
 
 To compute WSS via GUI interface:
-- run 'heat_maps.m'
+- run 'heat_maps.m' and click on 'WSS calculation'
+	o select mag_struct
+	+ select mask_struct (issue with load of the struct mrstruct,mrStruct, or mrstruct_mask!!!) - same as issue for line 30 below ('heatmaps')
 - saved data is under mrstruct folder and includes 
 	o global WSS quantificaiton
 	o WSS figure with quiver plot
