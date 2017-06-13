@@ -93,15 +93,20 @@ for n = 1:size(PATHNAME,2)
             end
         end
     end
+    if ~isempty(ls('all.txt'))
+        MimicsSegPath = strcat(PATHNAME{n},'\');
+        mimicsFileFlag = 1;
+    else
+        MimicsSegPath = MrstructPath;
+        mimicsFileFlag = 0;
+    end
     cd(currDir);
-    
-    MimicsSegPath = strcat(PATHNAME{n},'\');
     
     % TimeFlag: 1 (5 systolic phases);  0 (peak systole)
     %TimeFlag=1;
-    
+        
     tic
-    mimics_to_Wss([MrstructPath],[MimicsSegPath],1,1,1,1,TimeFlag,0,0,0,1,'',intracranial);
+    mimics_to_Wss([MrstructPath],[MimicsSegPath],1,1,1,1,TimeFlag,0,0,0,mimicsFileFlag,'',intracranial);
     toc
     
 %     close all

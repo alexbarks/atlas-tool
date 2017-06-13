@@ -319,9 +319,9 @@ currDir = pwd;
 % atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls';
 peak_systolicFlag = get(handles.signArea_calc,'Value');
 if peak_systolicFlag == 0   % average over 5 systolic time points
-    atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\PimsProjectWrapUp\7_AgeMatching\data\control_atlases\5time_averaged\all_controls';
+    atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\PimsProjectWrapUp\7_AgeMatching\data\control_atlases\5time_averaged\all_controls\atlas.mat';
 elseif peak_systolicFlag == 1   % peak systolic time point only
-    atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\PimsProjectWrapUp\7_AgeMatching\data\control_atlases\peakSystolic\all_controls';
+    atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\PimsProjectWrapUp\7_AgeMatching\data\control_atlases\peakSystolic\all_controls\atlas.mat';
 end
 [FileName,AtlasPath,FilterIndex] = uigetfile(atlas_folder,'Select the atlas.mat file');  % donner chemin par defaut
 try
@@ -343,7 +343,7 @@ calculateIE_Flag = get(handles.IE_calc,'Value');
 calculate_area_of_higherlowerFlag = get(handles.velVolume_wssArea_calc,'Value');
 images_for_surgeryFlag = get(handles.peakSyst_comp,'Value');
 heat_map_traffic_light_scalars_affine_registration(AtlasPath,FilePath(1:end-1),plotFlag,calculateIE_Flag,calculate_area_of_higherlowerFlag,peak_systolicFlag,images_for_surgeryFlag)
-h = msgbox('Heat maps were calculated');
+h = msgbox('Heat maps creation done');
 
 
 % --- Executes on button press in RE_calc.

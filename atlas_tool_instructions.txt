@@ -36,7 +36,7 @@ To compute heatmap
 		2. use the correct atlas (systolic, 5 timesteps, age-matched)
 		3. watch out for registration errors (create window for QA?)
 		4. create a uniform report
-	+ TODO: add in QA for rotation/coreg.
+	DONE: add in QA for rotation/coreg.
 	+ TODO: reduce the number of output windows, consolidate saved data, also put rotation_translation.mat somewhere appropriate in the file system
 	
 
