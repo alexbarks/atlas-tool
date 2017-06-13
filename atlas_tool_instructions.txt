@@ -24,8 +24,8 @@ To compute heatmap
 - run heat_maps and select 'Creation of heatmaps' 
 	+ TODO get rid of traffic lights?
 	o select atlas
-	+ TODO hard code atlas selection for peak_systole (or 5 timesteps)
-	+ TODO alex runs into error with calgary data bc of mrstruc_mask naming conventions (error line 294 heat_map_traffic_light_scalars_affine_registration) -- is this a one-off problem or systemic?
+	+ TODO hard code atlas selection for peak_systole (or 5 timesteps) - i.e. no need to select atlas file
+	+ TODO alex runs into error with calgary data bc of mrstruc_mask naming conventions (error line 294 heat_map_traffic_light_scalars_affine_registration) -- fixed this cosmetically by declaring yet another global variable
 	o CALGARY: watch out for peak systole (note seems like Julio did peak systole)
 	+ CALGARY: WARNING - need to perform segmentation uniformly (LVOT?), also watch out for registration errors
 	+ HIERARCHY of QUALITY TODO: 
