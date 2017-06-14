@@ -343,9 +343,11 @@ for t = 1:size(velocity,5)
 end
 
 if plotFlag == 1
-    figure('Name','Mean velocity')
+    h_meanVel=figure('Name','Mean velocity')
     plot(1:size(velocity,5),mean_velo,'-ko','LineWidth',4,...
         'MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',14);
+    ylabel('Mean velocity (m/s)');
+    xlabel('Time frame #');
 end
 
 [I,time] = find(mean_velo==max(mean_velo));
@@ -368,22 +370,47 @@ if peak_systolicFlag == 1
     data2.y_value_vel = data2.y_value_vel(L2);
     data2.z_value_vel = data2.z_value_vel(L2);
     if size(WSS,2) > 5
+        if plotFlag == 1
+            figure(h_meanVel)
+            hold on, plot(time,mean_velo(time),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        end
         data2.x_value_wss = WSS{time}(:,1);
         data2.y_value_wss = WSS{time}(:,2);
         data2.z_value_wss = WSS{time}(:,3);
     elseif size(WSS,2) == 5
+        if plotFlag == 1
+            figure(h_meanVel)
+            hold on, plot(3,mean_velo(3),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        end
         data2.x_value_wss = WSS{3}(:,1);
         data2.y_value_wss = WSS{3}(:,2);
         data2.z_value_wss = WSS{3}(:,3);
     elseif size(WSS,2) == 4
+        if plotFlag == 1
+            figure(h_meanVel)
+            hold on, plot(2,mean_velo(2),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        end
         data2.x_value_wss = WSS{2}(:,1);
         data2.y_value_wss = WSS{2}(:,2);
         data2.z_value_wss = WSS{2}(:,3);
     elseif size(WSS,2) == 3
+        if plotFlag == 1
+            figure(h_meanVel)
+            hold on, plot(1,mean_velo(1),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        end
         data2.x_value_wss = WSS{1}(:,1);
         data2.y_value_wss = WSS{1}(:,2);
         data2.z_value_wss = WSS{1}(:,3);
     elseif size(WSS,2) == 1    % Emilie: calculated at only one time (peak systole)
+        if plotFlag == 1
+            figure(h_meanVel)
+            hold on, plot(1,mean_velo(1),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        end
         data2.x_value_wss = WSS{1}(:,1);
         data2.y_value_wss = WSS{1}(:,2);
         data2.z_value_wss = WSS{1}(:,3);
@@ -395,6 +422,11 @@ elseif peak_systolicFlag == 0
         return;
     % Velocity averaged over 5 systolic time frames
     elseif time == 2    % mistriggering: second time frame is peak systole, averaging over 5 timesteps is not possible
+        if plotFlag == 1
+            figure(h_meanVel)
+            hold on, plot(time-1:time+2,mean_velo(time-1:time+2),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        end
         disp('TIME FRAMES AVERAGED OVER 4 TIME FRAMES!')
         data2.x_value_vel_t1 = velocity(:,:,:,1,time-1);data2.y_value_vel_t1 = velocity(:,:,:,2,time-1);data2.z_value_vel_t1 = velocity(:,:,:,3,time-1);
         data2.x_value_vel_t2 = velocity(:,:,:,1,time);  data2.y_value_vel_t2 = velocity(:,:,:,2,time);  data2.z_value_vel_t2 = velocity(:,:,:,3,time);
@@ -421,6 +453,11 @@ elseif peak_systolicFlag == 0
             data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4)./4;
         end
     elseif time == 1 % mistriggering: first time frame is peak systole, averaging over 5 timesteps is not possible
+        if plotFlag == 1
+            figure(h_meanVel)
+            hold on, plot(time:time+2,mean_velo(time:time+2),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        end
         disp('TIME FRAMES AVERAGED OVER 3 TIME FRAMES!')
         data2.x_value_vel_t1 = velocity(:,:,:,1,time);  data2.y_value_vel_t1 = velocity(:,:,:,2,time);  data2.z_value_vel_t1 = velocity(:,:,:,3,time);
         data2.x_value_vel_t2 = velocity(:,:,:,1,time+1);data2.y_value_vel_t2 = velocity(:,:,:,2,time+1);data2.z_value_vel_t2 = velocity(:,:,:,3,time+1);
@@ -444,6 +481,11 @@ elseif peak_systolicFlag == 0
             data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3)./3;
         end
     else % normal triggering timestep > 2 is peak systole
+        if plotFlag == 1
+            figure(h_meanVel)
+            hold on, plot(time-2:time+2,mean_velo(time-2:time+2),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        end
         data2.x_value_vel_t1 = velocity(:,:,:,1,time-2);data2.y_value_vel_t1 = velocity(:,:,:,2,time-2);data2.z_value_vel_t1 = velocity(:,:,:,3,time-2);
         data2.x_value_vel_t2 = velocity(:,:,:,1,time-1);data2.y_value_vel_t2 = velocity(:,:,:,2,time-1);data2.z_value_vel_t2 = velocity(:,:,:,3,time-1);
         data2.x_value_vel_t3 = velocity(:,:,:,1,time);  data2.y_value_vel_t3 = velocity(:,:,:,2,time);  data2.z_value_vel_t3 = velocity(:,:,:,3,time);
