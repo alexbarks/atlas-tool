@@ -68,9 +68,13 @@ for t = 1:size(velocity,5)
     vmagn = sqrt(vx.^2 + vy.^2 + vz.^2);
     mean_velo(t) = mean(vmagn(L2));
 end
-figure('Name','Mean velocity')
-plot(1:size(velocity,5),mean_velo,'-ro','LineWidth',5,...
-    'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',16);
+
+h_meanVel=figure('Name','Mean velocity');
+plot(1:size(velocity,5),mean_velo,'-ko','LineWidth',4,...
+    'MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',14);
+ylabel('Mean velocity (m/s)');
+xlabel('Time frame #');
+
 [I,time] = find(mean_velo==max(mean_velo));
 
 WSS_all = Wss_point_cloud; clear Wss_point_cloud
@@ -90,14 +94,29 @@ if TimeFlag==0
     % Peak systolic WSS
     if size(WSS_all,2) > 5
         WSS = WSS_all{time};
+        figure(h_meanVel)
+        hold on, plot(time,mean_velo(time),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     elseif size(WSS_all,2) == 5
         WSS = WSS_all{3};
+        figure(h_meanVel)
+        hold on, plot(3,mean_velo(3),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     elseif size(WSS_all,2) == 4
         WSS = WSS_all{2};
+        figure(h_meanVel)
+        hold on, plot(2,mean_velo(2),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     elseif size(WSS_all,2) == 3
         WSS = WSS_all{1};
+        figure(h_meanVel)
+        hold on, plot(1,mean_velo(1),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     elseif size(WSS_all,2) == 1    % Emilie: calculated at only one time (peak systole)
         WSS = WSS_all{1};
+        figure(h_meanVel)
+        hold on, plot(1,mean_velo(1),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     end
     wss_m = sqrt(WSS(:,1).^2 + WSS(:,2).^2 + WSS(:,3).^2);
 elseif TimeFlag==1  % Averaged systolic WSS
@@ -114,6 +133,9 @@ elseif TimeFlag==1  % Averaged systolic WSS
         data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4)./4;
         data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4)./4;
         data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4)./4;
+        figure(h_meanVel)
+        hold on, plot(time-1:time+2,mean_velo(time-1:time+2),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     elseif time == 1 % first time frame is peak systole: averaging over 3 timesteps
         disp('AVERAGE OVER 3 TIME FRAMES!')
         data2.x_value_wss_t1 = WSS_all{time}(:,1);  data2.y_value_wss_t1 = WSS_all{time}(:,2);  data2.z_value_wss_t1 = WSS_all{time}(:,3);
@@ -122,6 +144,9 @@ elseif TimeFlag==1  % Averaged systolic WSS
         data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3)./3;
         data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3)./3;
         data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3)./3;
+        figure(h_meanVel)
+        hold on, plot(time:time+2,mean_velo(time:time+2),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     else % timestep > 2 is peak systole: averaging over 5 timesteps
         if size(WSS_all,2) > 5
             data2.x_value_wss_t1 = WSS_all{time-2}(:,1);data2.y_value_wss_t1 = WSS_all{time-2}(:,2);data2.z_value_wss_t1 = WSS_all{time-2}(:,3);
@@ -129,12 +154,18 @@ elseif TimeFlag==1  % Averaged systolic WSS
             data2.x_value_wss_t3 = WSS_all{time}(:,1);  data2.y_value_wss_t3 = WSS_all{time}(:,2);  data2.z_value_wss_t3 = WSS_all{time}(:,3);
             data2.x_value_wss_t4 = WSS_all{time+1}(:,1);data2.y_value_wss_t4 = WSS_all{time+1}(:,2);data2.z_value_wss_t4 = WSS_all{time+1}(:,3);
             data2.x_value_wss_t5 = WSS_all{time+2}(:,1);data2.y_value_wss_t5 = WSS_all{time+2}(:,2);data2.z_value_wss_t5 = WSS_all{time+2}(:,3);
+            figure(h_meanVel)
+            hold on, plot(time-2:time+2,mean_velo(time-2:time+2),'-ko','LineWidth',4,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
         elseif size(WSS_all,2) == 5
             data2.x_value_wss_t1 = WSS_all{1}(:,1);data2.y_value_wss_t1 = WSS_all{1}(:,2);data2.z_value_wss_t1 = WSS_all{1}(:,3);
             data2.x_value_wss_t2 = WSS_all{2}(:,1);data2.y_value_wss_t2 = WSS_all{2}(:,2);data2.z_value_wss_t2 = WSS_all{2}(:,3);
             data2.x_value_wss_t3 = WSS_all{3}(:,1);  data2.y_value_wss_t3 = WSS_all{3}(:,2);  data2.z_value_wss_t3 = WSS_all{3}(:,3);
             data2.x_value_wss_t4 = WSS_all{4}(:,1);data2.y_value_wss_t4 = WSS_all{4}(:,2);data2.z_value_wss_t4 = WSS_all{4}(:,3);
             data2.x_value_wss_t5 = WSS_all{5}(:,1);data2.y_value_wss_t5 = WSS_all{5}(:,2);data2.z_value_wss_t5 = WSS_all{5}(:,3);
+            figure(h_meanVel)
+            hold on, plot(1:5,mean_velo(1:5),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
         end
         data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4 + data2.x_value_wss_t5)./5;
         data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4 + data2.y_value_wss_t5)./5;
