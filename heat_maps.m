@@ -134,7 +134,7 @@ switch choice
             MimicsSegPath=[MimicsSegPath FileName];
         end
         mimics_to_Wss([MrstructPath],[MimicsSegPath],WssFraction,WssThresh,plotFlag,saveFlag,TimeFlag,wss_ensight_Flag,hematocritFlag,multipleMasksFlag,mimicsFileFlag,FileName,intracranial)
-        h = msgbox('Wall shear stress was calculated and saved in the mrstruct folder');
+        h = msgbox('Wall shear stress calculation done!');
    
     case 'Batch'
         folder_name = uigetdir(currDir,'Select the folder containing all patient individual folders');
@@ -152,6 +152,7 @@ switch choice
             TimeFlag = 2;
         end
         wss_batch(folder_name, TimeFlag,intracranial);
+        h = msgbox('Wall shear stress calculation done!');
 end
 
 
