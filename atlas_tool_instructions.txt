@@ -11,7 +11,7 @@ To compute WSS via GUI interface:
 	o WSS figure with quiver plot
 	
 To compute WSS in ~10 ROIs:
-- run 'viewWSSverctors.m'
+- use heat_maps.m and click 'WSS regional quantification' which runs 'viewWSSverctors.m'
 - not sure how saved
 
 To compute WSS using MIP tool approach? (note that it doesn't compute WSS via the MIP rather it is only for viz)
@@ -38,7 +38,10 @@ To compute heatmap
 		4. create a uniform report
 	DONE: add in QA for rotation/coreg.
 	+ TODO: reduce the number of output windows, consolidate saved data, also put rotation_translation.mat somewhere appropriate in the file system
-	
+	ISSUES: 
+	1. funny operation of the ROI for hot cold regions
+	2. call windows to prevent user from click on something else and crashing graphic outputs
+	3. Uniform presentation of the aorta (same scales and orientations)
 
 
 **********************************************************************
