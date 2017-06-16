@@ -111,14 +111,29 @@ if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
     FILENAME4 = 'mag_struct';
     MrstructPath = PATHNAME;%strcat(PATHNAME,'\mrstruct')
 else
-%     MrstructPath = strcat(PATHNAME,'\mrstruct');
+    %     MrstructPath = strcat(PATHNAME,'\mrstruct');
     MrstructPath = PATHNAME;
     ind_sep=findstr(MrstructPath,'\');
     PATHNAME = MrstructPath(1:ind_sep(end)-1);
-    FILENAME1 = 'mask_struct_aorta';        % 1: Load mask
     FILENAME2 = 'vel_struct';               % 2: Load velocity
-    FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
     FILENAME4 = 'mag_struct';
+    tempDir=pwd;
+    cd(MrstructPath)
+    maskStructFiles=ls('mask_struct_*');
+    if size(maskStructFiles,1)>1
+        [FileName,FilePath,FilterIndex] = uigetfile(MrstructPath,'There are several ''mask_struct'' files, please select the right one');
+        FILENAME1 = FileName;        % 1: Load mask
+    else
+        FILENAME1 = maskStructFiles(1,:);        % 1: Load mask
+    end
+    WssPtCloudFiles=ls('Wss_point_cloud_*');
+    if size(WssPtCloudFiles,1)>1
+        [FileName,FilePath,FilterIndex] = uigetfile(MrstructPath,'There are several ''Wss_point_cloud'' files, please select the right one');
+        FILENAME3 = FileName;    % 3: Load WSS
+    else
+        FILENAME3 = WssPtCloudFiles(1,:);        % 1: Load WSS
+    end
+    cd(tempDir)
 end
 
 if nargin < 3 || isempty(plotFlag)
@@ -192,6 +207,34 @@ if plotFlag == 1
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
+    
+    
+%     %%%%%%%%%% IN PROGRESS
+%     figure('Name', 'Velocity and WSS atlas')
+%     subplot(2,2,1); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+%     axis tight;axis equal;axis ij;axis off;caxis([0 1.2]);
+%     title('mean velocity atlas (m/s)')
+% 
+%     atlas_matrix(L) = atlas.std_vel;
+%     subplot(2,2,2); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+%     axis tight;axis equal;axis ij;axis off;caxis([0 1.2]);
+%     title('std velocity atlas (m/s)')
+%     h_cb = colorbar;
+%     pos_cb = get(h_cb,'Position');
+%     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
+%     
+%     subplot(2,2,3);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
+%     axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
+%     title('mean WSS atlas (Pa)')
+%     subplot(2,2,4);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);
+%     axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
+%     title('std WSS atlas (Pa)')
+%     h_cb = colorbar;
+%     pos_cb = get(h_cb,'Position');
+%     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
+%     %%%%%%%%%
 end
 
 if calculateIE_Flag == 1;
@@ -369,48 +412,28 @@ if peak_systolicFlag == 1
     data2.x_value_vel = data2.x_value_vel(L2);
     data2.y_value_vel = data2.y_value_vel(L2);
     data2.z_value_vel = data2.z_value_vel(L2);
+    if plotFlag == 1
+        figure(h_meanVel)
+        hold on, plot(time,mean_velo(time),'-ko','LineWidth',4,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+    end
     if size(WSS,2) > 5
-        if plotFlag == 1
-            figure(h_meanVel)
-            hold on, plot(time,mean_velo(time),'-ko','LineWidth',4,...
-                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
-        end
         data2.x_value_wss = WSS{time}(:,1);
         data2.y_value_wss = WSS{time}(:,2);
         data2.z_value_wss = WSS{time}(:,3);
     elseif size(WSS,2) == 5
-        if plotFlag == 1
-            figure(h_meanVel)
-            hold on, plot(3,mean_velo(3),'-ko','LineWidth',4,...
-                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
-        end
         data2.x_value_wss = WSS{3}(:,1);
         data2.y_value_wss = WSS{3}(:,2);
         data2.z_value_wss = WSS{3}(:,3);
     elseif size(WSS,2) == 4
-        if plotFlag == 1
-            figure(h_meanVel)
-            hold on, plot(2,mean_velo(2),'-ko','LineWidth',4,...
-                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
-        end
         data2.x_value_wss = WSS{2}(:,1);
         data2.y_value_wss = WSS{2}(:,2);
         data2.z_value_wss = WSS{2}(:,3);
     elseif size(WSS,2) == 3
-        if plotFlag == 1
-            figure(h_meanVel)
-            hold on, plot(1,mean_velo(1),'-ko','LineWidth',4,...
-                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
-        end
         data2.x_value_wss = WSS{1}(:,1);
         data2.y_value_wss = WSS{1}(:,2);
         data2.z_value_wss = WSS{1}(:,3);
     elseif size(WSS,2) == 1    % Emilie: calculated at only one time (peak systole)
-        if plotFlag == 1
-            figure(h_meanVel)
-            hold on, plot(1,mean_velo(1),'-ko','LineWidth',4,...
-                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
-        end
         data2.x_value_wss = WSS{1}(:,1);
         data2.y_value_wss = WSS{1}(:,2);
         data2.z_value_wss = WSS{1}(:,3);
@@ -681,14 +704,12 @@ if plotFlag == 1
     hold on
     plot3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,'b.')
     axis equal; axis ij; axis off; view([-180 -90]); camorbit(-90,0,'data',[0 1 0])
-    legend('remains the same','transformed')
     title('registered')
     subplot(2,3,6)
     plot3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,'r.')
     hold on
     plot3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,'b.')
     axis equal; axis ij; axis off; view([-180 0])
-    
 end
 
 choice = questdlg('Is registration to the atlas geometry correct?', ...
