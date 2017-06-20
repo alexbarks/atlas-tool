@@ -177,64 +177,31 @@ if plotFlag == 1
     atlas_matrix = zeros(size(atlas.mask));
     L = (atlas.mask~=0);
     atlas_matrix(L) = atlas.mean_vel;
-    figure('Name', 'Velocity atlas')
-    subplot(1,2,1); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    axis tight;axis equal;axis ij;axis off;caxis([0 1.2]);
-    title('mean velocity atlas')
+    figure('Name', 'Velocity and WSS atlas')
+    subplot(2,2,1); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    imagesc(flipdim(squeeze(max(atlas_matrix,[],3)),2),'Alphadata',double(flipdim(L_figure,2)));
+    axis tight;axis equal;axis ij;axis off;caxis([0 1.5]);
+    title('mean velocity atlas (m/s)')
 
     atlas_matrix(L) = atlas.std_vel;
-    subplot(1,2,2); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    axis tight;axis equal;axis ij;axis off;caxis([0 1.2]);
-    title('std velocity atlas')
+    subplot(2,2,2); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+    imagesc(flipdim(squeeze(max(atlas_matrix,[],3)),2),'Alphadata',double(flipdim(L_figure,2)));
+    axis tight;axis equal;axis ij;axis off;caxis([0 1.5]);
+    title('std velocity atlas (m/s)')
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
-%     figure('Name','std velocity atlas')
-%     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-%     colorbar;axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);%view([180 -90])
-    
-    figure('Name', 'WSS atlas')
-    subplot(1,2,1);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
-    axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
-    title('mean WSS atlas')
-    subplot(1,2,2);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);
-    axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
-    title('std WSS atlas')
+    subplot(2,2,3);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
+    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+    title('mean WSS atlas (Pa)')
+    subplot(2,2,4);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);
+    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+    title('std WSS atlas (Pa)')
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
-    
-%     %%%%%%%%%% IN PROGRESS
-%     figure('Name', 'Velocity and WSS atlas')
-%     subplot(2,2,1); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-%     axis tight;axis equal;axis ij;axis off;caxis([0 1.2]);
-%     title('mean velocity atlas (m/s)')
-% 
-%     atlas_matrix(L) = atlas.std_vel;
-%     subplot(2,2,2); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-%     axis tight;axis equal;axis ij;axis off;caxis([0 1.2]);
-%     title('std velocity atlas (m/s)')
-%     h_cb = colorbar;
-%     pos_cb = get(h_cb,'Position');
-%     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
-%     
-%     subplot(2,2,3);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
-%     axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
-%     title('mean WSS atlas (Pa)')
-%     subplot(2,2,4);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);
-%     axis equal;axis off; axis ij;caxis([0 1.2]);view([180 -90])
-%     title('std WSS atlas (Pa)')
-%     h_cb = colorbar;
-%     pos_cb = get(h_cb,'Position');
-%     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
-%     %%%%%%%%%
 end
 
 if calculateIE_Flag == 1;
@@ -386,7 +353,7 @@ for t = 1:size(velocity,5)
 end
 
 if plotFlag == 1
-    h_meanVel=figure('Name','Mean velocity')
+    h_meanVel=figure('Name','Patient mean velocity waveform')
     plot(1:size(velocity,5),mean_velo,'-ko','LineWidth',4,...
         'MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',14);
     ylabel('Mean velocity (m/s)');
@@ -546,17 +513,8 @@ data2.wss_m = sqrt(data2.x_value_wss.^2 + data2.y_value_wss.^2 + data2.z_value_w
 
 if plotFlag == 1
     
-    atlas_matrix = zeros(size(mask2));
-    L = (mask2~=0);
-    atlas_matrix(L) = data2.vel_m;
-    
-    figure('Name', 'Patient velocity')
+    figure('Name', 'Patient velocity and WSS 3D vectors')
     subplot(1,2,1)
-    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);
-    title('data2 velocity')
-    subplot(1,2,2)
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
         'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',0.25);
     hold on
@@ -564,14 +522,13 @@ if plotFlag == 1
     a = [2 20];
     [F,V,C]=quiver3Dpatch(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,data2.y_value_vel,data2.x_value_vel,data2.z_value_vel,c,a);
     patch('Faces',F,'Vertices',V,'CData',C,'FaceColor','flat','EdgeColor','none','FaceAlpha',0.75);
-    caxis([0 1.2]);axis equal;view([0 -90]);axis off
-    title('Original velocity')
+    caxis([0 1.5]);axis equal;view([-180 90]);axis off
+    title('Velocity (m/s)')
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
-    figure('Name', 'Patient WSS')
-    subplot(1,2,1)
+    subplot(1,2,2)
     a = [2 15];
     c = [ ];
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
@@ -584,17 +541,12 @@ if plotFlag == 1
     axis equal;axis off; axis ij
     view([-180 -90])
 %     pause(5)    
-    title('data2 WSS vectors')
-    subplot(1,2,2)
-    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
-        'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
-    caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
-    title('data2 WSS')
+    title('WSS (Pa)')
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
-    figure('Name', 'Registration step')
+    figure('Name', 'Registration between atlas and patient')
     subplot(2,3,1)
     plot3(atlas.x_coor_vel,atlas.y_coor_vel,atlas.z_coor_vel,'r.')
     hold on
@@ -612,6 +564,24 @@ if plotFlag == 1
     hold on
     plot3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,'b.')
     axis equal; axis ij; axis off; view([-180 0])
+    
+%     subplot(1,2,1)
+%     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+%     axis tight; axis equal; axis ij; axis off;caxis([0 1.2]);
+%     title('data2 velocity')
+%     h_cb = colorbar;
+%     pos_cb = get(h_cb,'Position');
+%     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
+%     
+%     subplot(1,2,2)
+%     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
+%         'EdgeColor','none','FaceVertexCData',data2.wss_m,'FaceColor','interp','FaceAlpha',1);
+%     caxis([0 1.5]);axis equal;axis off; axis ij;view([-180 -90])
+%     title('data2 WSS')
+%     h_cb = colorbar;
+%     pos_cb = get(h_cb,'Position');
+%     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
 end
 
@@ -947,49 +917,49 @@ end
 
 if plotFlag == 1
         
-    h=figure('Name','Transformed velocity atlas');
-    subplot(1,3,1)
-    scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_mean_vel.*50,atlas_mean_vel,'filled')
-    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
-    title('Mean transformed velocity atlas');
-    subplot(1,3,2)
-    scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_std_vel.*50,atlas_std_vel,'filled')
-    axis equal;axis off; axis ij;
-    caxis([0 1.5])
-    view([180 -90])
-    title('std transformed velocity atlas');
-    subplot(1,3,3)
+    h=figure('Name','Transformed velocity and WSS atlas to patient geometry');
+    subplot(1,2,1)
     atlas_matrix = zeros(size(L2)); 
     atlas_matrix(L2) = atlas_mean_vel;
     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+    imagesc(flipdim(squeeze(max(atlas_matrix,[],3)),2),'Alphadata',double(flipdim(L_figure,2)));
     axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);
-    title('Mean transformed velocity atlas 2');
+    title('Velocity (m/s)');
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
-    set(h,'Position', [680   558   672   420])
-    
-    h=figure('Name','Transformed WSS atlas');
-    subplot(1,3,1)
+    subplot(1,2,2)
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_mean_wss,'FaceColor','interp','FaceAlpha',1);
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
-    title('Mean transformed WSS atlas');
-    subplot(1,3,2)
-    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_std_wss,'FaceColor','interp','FaceAlpha',1);
-    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
-    title('std transformed WSS atlas');
-    subplot(1,3,3)
-    atlas_matrix = zeros(size(L2));
-    atlas_matrix(L2) = atlas_std_vel;
-    L_figure = (squeeze(max(L2,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);
-    title('Mean transformed WSS atlas 2');
+    title('WSS (Pa)');
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
-    set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
-    set(h,'Position', [680   558   672   420])
+    set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])    
+    
+%     scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_mean_vel.*50,atlas_mean_vel,'filled')
+%     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
+%     title('Mean transformed velocity atlas');
+%     subplot(1,3,2)
+%     scatter3(data2.x_coor_vel_new,data2.y_coor_vel_new,data2.z_coor_vel_new,atlas_std_vel.*50,atlas_std_vel,'filled')
+%     axis equal;axis off; axis ij;
+%     caxis([0 1.5])
+%     view([180 -90])
+%     title('std transformed velocity atlas');
+%     
+%     set(h,'Position', [680   558   672   420])
+%     
+%     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_std_wss,'FaceColor','interp','FaceAlpha',1);
+%     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+%     title('std transformed WSS atlas');
+%     subplot(1,3,3)
+%     atlas_matrix = zeros(size(L2));
+%     atlas_matrix(L2) = atlas_std_vel;
+%     L_figure = (squeeze(max(L2,[],3))~=0);
+%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+%     axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);
+%     title('Mean transformed WSS atlas 2');
+% 
+%     set(h,'Position', [680   558   672   420])
     
 end
 
@@ -1000,50 +970,51 @@ mean_min_2SD_atlas_vel = atlas_mean_vel - 1.96.*atlas_std_vel;
 mean_plus_2SD_atlas_wss = atlas_mean_wss + 1.96.*atlas_std_wss;
 mean_min_2SD_atlas_wss = atlas_mean_wss - 1.96.*atlas_std_wss;
 
-if plotFlag == 1
-    % Velocity
-%     figure('Name','mean_plus_2SD_atlas velocity')
-%     scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,atlas_mean_vel.*50,mean_plus_2SD_atlas_vel,'filled')
-%     colorbar;axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
-
-%     figure('Name','mean_plus_1SD_atlas velocity')
-%     scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,atlas_mean_vel.*50,mean_plus_1SD_atlas_vel,'filled')
-%     colorbar;axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
-
-    figure('Name', 'Velocity confidence interval atlas')
-    subplot(1,2,1)
-    atlas_matrix = zeros(size(L2));
-    atlas_matrix(L2) = mean_min_2SD_atlas_vel;
-    L_figure = (squeeze(max(L2,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);
-    title('mean minus 2SD atlas velocity')
-    subplot(1,2,2)
-    atlas_matrix = zeros(size(L2)); 
-    atlas_matrix(L2) = mean_plus_2SD_atlas_vel;
-    L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
-    imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
-    axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);
-    title('mean plus 2SD atlas velocity')
-    h_cb = colorbar;
-    pos_cb = get(h_cb,'Position');
-    set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
-
-    % WSS
-    figure('Name', 'WSS confidence interval atlas')
-    subplot(1,2,1)
-    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',mean_min_2SD_atlas_wss,'FaceColor','interp','FaceAlpha',1);
-    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
-    title('mean minus 2SD atlas WSS')
-    subplot(1,2,2)
-    patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',mean_plus_2SD_atlas_wss,'FaceColor','interp','FaceAlpha',1);
-    axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
-    title('mean plus 2SD atlas WSS')
-    h_cb = colorbar;
-    pos_cb = get(h_cb,'Position');
-    set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
-    
-end
+% confidence interval figures: create switch to keep display?
+% if plotFlag == 1
+%     % Velocity
+% %     figure('Name','mean_plus_2SD_atlas velocity')
+% %     scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,atlas_mean_vel.*50,mean_plus_2SD_atlas_vel,'filled')
+% %     colorbar;axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
+% 
+% %     figure('Name','mean_plus_1SD_atlas velocity')
+% %     scatter3(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,atlas_mean_vel.*50,mean_plus_1SD_atlas_vel,'filled')
+% %     colorbar;axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
+% 
+%     figure('Name', 'Velocity confidence interval atlas')
+%     subplot(1,2,1)
+%     atlas_matrix = zeros(size(L2));
+%     atlas_matrix(L2) = mean_min_2SD_atlas_vel;
+%     L_figure = (squeeze(max(L2,[],3))~=0);
+%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+%     axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);
+%     title('mean minus 2SD atlas velocity')
+%     subplot(1,2,2)
+%     atlas_matrix = zeros(size(L2)); 
+%     atlas_matrix(L2) = mean_plus_2SD_atlas_vel;
+%     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
+%     imagesc(squeeze(max(atlas_matrix,[],3)),'Alphadata',double(L_figure));
+%     axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);
+%     title('mean plus 2SD atlas velocity')
+%     h_cb = colorbar;
+%     pos_cb = get(h_cb,'Position');
+%     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
+% 
+%     % WSS
+%     figure('Name', 'WSS confidence interval atlas')
+%     subplot(1,2,1)
+%     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',mean_min_2SD_atlas_wss,'FaceColor','interp','FaceAlpha',1);
+%     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
+%     title('mean minus 2SD atlas WSS')
+%     subplot(1,2,2)
+%     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',mean_plus_2SD_atlas_wss,'FaceColor','interp','FaceAlpha',1);
+%     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90]);
+%     title('mean plus 2SD atlas WSS')
+%     h_cb = colorbar;
+%     pos_cb = get(h_cb,'Position');
+%     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
+%     
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%% TRAFFIC LIGHT MAP FOR ABNORMAL VELOCITY %%%%%%%%%%%%%%
@@ -1889,7 +1860,7 @@ if images_for_surgeryFlag
     
     
     hax_f3 = gca;
-    h = figure; % Emilie: figure including all views for report
+    h = figure('Name', 'Report for surgery'); % Emilie: figure including all views for report
     subP1 = subplot(1,5,1);
     posP1 = get(subP1,'Position');
     delete(subP1);

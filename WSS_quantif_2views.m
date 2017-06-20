@@ -121,31 +121,19 @@ end
 
 if TimeFlag==0
     % Peak systolic WSS
+    figure(h_meanVel)
+    hold on, plot(time,mean_velo(time),'-ko','LineWidth',4,...
+        'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     if size(Wss_matrix,5) > 5
-        WSS = Wss_matrix(:,:,:,:,time);
-        figure(h_meanVel)
-        hold on, plot(time,mean_velo(time),'-ko','LineWidth',4,...
-            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        WSS = Wss_matrix(:,:,:,:,time);        
     elseif size(Wss_matrix,5) == 5
         WSS = Wss_matrix(:,:,:,:,3);
-        figure(h_meanVel)
-        hold on, plot(3,mean_velo(3),'-ko','LineWidth',4,...
-            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     elseif size(Wss_matrix,5) == 4
         WSS = Wss_matrix(:,:,:,:,2);
-        figure(h_meanVel)
-        hold on, plot(2,mean_velo(2),'-ko','LineWidth',4,...
-            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     elseif size(Wss_matrix,5) == 3
         WSS = Wss_matrix(:,:,:,:,1);
-        figure(h_meanVel)
-        hold on, plot(1,mean_velo(1),'-ko','LineWidth',4,...
-            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     elseif size(Wss_matrix,5) == 1    % Emilie: calculated at only one time (peak systole)
         WSS = Wss_matrix(:,:,:,:,1);
-        figure(h_meanVel)
-        hold on, plot(1,mean_velo(1),'-ko','LineWidth',4,...
-            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
     end
     wss_m = squeeze(sum(WSS.^2,4).^0.5);
 elseif TimeFlag==1  % Averaged systolic WSS
