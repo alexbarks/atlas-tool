@@ -22,7 +22,7 @@ function varargout = heat_maps(varargin)
 
 % Edit the above text to modify the response to help heat_maps
 
-% Last Modified by GUIDE v2.5 26-Aug-2016 11:33:10
+% Last Modified by GUIDE v2.5 22-Jun-2017 10:57:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -120,11 +120,6 @@ switch choice
             TimeFlag = 2;
         end
         wss_ensight_Flag = get(handles.checkbox_ensight,'Value');
-        % % If WSS calculation for systole only force to 0 >> taken into account in
-        % mimics_to_Wss
-        % if (WSS_allTimes == 0 && wss_ensight_Flag == 1)
-        %     wss_ensight_Flag = 0;
-        % end
         hematocritFlag = get(handles.checkbox_hematocrit,'Value');
         multipleMasksFlag = get(handles.checkbox_masks,'Value');
         if(isequal(FileName(end-3:end),'.txt'))
@@ -390,6 +385,26 @@ function peakSyst_comp_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of peakSyst_comp
+
+
+% --- Executes on button press in WSS_quantif.
+function WSS_quantif_Callback(hObject, eventdata, handles)
+% hObject    handle to WSS_quantif (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+WSS_syst = get(handles.WSS_sysTime,'Value');
+WSS_syst_avg = get(handles.WSS_syst_avg,'Value');
+WSS_allTimes = get(handles.WSS_allTimes,'Value');
+% TimeFlag: 0 if only peak systole; 1 if average over 5 systolic phases; 2 if
+% all phases
+if WSS_syst == 1
+    TimeFlag = 0;
+elseif WSS_syst_avg == 1
+    TimeFlag = 1;
+elseif WSS_allTimes == 1
+    TimeFlag = 2;
+end
+quantif_WSS(TimeFlag);
 
 
 % --- Executes on button press in WSS_visu.
