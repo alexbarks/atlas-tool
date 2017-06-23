@@ -1,5 +1,5 @@
 function [traffic_light,heat_map]=heat_map_traffic_light_scalars_affine_registration(AtlasPath,PATHNAME,plotFlag,calculateIE_Flag,calculate_area_of_higherlowerFlag,peak_systolicFlag,images_for_surgeryFlag)
-close all
+
 %%% [heat_map,traffic_light]=heat_map_traffic_light_scalars_affine_registration(offset,plotFlag,calculateRE_Flag,calculateIE_Flag,calculate_area_of_significanceFlag,peak_systolicFlag)
 %
 % This function creates the traffic light figure for velocity and the heat map for WSS for individual patients by comparison with the velocity
@@ -170,7 +170,7 @@ Rotation_Translation = [];
 load(strcat(AtlasPath,'\',FILENAME_atlas))
 mask1 = atlas.mask;
 gray_colormap = colormap(gray);
-close all
+% close all
 
 if plotFlag == 1
     

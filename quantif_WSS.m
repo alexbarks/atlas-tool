@@ -233,21 +233,16 @@ switch choice
             polyAAo = impoly;
             wait(polyAAo);
             region = getPosition(polyAAo);
-            %mask = inpolygon(x, y, AAo(:,1), AAo(:,2));
-            
             disp('saving, pausing')
             save(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]),'region');
+            mask_wss = inpolygon(x,y, region(:,1), region(:,2));
+            % compute WSS in the region
+            wss_mask{i} = wss_m(mask_wss);
+            clear mask_wss region
             pause
         end
         
-        % compute WSS in the 10 regional ROIs
-        for i = 1:nbROIs
-            load(strcat(MrstructPath,'..','\regional_masks\mask',num2str(i)));
-            %         mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
-            mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-            wss_mask{i} = wss_m(mask_wss);
-            clear mask_wss
-        end
+        h1 = msgbox('ROIs drawn, WSS quantification in progress...');
                 
         if TimeFlag==0
             mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
@@ -296,7 +291,9 @@ switch choice
         end
         xlswrite(xls_file,indices);
         cd(currDir)
+        close(h1)
         h1 = msgbox('WSS quantification done, results are saved in the regional_masks folder');
+        
     case 'Load existing'
         
         choice = questdlg('Do you want to...', ...
@@ -306,12 +303,15 @@ switch choice
         switch choice
             case 'Modify one ROI'
                 [FileName,MrstructPath,FilterIndex] = uigetfile(currDir,'Select the ROI you want to load');
-                masks=ls(MrstructPath);
-                for i=3:12
+                currentDir=pwd;
+                cd(MrstructPath);
+                masks=ls('mask*');
+                for i=1:size(masks,1)
                     load(strcat(MrstructPath,masks(i,:)));
                     hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
                     clear region
                 end
+                cd(currentDir);
                 
                 load(strcat(MrstructPath,FileName));
                 
@@ -322,7 +322,8 @@ switch choice
                 save(strcat(MrstructPath,FileName),'region');
                 pause
                 
-                %         mask_wss = inpolygon(V(:,1),V(:,2), region(:,1), region(:,2));
+                h1 = msgbox('ROI changed, updated WSS quantification in progress...');
+                
                 mask_wss = inpolygon(x,y, region(:,1), region(:,2));
                 wss_mask = wss_m(mask_wss);
                 if TimeFlag==0
@@ -357,49 +358,30 @@ switch choice
                     xls_file = 'wss_indices_avg.xls';
                 end
                 xlswrite(xls_file,new_indices,xlRange);
-%                 xlswrite('wss_indices.xls',new_indices,xlRange);
                 cd(currDir)
-                h1 = msgbox('WSS indices in the new ROI were calculated and saved in the regional_masks folder');
+                close(h1);
+                h1 = msgbox('WSS quantification in the new ROI was updated and saved in the regional_masks folder');
                 
             case 'Recompute WSS in all existing ROIs'
-                load(strcat(MrstructPath,'..','\regional_masks\mask1'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_proxAAo_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask2'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_proxAAo_outer = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask3'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_distAAo_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask4'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_distAAo_outer = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask5'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_arch_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask6'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_arch_outer = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask7'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_proxDAo_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask8'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_proxDAo_outer = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask9'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_distDAo_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask10'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_distDAo_outer = wss_m(mask_wss);
+                
+                currentDir=pwd;
+                cd(strcat([MrstructPath '..' '\regional_masks']));
+                masks=ls('mask*');
+                for i=1:size(masks,1)
+                    load(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]));
+                    hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+                    mask_wss = inpolygon(x,y, region(:,1), region(:,2));
+                    wss_mask{i} = wss_m(mask_wss);
+                    clear region mask_wss
+                end
+                cd(currentDir);
                 
                 if TimeFlag==0
                     mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
                 elseif TimeFlag==1
                     mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_avg');
                 end
-                save(mat_file,'wss_mask_proxAAo_inner','wss_mask_proxAAo_outer','wss_mask_distAAo_inner','wss_mask_distAAo_outer','wss_mask_arch_inner','wss_mask_arch_outer','wss_mask_proxDAo_inner','wss_mask_proxDAo_outer',...
-                    'wss_mask_distDAo_inner','wss_mask_distDAo_outer');
+                save(mat_file,'wss_mask');
                 
                 % compute quantitative indices
                 indices{1,1} = '';
@@ -413,125 +395,23 @@ switch choice
                 indices{9,1} = 'min5percent';
                 indices{10,1} = 'min2percent';
                 
-                indices{1,2} = 'proxAAo_inner';
-                indices{2,2} = mean(wss_mask_proxAAo_inner(~isnan(wss_mask_proxAAo_inner)));
-                indices{3,2} = median(wss_mask_proxAAo_inner(~isnan(wss_mask_proxAAo_inner)));
-                indices{4,2} = max(wss_mask_proxAAo_inner);
-                indices{5,2} = min(wss_mask_proxAAo_inner);
-                indices{6,2} = std(wss_mask_proxAAo_inner(~isnan(wss_mask_proxAAo_inner)));
-                WSS_sorted = sort(wss_mask_proxAAo_inner(~isnan(wss_mask_proxAAo_inner)));
-                indices{7,2} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,2} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,2} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,2} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,3} = 'proxAAo_outer';
-                indices{2,3} = mean(wss_mask_proxAAo_outer(~isnan(wss_mask_proxAAo_outer)));
-                indices{3,3} = median(wss_mask_proxAAo_outer(~isnan(wss_mask_proxAAo_outer)));
-                indices{4,3} = max(wss_mask_proxAAo_outer);
-                indices{5,3} = min(wss_mask_proxAAo_outer);
-                indices{6,3} = std(wss_mask_proxAAo_outer(~isnan(wss_mask_proxAAo_outer)));
-                WSS_sorted = sort(wss_mask_proxAAo_outer(~isnan(wss_mask_proxAAo_outer)));
-                indices{7,3} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,3} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,3} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,3} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,4} = 'distAAo_inner';
-                indices{2,4} = mean(wss_mask_distAAo_inner(~isnan(wss_mask_distAAo_inner)));
-                indices{3,4} = median(wss_mask_distAAo_inner(~isnan(wss_mask_distAAo_inner)));
-                indices{4,4} = max(wss_mask_distAAo_inner);
-                indices{5,4} = min(wss_mask_distAAo_inner);
-                indices{6,4} = std(wss_mask_distAAo_inner(~isnan(wss_mask_distAAo_inner)));
-                WSS_sorted = sort(wss_mask_distAAo_inner(~isnan(wss_mask_distAAo_inner)));
-                indices{7,4} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,4} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,4} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,4} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,5} = 'distAAo_outer';
-                indices{2,5} = mean(wss_mask_distAAo_outer(~isnan(wss_mask_distAAo_outer)));
-                indices{3,5} = median(wss_mask_distAAo_outer(~isnan(wss_mask_distAAo_outer)));
-                indices{4,5} = max(wss_mask_distAAo_outer);
-                indices{5,5} = min(wss_mask_distAAo_outer);
-                indices{6,5} = std(wss_mask_distAAo_outer(~isnan(wss_mask_distAAo_outer)));
-                WSS_sorted = sort(wss_mask_distAAo_outer(~isnan(wss_mask_distAAo_outer)));
-                indices{7,5} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,5} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,5} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,5} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,6} = 'arch_inner';
-                indices{2,6} = mean(wss_mask_arch_inner(~isnan(wss_mask_arch_inner)));
-                indices{3,6} = median(wss_mask_arch_inner(~isnan(wss_mask_arch_inner)));
-                indices{4,6} = max(wss_mask_arch_inner);
-                indices{5,6} = min(wss_mask_arch_inner);
-                indices{6,6} = std(wss_mask_arch_inner(~isnan(wss_mask_arch_inner)));
-                WSS_sorted = sort(wss_mask_arch_inner(~isnan(wss_mask_arch_inner)));
-                indices{7,6} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,6} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,6} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,6} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,7} = 'arch_outer';
-                indices{2,7} = mean(wss_mask_arch_outer(~isnan(wss_mask_arch_outer)));
-                indices{3,7} = median(wss_mask_arch_outer(~isnan(wss_mask_arch_outer)));
-                indices{4,7} = max(wss_mask_arch_outer);
-                indices{5,7} = min(wss_mask_arch_outer);
-                indices{6,7} = std(wss_mask_arch_outer(~isnan(wss_mask_arch_outer)));
-                WSS_sorted = sort(wss_mask_arch_outer(~isnan(wss_mask_arch_outer)));
-                indices{7,7} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,7} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,7} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,7} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,8} = 'proxDAo_inner';
-                indices{2,8} = mean(wss_mask_proxDAo_inner(~isnan(wss_mask_proxDAo_inner)));
-                indices{3,8} = median(wss_mask_proxDAo_inner(~isnan(wss_mask_proxDAo_inner)));
-                indices{4,8} = max(wss_mask_proxDAo_inner);
-                indices{5,8} = min(wss_mask_proxDAo_inner);
-                indices{6,8} = std(wss_mask_proxDAo_inner(~isnan(wss_mask_proxDAo_inner)));
-                WSS_sorted = sort(wss_mask_proxDAo_inner(~isnan(wss_mask_proxDAo_inner)));
-                indices{7,8} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,8} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,8} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,8} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,9} = 'proxDAo_outer';
-                indices{2,9} = mean(wss_mask_proxDAo_outer(~isnan(wss_mask_proxDAo_outer)));
-                indices{3,9} = median(wss_mask_proxDAo_outer(~isnan(wss_mask_proxDAo_outer)));
-                indices{4,9} = max(wss_mask_proxDAo_outer);
-                indices{5,9} = min(wss_mask_proxDAo_outer);
-                indices{6,9} = std(wss_mask_proxDAo_outer(~isnan(wss_mask_proxDAo_outer)));
-                WSS_sorted = sort(wss_mask_proxDAo_outer(~isnan(wss_mask_proxDAo_outer)));
-                indices{7,9} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,9} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,9} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,9} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,10} = 'distDAo_inner';
-                indices{2,10} = mean(wss_mask_distDAo_inner(~isnan(wss_mask_distDAo_inner)));
-                indices{3,10} = median(wss_mask_distDAo_inner(~isnan(wss_mask_distDAo_inner)));
-                indices{4,10} = max(wss_mask_distDAo_inner);
-                indices{5,10} = min(wss_mask_distDAo_inner);
-                indices{6,10} = std(wss_mask_distDAo_inner(~isnan(wss_mask_distDAo_inner)));
-                WSS_sorted = sort(wss_mask_distDAo_inner(~isnan(wss_mask_distDAo_inner)));
-                indices{7,10} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,10} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,10} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,10} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,11} = 'distDAo_outer';
-                indices{2,11} = mean(wss_mask_distDAo_outer(~isnan(wss_mask_distDAo_outer)));
-                indices{3,11} = median(wss_mask_distDAo_outer(~isnan(wss_mask_distDAo_outer)));
-                indices{4,11} = max(wss_mask_distDAo_outer);
-                indices{5,11} = min(wss_mask_distDAo_outer);
-                indices{6,11} = std(wss_mask_distDAo_outer(~isnan(wss_mask_distDAo_outer)));
-                WSS_sorted = sort(wss_mask_distDAo_outer(~isnan(wss_mask_distDAo_outer)));
-                indices{7,11} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,11} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,11} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,11} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                for i=1:size(masks,1)
+                    
+                    mask_wss=wss_mask{i};
+                    indices{1,i+1} = strcat(['region' num2str(i)]);
+                    indices{2,i+1} = mean(mask_wss(~isnan(mask_wss)));
+                    indices{3,i+1} = median(mask_wss(~isnan(mask_wss)));
+                    indices{4,i+1} = max(mask_wss);
+                    indices{5,i+1} = min(mask_wss);
+                    indices{6,i+1} = std(mask_wss(~isnan(mask_wss)));
+                    WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                    indices{7,i+1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
+                    indices{8,i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                    indices{9,i+1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
+                    indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                    
+                    clear mask_wss WSS_sorted
+                end
                 
                 currDir=pwd;
                 cd(strcat(MrstructPath,'..','\regional_masks'))
@@ -543,63 +423,41 @@ switch choice
                 end
                 xlswrite(xls_file,indices);
                 cd(currDir)
-                h1 = msgbox('WSS indices were calculated and saved in the regional_masks folder');
+                h1 = msgbox('WSS indices were recalculated and saved in the regional_masks folder');
+                
             case 'Modify all ROIs'
                 
-                for i=1:10
+                currentDir=pwd;
+                cd(strcat([MrstructPath '..' '\regional_masks']));
+                masks=ls('mask*');
+                for i=1:size(masks,1)
                     load(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]));
                     hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
                     clear region
                 end
-                
-                for i=1:10
+                for i=1:size(masks,1)
                     load(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]));
+                    %Polygon and mask
                     polyAAo = impoly(gca,region);
                     wait(polyAAo);
                     region = getPosition(polyAAo);
                     disp('saving, pausing')
                     save(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]),'region');
+                    mask_wss = inpolygon(x,y, region(:,1), region(:,2));
+                    % compute WSS in the region
+                    wss_mask{i} = wss_m(mask_wss);
+                    clear mask_wss region
                     pause
                 end
-                
-                load(strcat(MrstructPath,'..','\regional_masks\mask1'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_proxAAo_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask2'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_proxAAo_outer = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask3'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_distAAo_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask4'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_distAAo_outer = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask5'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_arch_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask6'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_arch_outer = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask7'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_proxDAo_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask8'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_proxDAo_outer = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask9'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_distDAo_inner = wss_m(mask_wss);
-                load(strcat(MrstructPath,'..','\regional_masks\mask10'));
-                mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask_distDAo_outer = wss_m(mask_wss);
+                cd(currentDir);
+                h1 = msgbox('ROI changed, updated WSS quantification in progress...');
                 
                 if TimeFlag==0
                     mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
                 elseif TimeFlag==1
                     mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_avg');
                 end
-                save(mat_file,'wss_mask_proxAAo_inner','wss_mask_proxAAo_outer','wss_mask_distAAo_inner','wss_mask_distAAo_outer','wss_mask_arch_inner','wss_mask_arch_outer','wss_mask_proxDAo_inner','wss_mask_proxDAo_outer',...
-                    'wss_mask_distDAo_inner','wss_mask_distDAo_outer');
+                save(mat_file,'wss_mask');
                 
                 % compute quantitative indices
                 indices{1,1} = '';
@@ -613,125 +471,23 @@ switch choice
                 indices{9,1} = 'min5percent';
                 indices{10,1} = 'min2percent';
                 
-                indices{1,2} = 'proxAAo_inner';
-                indices{2,2} = mean(wss_mask_proxAAo_inner(~isnan(wss_mask_proxAAo_inner)));
-                indices{3,2} = median(wss_mask_proxAAo_inner(~isnan(wss_mask_proxAAo_inner)));
-                indices{4,2} = max(wss_mask_proxAAo_inner);
-                indices{5,2} = min(wss_mask_proxAAo_inner);
-                indices{6,2} = std(wss_mask_proxAAo_inner(~isnan(wss_mask_proxAAo_inner)));
-                WSS_sorted = sort(wss_mask_proxAAo_inner(~isnan(wss_mask_proxAAo_inner)));
-                indices{7,2} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,2} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,2} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,2} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,3} = 'proxAAo_outer';
-                indices{2,3} = mean(wss_mask_proxAAo_outer(~isnan(wss_mask_proxAAo_outer)));
-                indices{3,3} = median(wss_mask_proxAAo_outer(~isnan(wss_mask_proxAAo_outer)));
-                indices{4,3} = max(wss_mask_proxAAo_outer);
-                indices{5,3} = min(wss_mask_proxAAo_outer);
-                indices{6,3} = std(wss_mask_proxAAo_outer(~isnan(wss_mask_proxAAo_outer)));
-                WSS_sorted = sort(wss_mask_proxAAo_outer(~isnan(wss_mask_proxAAo_outer)));
-                indices{7,3} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,3} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,3} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,3} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,4} = 'distAAo_inner';
-                indices{2,4} = mean(wss_mask_distAAo_inner(~isnan(wss_mask_distAAo_inner)));
-                indices{3,4} = median(wss_mask_distAAo_inner(~isnan(wss_mask_distAAo_inner)));
-                indices{4,4} = max(wss_mask_distAAo_inner);
-                indices{5,4} = min(wss_mask_distAAo_inner);
-                indices{6,4} = std(wss_mask_distAAo_inner(~isnan(wss_mask_distAAo_inner)));
-                WSS_sorted = sort(wss_mask_distAAo_inner(~isnan(wss_mask_distAAo_inner)));
-                indices{7,4} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,4} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,4} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,4} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,5} = 'distAAo_outer';
-                indices{2,5} = mean(wss_mask_distAAo_outer(~isnan(wss_mask_distAAo_outer)));
-                indices{3,5} = median(wss_mask_distAAo_outer(~isnan(wss_mask_distAAo_outer)));
-                indices{4,5} = max(wss_mask_distAAo_outer);
-                indices{5,5} = min(wss_mask_distAAo_outer);
-                indices{6,5} = std(wss_mask_distAAo_outer(~isnan(wss_mask_distAAo_outer)));
-                WSS_sorted = sort(wss_mask_distAAo_outer(~isnan(wss_mask_distAAo_outer)));
-                indices{7,5} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,5} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,5} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,5} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,6} = 'arch_inner';
-                indices{2,6} = mean(wss_mask_arch_inner(~isnan(wss_mask_arch_inner)));
-                indices{3,6} = median(wss_mask_arch_inner(~isnan(wss_mask_arch_inner)));
-                indices{4,6} = max(wss_mask_arch_inner);
-                indices{5,6} = min(wss_mask_arch_inner);
-                indices{6,6} = std(wss_mask_arch_inner(~isnan(wss_mask_arch_inner)));
-                WSS_sorted = sort(wss_mask_arch_inner(~isnan(wss_mask_arch_inner)));
-                indices{7,6} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,6} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,6} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,6} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,7} = 'arch_outer';
-                indices{2,7} = mean(wss_mask_arch_outer(~isnan(wss_mask_arch_outer)));
-                indices{3,7} = median(wss_mask_arch_outer(~isnan(wss_mask_arch_outer)));
-                indices{4,7} = max(wss_mask_arch_outer);
-                indices{5,7} = min(wss_mask_arch_outer);
-                indices{6,7} = std(wss_mask_arch_outer(~isnan(wss_mask_arch_outer)));
-                WSS_sorted = sort(wss_mask_arch_outer(~isnan(wss_mask_arch_outer)));
-                indices{7,7} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,7} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,7} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,7} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,8} = 'proxDAo_inner';
-                indices{2,8} = mean(wss_mask_proxDAo_inner(~isnan(wss_mask_proxDAo_inner)));
-                indices{3,8} = median(wss_mask_proxDAo_inner(~isnan(wss_mask_proxDAo_inner)));
-                indices{4,8} = max(wss_mask_proxDAo_inner);
-                indices{5,8} = min(wss_mask_proxDAo_inner);
-                indices{6,8} = std(wss_mask_proxDAo_inner(~isnan(wss_mask_proxDAo_inner)));
-                WSS_sorted = sort(wss_mask_proxDAo_inner(~isnan(wss_mask_proxDAo_inner)));
-                indices{7,8} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,8} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,8} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,8} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,9} = 'proxDAo_outer';
-                indices{2,9} = mean(wss_mask_proxDAo_outer(~isnan(wss_mask_proxDAo_outer)));
-                indices{3,9} = median(wss_mask_proxDAo_outer(~isnan(wss_mask_proxDAo_outer)));
-                indices{4,9} = max(wss_mask_proxDAo_outer);
-                indices{5,9} = min(wss_mask_proxDAo_outer);
-                indices{6,9} = std(wss_mask_proxDAo_outer(~isnan(wss_mask_proxDAo_outer)));
-                WSS_sorted = sort(wss_mask_proxDAo_outer(~isnan(wss_mask_proxDAo_outer)));
-                indices{7,9} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,9} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,9} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,9} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,10} = 'distDAo_inner';
-                indices{2,10} = mean(wss_mask_distDAo_inner(~isnan(wss_mask_distDAo_inner)));
-                indices{3,10} = median(wss_mask_distDAo_inner(~isnan(wss_mask_distDAo_inner)));
-                indices{4,10} = max(wss_mask_distDAo_inner);
-                indices{5,10} = min(wss_mask_distDAo_inner);
-                indices{6,10} = std(wss_mask_distDAo_inner(~isnan(wss_mask_distDAo_inner)));
-                WSS_sorted = sort(wss_mask_distDAo_inner(~isnan(wss_mask_distDAo_inner)));
-                indices{7,10} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,10} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,10} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,10} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                
-                indices{1,11} = 'distDAo_outer';
-                indices{2,11} = mean(wss_mask_distDAo_outer(~isnan(wss_mask_distDAo_outer)));
-                indices{3,11} = median(wss_mask_distDAo_outer(~isnan(wss_mask_distDAo_outer)));
-                indices{4,11} = max(wss_mask_distDAo_outer);
-                indices{5,11} = min(wss_mask_distDAo_outer);
-                indices{6,11} = std(wss_mask_distDAo_outer(~isnan(wss_mask_distDAo_outer)));
-                WSS_sorted = sort(wss_mask_distDAo_outer(~isnan(wss_mask_distDAo_outer)));
-                indices{7,11} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                indices{8,11} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                indices{9,11} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                indices{10,11} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                for i=1:size(masks,1)
+                    
+                    mask_wss=wss_mask{i};
+                    indices{1,i+1} = strcat(['region' num2str(i)]);
+                    indices{2,i+1} = mean(mask_wss(~isnan(mask_wss)));
+                    indices{3,i+1} = median(mask_wss(~isnan(mask_wss)));
+                    indices{4,i+1} = max(mask_wss);
+                    indices{5,i+1} = min(mask_wss);
+                    indices{6,i+1} = std(mask_wss(~isnan(mask_wss)));
+                    WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                    indices{7,i+1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
+                    indices{8,i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                    indices{9,i+1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
+                    indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                    
+                    clear mask_wss WSS_sorted
+                end
                 
                 currDir=pwd;
                 cd(strcat(MrstructPath,'..','\regional_masks'))
@@ -743,6 +499,7 @@ switch choice
                 end
                 xlswrite(xls_file,indices);
                 cd(currDir)
+                close(h1)
                 h1 = msgbox('WSS indices were calculated and saved in the regional_masks folder');
 
         end
