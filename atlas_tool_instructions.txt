@@ -5,14 +5,16 @@ NOTE (AJB) -- All instructions below are from 'new workflow' circa EB & 2017
 To compute WSS via GUI interface:
 - run 'heat_maps.m' and click on 'WSS calculation'
 	o select mag_struct
-	+ select mask_struct (issue with load of the struct mrstruct,mrStruct, or mrstruct_mask!!!) - same as issue for line 30 below ('heatmaps')
+	+ select mask_struct or grayvalues.txt(issue with load of the struct mrstruct,mrStruct, or mrstruct_mask!!!) - same as issue for line 30 below ('heatmaps')
 - saved data is under mrstruct folder and includes 
 	o global WSS quantificaiton
 	o WSS figure with quiver plot
+	TODO: 1. change graphical output to show subplots of flow, RA, LP, and histogram (don't show MIP)
 	
-To compute WSS in ~10 ROIs:
-- use heat_maps.m and click 'WSS regional quantification' which runs 'viewWSSverctors.m'
-- not sure how saved
+To compute WSS in ROIs:
+- use heat_maps.m and click 'WSS regional quantification' which runs 'quantifWSS.m'
+	TODO: 1. add flow to same fig as ROI (low priority)
+		  2. save ROI number (and be able to load) [low priority]			
 
 To compute WSS using MIP tool approach? (note that it doesn't compute WSS via the MIP rather it is only for viz)
 - created for Kenichiro to do PA's; but also useful for tissue study
@@ -22,22 +24,21 @@ To compute WSS using MIP tool approach? (note that it doesn't compute WSS via th
 	o masks
 	o excel sheet with measurements
 
-To compute heatmap
+To compute heatmap (TODO test Pa's)
 - run heat_maps and select 'Creation of heatmaps' 
-	+ TODO get rid of traffic lights?
 	o select atlas
-	DONE hard code atlas selection for peak_systole (or 5 timesteps)
+	+ TODO get rid of traffic lights?
 	+ TODO alex runs into error with calgary data bc of mrstruc_mask naming conventions (error line 294 heat_map_traffic_light_scalars_affine_registration) -- is this a one-off problem or systemic?
 	o CALGARY: watch out for peak systole (note seems like Julio did peak systole)
 	+ CALGARY: WARNING - need to perform segmentation uniformly (LVOT?), also watch out for registration errors
-	+ HIERARCHY of QUALITY TODO: 
+	+ HIERARCHY of QUALITY TODO (with CALGARY): 
 		1. agree on segmentation approach (include LVOT, etc)
 			o make sure the code for creating the mask_struct_aorta is the same between sites
 		2. use the correct atlas (systolic, 5 timesteps, age-matched)
 		3. watch out for registration errors (create window for QA?)
 		4. create a uniform report
-	DONE: add in QA for rotation/coreg.
-	+ TODO: reduce the number of output windows, consolidate saved data, also put rotation_translation.mat somewhere appropriate in the file system
+	+ TODO: consolidate saved data, also put rotation_translation.mat somewhere appropriate in the file system [low priority]
+	+ TODO: consolidate patient flow, Velocity and velocity atlases (mean/std), same for WSS
 	ISSUES: 
 	1. funny operation of the ROI for hot cold regions
 	2. call windows to prevent user from click on something else and crashing graphic outputs
