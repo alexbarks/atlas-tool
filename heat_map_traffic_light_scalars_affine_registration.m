@@ -109,9 +109,8 @@ if ~exist(PATHNAME) == 2 || isempty(PATHNAME)
     FILENAME2 = 'vel_struct';               % 2: Load velocity
     FILENAME3 = 'Wss_point_cloud_aorta';    % 3: Load WSS
     FILENAME4 = 'mag_struct';
-    MrstructPath = PATHNAME;%strcat(PATHNAME,'\mrstruct')
+    MrstructPath = PATHNAME;
 else
-    %     MrstructPath = strcat(PATHNAME,'\mrstruct');
     MrstructPath = PATHNAME;
     ind_sep=findstr(MrstructPath,'\');
     PATHNAME = MrstructPath(1:ind_sep(end)-1);
@@ -163,14 +162,14 @@ global Wss_point_cloud
 global atlas
 global angles
 global count3
-%
-%data = [];
+
+cd([MrstructPath '\..'])
+
 Rotation_Translation = [];
 
 load(strcat(AtlasPath,'\',FILENAME_atlas))
 mask1 = atlas.mask;
 gray_colormap = colormap(gray);
-% close all
 
 if plotFlag == 1
     
@@ -242,37 +241,17 @@ if calculateIE_Flag == 1;
     mean_vel_arch_inner = mean(atlas.mean_vel(atlas_mask_arch_inner_vel));
     atlas_mask_arch_inner_wss = inpolygon(atlas.x_coor_wss, atlas.y_coor_wss, region(:,1), region(:,2));
     mean_wss_arch_inner = mean(atlas.mean_wss(atlas_mask_arch_inner_wss));
-    %     load(strcat(AtlasPath,'\interpolation_error_ROI\mask4'))
-    %     atlas_mask_arch_outer_vel = inpolygon(atlas.x_coor_vel, atlas.y_coor_vel, region(:,1), region(:,2));
-    %     mean_vel_arch_outer = mean(atlas.mean_vel(atlas_mask_arch_outer_vel));
-    %     atlas_mask_arch_outer_wss = inpolygon(atlas.x_coor_wss, atlas.y_coor_wss, region(:,1), region(:,2));
-    %     mean_wss_arch_outer = mean(atlas.mean_wss(atlas_mask_arch_outer_wss));
-    %     load(strcat(AtlasPath,'\interpolation_error_ROI\mask5'))
-    %     atlas_mask_DAo_inner_vel = inpolygon(atlas.x_coor_vel, atlas.y_coor_vel, region(:,1), region(:,2));
-    %     mean_vel_DAo_inner = mean(atlas.mean_vel(atlas_mask_DAo_inner_vel));
-    %     atlas_mask_DAo_inner_wss = inpolygon(atlas.x_coor_wss, atlas.y_coor_wss, region(:,1), region(:,2));
-    %     mean_wss_DAo_inner = mean(atlas.mean_wss(atlas_mask_DAo_inner_wss));
-    %     load(strcat(AtlasPath,'\interpolation_error_ROI\mask6'))
-    %     atlas_mask_DAo_outer_vel = inpolygon(atlas.x_coor_vel, atlas.y_coor_vel, region(:,1), region(:,2));
-    %     mean_vel_DAo_outer = mean(atlas.mean_vel(atlas_mask_DAo_outer_vel));
-    %     atlas_mask_DAo_outer_wss = inpolygon(atlas.x_coor_wss, atlas.y_coor_wss, region(:,1), region(:,2));
-    %     mean_wss_DAo_outer = mean(atlas.mean_wss(atlas_mask_DAo_outer_wss));
+
     mean_vel_atlas_total_before_interpolation = mean(atlas.mean_vel)
     mean_wss_atlas_total_before_interpolation = mean(atlas.mean_wss)
     
     mean_vel_before_interpolation(1,1) = mean_vel_asc_inner;
     mean_vel_before_interpolation(2,1) = mean_vel_asc_outer;
     mean_vel_before_interpolation(3,1) = mean_vel_arch_inner
-    %     mean_vel_before_interpolation(4,1) = mean_vel_arch_outer;
-    %     mean_vel_before_interpolation(5,1) = mean_vel_DAo_inner;
-    %     mean_vel_before_interpolation(6,1) = mean_vel_DAo_outer;
     
     mean_wss_before_interpolation(1,1) = mean_wss_asc_inner;
     mean_wss_before_interpolation(2,1) = mean_wss_asc_outer;
     mean_wss_before_interpolation(3,1) = mean_wss_arch_inner
-    %     mean_wss_before_interpolation(4,1) = mean_wss_arch_outer;
-    %     mean_wss_before_interpolation(5,1) = mean_wss_DAo_inner;
-    %     mean_wss_before_interpolation(6,1) = mean_wss_DAo_outer;
     
     if plotFlag == 1
         figure('Name','Velocity before interpolation: inner AAo')
@@ -284,15 +263,7 @@ if calculateIE_Flag == 1;
         figure('Name','Velocity before interpolation: inner arch')
         scatter3(atlas.x_coor_vel(atlas_mask_arch_inner_vel),atlas.y_coor_vel(atlas_mask_arch_inner_vel),atlas.z_coor_vel(atlas_mask_arch_inner_vel),20,atlas.mean_vel(atlas_mask_arch_inner_vel),'filled');axis equal;caxis([0 1.5])
         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
-        %         figure('Name','Velocity before interpolation: outer arch')
-        %         scatter3(atlas.x_coor_vel(atlas_mask_arch_outer_vel),atlas.y_coor_vel(atlas_mask_arch_outer_vel),atlas.z_coor_vel(atlas_mask_arch_outer_vel),20,atlas.mean_vel(atlas_mask_arch_outer_vel),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
-        %         figure('Name','Velocity before interpolation: inner DAo')
-        %         scatter3(atlas.x_coor_vel(atlas_mask_DAo_inner_vel),atlas.y_coor_vel(atlas_mask_DAo_inner_vel),atlas.z_coor_vel(atlas_mask_DAo_inner_vel),20,atlas.mean_vel(atlas_mask_DAo_inner_vel),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
-        %         figure('Name','Velocity before interpolation: outer DAo')
-        %         scatter3(atlas.x_coor_vel(atlas_mask_DAo_outer_vel),atlas.y_coor_vel(atlas_mask_DAo_outer_vel),atlas.z_coor_vel(atlas_mask_DAo_outer_vel),20,atlas.mean_vel(atlas_mask_DAo_outer_vel),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
+
         figure('Name','WSS before interpolation: inner AAo')
         scatter3(atlas.x_coor_wss(atlas_mask_AAo_inner_wss),atlas.y_coor_wss(atlas_mask_AAo_inner_wss),atlas.z_coor_wss(atlas_mask_AAo_inner_wss),20,atlas.mean_wss(atlas_mask_AAo_inner_wss),'filled');axis equal;caxis([0 1.5])
         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
@@ -302,15 +273,7 @@ if calculateIE_Flag == 1;
         figure('Name','WSS before interpolation: inner arch')
         scatter3(atlas.x_coor_wss(atlas_mask_arch_inner_wss),atlas.y_coor_wss(atlas_mask_arch_inner_wss),atlas.z_coor_wss(atlas_mask_arch_inner_wss),20,atlas.mean_wss(atlas_mask_arch_inner_wss),'filled');axis equal;caxis([0 1.5])
         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
-        %         figure('Name','WSS before interpolation: outer arch')
-        %         scatter3(atlas.x_coor_wss(atlas_mask_arch_outer_wss),atlas.y_coor_wss(atlas_mask_arch_outer_wss),atlas.z_coor_wss(atlas_mask_arch_outer_wss),20,atlas.mean_wss(atlas_mask_arch_outer_wss),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
-        %         figure('Name','WSS before interpolation: inner DAo')
-        %         scatter3(atlas.x_coor_wss(atlas_mask_DAo_inner_wss),atlas.y_coor_wss(atlas_mask_DAo_inner_wss),atlas.z_coor_wss(atlas_mask_DAo_inner_wss),20,atlas.mean_wss(atlas_mask_DAo_inner_wss),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
-        %         figure('Name','WSS before interpolation: outer DAo')
-        %         scatter3(atlas.x_coor_wss(atlas_mask_DAo_outer_wss),atlas.y_coor_wss(atlas_mask_DAo_outer_wss),atlas.z_coor_wss(atlas_mask_DAo_outer_wss),20,atlas.mean_wss(atlas_mask_DAo_outer_wss),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);caxis([0 1.5])
+
     end
 end
 
@@ -353,7 +316,7 @@ for t = 1:size(velocity,5)
 end
 
 if plotFlag == 1
-    h_meanVel=figure('Name','Patient mean velocity waveform')
+    h_meanVel=figure('Name','Patient mean velocity waveform');
     plot(1:size(velocity,5),mean_velo,'-ko','LineWidth',4,...
         'MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',14);
     ylabel('Mean velocity (m/s)');
@@ -539,8 +502,7 @@ if plotFlag == 1
     patch('Faces',F2,'Vertices',V2,'CData',C2,'FaceColor','flat','EdgeColor','none','FaceAlpha',1);
     caxis([0 1.5])
     axis equal;axis off; axis ij
-    view([-180 -90])
-%     pause(5)    
+    view([-180 -90])  
     title('WSS (Pa)')
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
@@ -591,14 +553,6 @@ mask1_to_register = mask1;
 mask1_to_register = imfilter(mask1_to_register,PSF,'conv');
 
 mask2 = imfilter(mask2,PSF,'conv');
-
-% figure('Name','mask1')
-% V = vol3d('cdata',mask1_to_register,'texture','3D','texturemap',mask1);
-% axis tight; axis equal
-%
-% figure('Name','mask2')
-% V = vol3d('cdata',mask2,'texture','3D','texturemap',mask2);
-% axis tight; axis equal
 
 disp(' ')
 disp('affine registration (dof = 12)! So only scalars used (Affine registration doesnt work for vectors)...Busy registering...')
@@ -780,7 +734,6 @@ if calculateIE_Flag == 1;
         
         F2=figure('Name','Atlas shape: Paused after finishing a region so press space when finished!');
         plot3(data2.x_coor_wss_new,data2.y_coor_wss_new,data2.z_coor_wss_new,'r.');
-        %  patch('Faces',data2.F_matrix{1},'Vertices',[data2.x_coor_wss_new data2.y_coor_wss_new data2.z_coor_wss_new],'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',0.25);
         view([-180 -90]);axis ij;axis equal;axis off
         
         mkdir(PATHNAME,'\atlas_interpolation_error_ROI_after_transformation')
@@ -813,36 +766,17 @@ if calculateIE_Flag == 1;
     transformed_mean_vel_arch_inner = mean(atlas_mean_vel(transformed_atlas_mask_arch_inner_vel));
     transformed_atlas_mask_arch_inner_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
     transformed_mean_wss_arch_inner = mean(atlas_mean_wss(transformed_atlas_mask_arch_inner_wss));
-    %     load(strcat(PATHNAME,'\atlas_interpolation_error_ROI_after_transformation\mask4'))
-    %     transformed_atlas_mask_arch_outer_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
-    %     transformed_mean_vel_arch_outer = mean(atlas_mean_vel(transformed_atlas_mask_arch_outer_vel));
-    %     transformed_atlas_mask_arch_outer_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
-    %     transformed_mean_wss_arch_outer = mean(atlas_mean_wss(transformed_atlas_mask_arch_outer_wss));
-    %     load(strcat(PATHNAME,'\atlas_interpolation_error_ROI_after_transformation\mask5'))
-    %     transformed_atlas_mask_DAo_inner_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
-    %     transformed_mean_vel_DAo_inner = mean(atlas_mean_vel(transformed_atlas_mask_DAo_inner_vel));
-    %     transformed_atlas_mask_DAo_inner_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
-    %     transformed_mean_wss_DAo_inner = mean(atlas_mean_wss(transformed_atlas_mask_DAo_inner_wss));
-    %     load(strcat(PATHNAME,'\atlas_interpolation_error_ROI_after_transformation\mask6'))
-    %     transformed_atlas_mask_DAo_outer_vel = inpolygon(data2.x_coor_vel_new,data2.y_coor_vel_new, region(:,1), region(:,2));
-    %     transformed_mean_vel_DAo_outer = mean(atlas_mean_vel(transformed_atlas_mask_DAo_outer_vel));
-    %     transformed_atlas_mask_DAo_outer_wss = inpolygon(data2.x_coor_wss_new,data2.y_coor_wss_new, region(:,1), region(:,2));
-    %     transformed_mean_wss_DAo_outer = mean(atlas_mean_wss(transformed_atlas_mask_DAo_outer_wss));
+
     mean_vel_atlas_total_after_interpolation = mean(atlas_mean_vel)
     mean_wss_atlas_total_after_interpolation = mean(atlas_mean_wss)
     
     mean_vel_after_interpolation(1,1) = transformed_mean_vel_asc_inner;
     mean_vel_after_interpolation(2,1) = transformed_mean_vel_asc_outer;
     mean_vel_after_interpolation(3,1) = transformed_mean_vel_arch_inner
-    %     mean_vel_after_interpolation(4,1) = transformed_mean_vel_arch_outer;
-    %     mean_vel_after_interpolation(5,1) = transformed_mean_vel_DAo_inner;
-    %     mean_vel_after_interpolation(6,1) = transformed_mean_vel_DAo_outer;
+
     mean_wss_after_interpolation(1,1) = transformed_mean_wss_asc_inner;
     mean_wss_after_interpolation(2,1) = transformed_mean_wss_asc_outer;
     mean_wss_after_interpolation(3,1) = transformed_mean_wss_arch_inner
-    %     mean_wss_after_interpolation(4,1) = transformed_mean_wss_arch_outer;
-    %     mean_wss_after_interpolation(5,1) = transformed_mean_wss_DAo_inner;
-    %     mean_wss_after_interpolation(6,1) = transformed_mean_wss_DAo_outer;
     
     if plotFlag == 1
         figure('Name','Velocity after interpolation: inner AAo')
@@ -854,15 +788,7 @@ if calculateIE_Flag == 1;
         figure('Name','Velocity after interpolation: inner arch')
         scatter3(data2.x_coor_vel_new(transformed_atlas_mask_arch_inner_vel),data2.y_coor_vel_new(transformed_atlas_mask_arch_inner_vel),data2.z_coor_vel_new(transformed_atlas_mask_arch_inner_vel),20,atlas_mean_vel(transformed_atlas_mask_arch_inner_vel),'filled');axis equal;caxis([0 1.5])
         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-        %         figure('Name','Velocity after interpolation: outer arch')
-        %         scatter3(data2.x_coor_vel_new(transformed_atlas_mask_arch_outer_vel),data2.y_coor_vel_new(transformed_atlas_mask_arch_outer_vel),data2.z_coor_vel_new(transformed_atlas_mask_arch_outer_vel),20,atlas_mean_vel(transformed_atlas_mask_arch_outer_vel),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-        %         figure('Name','Velocity after interpolation: inner DAo')
-        %         scatter3(data2.x_coor_vel_new(transformed_atlas_mask_DAo_inner_vel),data2.y_coor_vel_new(transformed_atlas_mask_DAo_inner_vel),data2.z_coor_vel_new(transformed_atlas_mask_DAo_inner_vel),20,atlas_mean_vel(transformed_atlas_mask_DAo_inner_vel),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-        %         figure('Name','Velocity after interpolation: outer DAo')
-        %         scatter3(data2.x_coor_vel_new(transformed_atlas_mask_DAo_outer_vel),data2.y_coor_vel_new(transformed_atlas_mask_DAo_outer_vel),data2.z_coor_vel_new(transformed_atlas_mask_DAo_outer_vel),20,atlas_mean_vel(transformed_atlas_mask_DAo_outer_vel),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+
         figure('Name','WSS after interpolation: inner AAo')
         scatter3(data2.x_coor_wss_new(transformed_atlas_mask_AAo_inner_wss),data2.y_coor_wss_new(transformed_atlas_mask_AAo_inner_wss),atlas.z_coor_wss(transformed_atlas_mask_AAo_inner_wss),20,atlas_mean_wss(transformed_atlas_mask_AAo_inner_wss),'filled');axis equal;caxis([0 1.5])
         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
@@ -872,45 +798,25 @@ if calculateIE_Flag == 1;
         figure('Name','WSS before interpolation: inner arch')
         scatter3(data2.x_coor_wss_new(transformed_atlas_mask_arch_inner_wss),data2.y_coor_wss_new(transformed_atlas_mask_arch_inner_wss),data2.z_coor_wss_new(transformed_atlas_mask_arch_inner_wss),20,atlas_mean_wss(transformed_atlas_mask_arch_inner_wss),'filled');axis equal;caxis([0 1.5])
         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-        %         figure('Name','WSS after interpolation: outer arch')
-        %         scatter3(data2.x_coor_wss_new(transformed_atlas_mask_arch_outer_wss),data2.y_coor_wss_new(transformed_atlas_mask_arch_outer_wss),data2.z_coor_wss_new(transformed_atlas_mask_arch_outer_wss),20,atlas_mean_wss(transformed_atlas_mask_arch_outer_wss),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-        %         figure('Name','WSS after interpolation: inner DAo')
-        %         scatter3(data2.x_coor_wss_new(transformed_atlas_mask_DAo_inner_wss),data2.y_coor_wss_new(transformed_atlas_mask_DAo_inner_wss),data2.z_coor_wss_new(transformed_atlas_mask_DAo_inner_wss),20,atlas_mean_wss(transformed_atlas_mask_DAo_inner_wss),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
-        %         figure('Name','WSS after interpolation: outer DAo')
-        %         scatter3(data2.x_coor_wss_new(transformed_atlas_mask_DAo_outer_wss),data2.y_coor_wss_new(transformed_atlas_mask_DAo_outer_wss),data2.z_coor_wss_new(transformed_atlas_mask_DAo_outer_wss),20,atlas_mean_wss(transformed_atlas_mask_DAo_outer_wss),'filled');axis equal;caxis([0 1.5])
-        %         xlabel('x'),ylabel('y'),zlabel('z');view([0 -90]);
+
     end
     
     IE_inner_AAo_vel = abs(mean_vel_before_interpolation(1,1)-mean_vel_after_interpolation(1,1)) / ((mean_vel_before_interpolation(1,1)+mean_vel_after_interpolation(1,1))./2)*100;
     IE_outer_AAo_vel = abs(mean_vel_before_interpolation(2,1)-mean_vel_after_interpolation(2,1)) / ((mean_vel_before_interpolation(2,1)+mean_vel_after_interpolation(2,1))./2)*100;
     IE_inner_asc_vel = abs(mean_vel_before_interpolation(3,1)-mean_vel_after_interpolation(3,1)) / ((mean_vel_before_interpolation(3,1)+mean_vel_after_interpolation(3,1))./2)*100;
-    %     IE_outer_asc_vel = abs(mean_vel_before_interpolation(4,1)-mean_vel_after_interpolation(4,1)) / ((mean_vel_before_interpolation(4,1)+mean_vel_after_interpolation(4,1))./2)*100;
-    %     IE_inner_DAo_vel = abs(mean_vel_before_interpolation(5,1)-mean_vel_after_interpolation(5,1)) / ((mean_vel_before_interpolation(5,1)+mean_vel_after_interpolation(5,1))./2)*100;
-    %     IE_outer_DAo_vel = abs(mean_vel_before_interpolation(6,1)-mean_vel_after_interpolation(6,1)) / ((mean_vel_before_interpolation(6,1)+mean_vel_after_interpolation(6,1))./2)*100;
     IE_total_vel = abs(mean_vel_atlas_total_before_interpolation-mean_vel_atlas_total_after_interpolation) / ((mean_vel_atlas_total_before_interpolation+mean_vel_atlas_total_after_interpolation)./2)*100;
     IE_inner_AAo_wss = abs(mean_wss_before_interpolation(1,1)-mean_wss_after_interpolation(1,1)) / ((mean_wss_before_interpolation(1,1)+mean_wss_after_interpolation(1,1))./2)*100;
     IE_outer_AAo_wss = abs(mean_wss_before_interpolation(2,1)-mean_wss_after_interpolation(2,1)) / ((mean_wss_before_interpolation(2,1)+mean_wss_after_interpolation(2,1))./2)*100;
     IE_inner_asc_wss = abs(mean_wss_before_interpolation(3,1)-mean_wss_after_interpolation(3,1)) / ((mean_wss_before_interpolation(3,1)+mean_wss_after_interpolation(3,1))./2)*100;
-    %     IE_outer_asc_wss = abs(mean_wss_before_interpolation(4,1)-mean_wss_after_interpolation(4,1)) / ((mean_wss_before_interpolation(4,1)+mean_wss_after_interpolation(4,1))./2)*100;
-    %     IE_inner_DAo_wss = abs(mean_wss_before_interpolation(5,1)-mean_wss_after_interpolation(5,1)) / ((mean_wss_before_interpolation(5,1)+mean_wss_after_interpolation(5,1))./2)*100;
-    %     IE_outer_DAo_wss = abs(mean_wss_before_interpolation(6,1)-mean_wss_after_interpolation(6,1)) / ((mean_wss_before_interpolation(6,1)+mean_wss_after_interpolation(6,1))./2)*100;
     IE_total_wss = abs(mean_wss_atlas_total_before_interpolation-mean_wss_atlas_total_after_interpolation) / ((mean_wss_atlas_total_before_interpolation+mean_wss_atlas_total_after_interpolation)./2)*100;
     disp(['IE velocity inner AAo = ' num2str(IE_inner_AAo_vel) ' %'])
     disp(['IE velocity outer AAo = ' num2str(IE_outer_AAo_vel) ' %'])
     disp(['IE velocity inner asc = ' num2str(IE_inner_asc_vel) ' %'])
-    %     disp(['IE velocity outer asc = ' num2str(IE_outer_asc_vel) ' %'])
-    %     disp(['IE velocity inner DAo = ' num2str(IE_inner_DAo_vel) ' %'])
-    %     disp(['IE velocity outer DAo = ' num2str(IE_outer_DAo_vel) ' %'])
     disp(['IE velocity total = ' num2str(IE_total_vel) ' %'])
     disp(' ')
     disp(['IE wall shear stress inner AAo = ' num2str(IE_inner_AAo_wss) ' %'])
     disp(['IE wall shear stress outer AAo = ' num2str(IE_outer_AAo_wss) ' %'])
     disp(['IE wall shear stress inner asc = ' num2str(IE_inner_asc_wss) ' %'])
-    %     disp(['IE wall shear stress outer asc = ' num2str(IE_outer_asc_wss) ' %'])
-    %     disp(['IE wall shear stress inner DAo = ' num2str(IE_inner_DAo_wss) ' %'])
-    %     disp(['IE wall shear stress outer DAo = ' num2str(IE_outer_DAo_wss) ' %'])
     disp(['IE wss total = ' num2str(IE_total_wss) ' %'])
     disp(' ')
 end
@@ -1132,163 +1038,335 @@ color2(4:64,:) = gray_colormap(4:64,:);
 
 if calculate_area_of_higherlowerFlag == 1;
     
-    vertices = [data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss];
-    figure, patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss], ...
-        'EdgeColor','none', 'FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
+%     vertices = [data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss];
+    x1 = data2.x_coor_wss;%/mask2_vox(1);
+    y1 = data2.y_coor_wss;%/mask2_vox(2);
+    z1 = data2.z_coor_wss;%/mask2_vox(3);
+    vertices = [x1 y1 z1];
+    
+    f5=figure('Name', 'Calculation of higher and lower WSS areas')
+    patch('Faces',data2.F,'Vertices',vertices, ...
+        'EdgeColor','none','FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
     axis equal;axis off; axis ij
     view([-180 -90])
+    
+%     gray_colormap = colormap(gray);
+%     color3(1,:) = [0 0 1];
+%     color3(2,:) = [1 0 0];
+%     color3(3,:) = [0.5 0.5 0.5];
+%     color3(4:64,:) = gray_colormap(4:64,:);
     colormap(color2);
     caxis([0 64]);
+%     load(strcat(MrstructPath,'\',FILENAME4))
+%     magnitude = flipdim(double(mrStruct.dataAy(:,:,:,3)),3);
+%     magnitude(magnitude == 0) = 3;
+%     magnitude(magnitude == 1) = 3;
+%     magnitude(magnitude == 2) = 3;
+%     hold on,
+%     s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3),magnitude(:,:,1),'EdgeColor','none');
+    title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate and press space to move on to the next one'})
     
-    if exist(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask1.mat'),'file')~=2
-        title('Draw regions from proximal to distal, inner then outer locations')
-        mkdir(PATHNAME,'heat_map_higher_lower_masks')
-        nbROIs = inputdlg('How many ROIs for calculation of higher and lower WSS areas?', 'Number of ROIs', 1, {'3'});
-        nbROIs = (round(str2num(nbROIs{1})));        
-        for i = 1:nbROIs
-            %Polygon and mask for AAo
-            polyAAo = impoly;
-            wait(polyAAo);
-            region = getPosition(polyAAo);
-            %mask = inpolygon(x, y, AAo(:,1), AAo(:,2));
-            disp('saving, pausing')
-            save(strcat([PATHNAME '\heat_map_higher_lower_masks\mask' num2str(i)]),'region');
-            pause
+%     uicontrol('Style','text',...
+%         'Position',[10 200 120 70],...
+%         'String','Please choose using the slider the magnitude slice')
+%     uicontrol('Style','text',...
+%         'Position',[10 75 120 20],...
+%         'String','Slice slider')
+%     sl1 = uicontrol('Style', 'slider',...
+%         'Min',1,'Max',size(magnitude,3),'Value',size(magnitude,3)/2,...
+%         'Position', [10 50 120 20],...
+%         'SliderStep',[1/(size(magnitude,3)-1) 10/(size(magnitude,3)-1)],...
+%         'Callback', {@move_slice4,gca});
+    
+    mkdir(strcat(PATHNAME,'\heat_map_higher_lower_masks'));
+    
+    choice = questdlg('Do you want to draw new ROIs or load previous ones?', ...
+        'ROIs creation', ...
+        'Draw new','Load existing','Draw new');
+    % Handle response
+    switch choice
+        case 'Draw new'
+            
+            nbROIs = inputdlg('How many ROIs do you need for calculation of higher and lower WSS areas?','Number of ROIs',1,{'3'});
+            nbROIs = (round(str2num(nbROIs{1})));
+            
+            figure(f5)
+            for i = 1:nbROIs
+                %Polygon and mask
+                polyAAo = impoly;
+                wait(polyAAo);
+                region = getPosition(polyAAo);
+                disp('saving, pausing')
+                save(strcat([PATHNAME '\heat_map_higher_lower_masks\mask' num2str(i)]),'region');
+                text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
+                clear region
+                pause
+            end
+
+            h1 = waitbar(0,'ROIs drawn, calculation of higher and lower WSS areas in progress...');
+            
+            % save in Excel
+            indices{1,1} = 'ROI #';
+            indices{2,1} = 'total area (cm2)';
+            indices{3,1} = 'red area (cm2)';
+            indices{4,1} = 'blue area (cm2)';
+            
+            for i=1:nbROIs
+                
+                load(strcat(PATHNAME, '\heat_map_higher_lower_masks\mask', num2str(i)));
+                mask = inpolygon(x1, y1, region(:,1), region(:,2));
+                new_heatmap = heat_mapp.*mask;
+                new_heatmap(~mask)=3;
+                new_sel_blue = (new_heatmap == 0);
+                new_sel_red = (new_heatmap == 1);
+                new_sel_gray = (new_heatmap == 2);
+                new_sel_blue = sum([new_sel_blue(data2.F(:,1)) new_sel_blue(data2.F(:,2)) new_sel_blue(data2.F(:,3))],2)>1;
+                new_sel_red = sum([new_sel_red(data2.F(:,1)) new_sel_red(data2.F(:,2)) new_sel_red(data2.F(:,3))],2)>1;
+                new_sel_gray = sum([new_sel_gray(data2.F(:,1)) new_sel_gray(data2.F(:,2)) new_sel_gray(data2.F(:,3))],2)>1;
+                new_area_blue = triangleArea3d(vertices(data2.F(new_sel_blue,1),:),vertices(data2.F(new_sel_blue,2),:),vertices(data2.F(new_sel_blue,3),:));
+                new_area_red = triangleArea3d(vertices(data2.F(new_sel_red,1),:),vertices(data2.F(new_sel_red,2),:),vertices(data2.F(new_sel_red,3),:));
+                new_area_gray = triangleArea3d(vertices(data2.F(new_sel_gray,1),:),vertices(data2.F(new_sel_gray,2),:),vertices(data2.F(new_sel_gray,3),:));
+                new_area_total = (sum(new_area_blue)+sum(new_area_red)+sum(new_area_gray)); % mm2
+                new_area_red_total = sum(new_area_red);% mm2
+                new_area_blue_total = sum(new_area_blue);% mm2
+                
+                disp(['total area ' num2str(i) ' = ' num2str(new_area_total/100) ' cm2'])
+                disp(['red area ' num2str(i) '= ' num2str(new_area_red_total/100) ' cm2'])
+                disp(['blue area ' num2str(i) ' = ' num2str(new_area_blue_total/100) ' cm2'])
+                
+                % save in the Excel file
+                indices{1,i+1} = i;
+                indices{2,i+1} = num2str(new_area_total/100);
+                indices{3,i+1} = num2str(new_area_red_total/100);
+                indices{4,i+1} = num2str(new_area_blue_total/100);
+                
+                clear new_heatmap mask new_sel_blue new_sel_red new_sel_gray new_area_blue new_area_red new_area_gray new_area_total new_area_red_total new_area_blue_total region
+                
+                waitbar(i / nbROIs)
+            end
+            
+            currDir=pwd;
+            cd(strcat(PATHNAME,'\heat_map_higher_lower_masks'))
+            % save in an Excel sheet
+            xlswrite('higher_lower_areas',indices);
+            saveas(f5,'ROIs','tif')
+            cd(currDir)
+            close(h1)
+            close(f5)
+        
+        case 'Load existing'
+            
+            choice = questdlg('Do you want to...', ...
+                'Load existing ROIs', ...
+                'Recompute WSS in all existing ROIs','Modify one ROI','Modify all ROIs','Modify one ROI');
+            % Handle response
+            switch choice
+                case 'Modify one ROI'
+                    [FileName,MrstructPath1,FilterIndex] = uigetfile(PATHNAME,'Select the ROI you want to load');
+                    currentDir=pwd;
+                    cd(MrstructPath1);
+                    masks=ls('mask*');
+                    figure(f5)
+                    for i=1:size(masks,1)
+                        load(strcat(MrstructPath1,masks(i,:)));
+                        hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+                        text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
+                        clear region
+                    end
+                    cd(currentDir);
+                    
+                    load(strcat(MrstructPath1,FileName));
+                    
+                    polyAAo = impoly(gca,region);
+                    wait(polyAAo);
+                    region = getPosition(polyAAo);
+                    disp('saving, pausing')
+                    save(strcat(MrstructPath1,FileName),'region');
+                    pause
+                    
+                    h1 = waitbar(0,'ROI modified, updated calculation of higher and lower WSS areas in progress...');
+                    
+                    mask = inpolygon(x1, y1, region(:,1), region(:,2));
+                    new_heatmap = heat_mapp.*mask;
+                    new_heatmap(~mask)=3;
+                    new_sel_blue = (new_heatmap == 0);
+                    new_sel_red = (new_heatmap == 1);
+                    new_sel_gray = (new_heatmap == 2);
+                    new_sel_blue = sum([new_sel_blue(data2.F(:,1)) new_sel_blue(data2.F(:,2)) new_sel_blue(data2.F(:,3))],2)>1;
+                    new_sel_red = sum([new_sel_red(data2.F(:,1)) new_sel_red(data2.F(:,2)) new_sel_red(data2.F(:,3))],2)>1;
+                    new_sel_gray = sum([new_sel_gray(data2.F(:,1)) new_sel_gray(data2.F(:,2)) new_sel_gray(data2.F(:,3))],2)>1;
+                    new_area_blue = triangleArea3d(vertices(data2.F(new_sel_blue,1),:),vertices(data2.F(new_sel_blue,2),:),vertices(data2.F(new_sel_blue,3),:));
+                    new_area_red = triangleArea3d(vertices(data2.F(new_sel_red,1),:),vertices(data2.F(new_sel_red,2),:),vertices(data2.F(new_sel_red,3),:));
+                    new_area_gray = triangleArea3d(vertices(data2.F(new_sel_gray,1),:),vertices(data2.F(new_sel_gray,2),:),vertices(data2.F(new_sel_gray,3),:));
+                    new_area_total = (sum(new_area_blue)+sum(new_area_red)+sum(new_area_gray)); % mm2
+                    new_area_red_total = sum(new_area_red);% mm2
+                    new_area_blue_total = sum(new_area_blue);% mm2
+                    
+                    disp(['new total area ' '= ' num2str(new_area_total/100) ' cm2'])
+                    disp(['new red area ' '= ' num2str(new_area_red_total/100) ' cm2'])
+                    disp(['new blue area ' '= ' num2str(new_area_blue_total/100) ' cm2'])
+                    
+                    % save in the Excel file
+                    new_indices{1,1} = num2str(new_area_total/100);
+                    new_indices{2,1} = num2str(new_area_red_total/100);
+                    new_indices{3,1} = num2str(new_area_blue_total/100);
+                    
+                    clear new_heatmap mask new_sel_blue new_sel_red new_sel_gray new_area_blue new_area_red new_area_gray new_area_total new_area_red_total new_area_blue_total region
+                    
+                    currDir=pwd;
+                    cd(strcat(PATHNAME,'\heat_map_higher_lower_masks'))
+                    indMask = strfind(FileName, 'mask');
+                    indMat = strfind(FileName, '.mat');
+                    col = char(str2num(FileName(indMask+4:indMat-1))+'A');
+                    xlRange = strcat([col '2:' col '4']);
+                    % save in an Excel sheet
+                    xlswrite('higher_lower_areas',new_indices,xlRange);
+                    saveas(f5,'ROIs','tif')
+                    cd(currDir)
+                    waitbar(1)
+                    close(h1)
+                    close(f5)
+                            
+            case 'Recompute WSS in all existing ROIs'
+                
+                h1 = waitbar(0,'ROIs loading, updated calculation of higher and lower WSS areas in progress...');
+                
+                currentDir=pwd;
+                cd(strcat(PATHNAME,'\heat_map_higher_lower_masks'))
+                masks=ls('mask*');
+                figure(f5)
+                for i=1:size(masks,1)
+                    load(strcat([PATHNAME '\heat_map_higher_lower_masks\mask' num2str(i)]));
+                    hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+                    clear region
+                end
+                cd(currentDir);
+                
+                % save in Excel
+                indices{1,1} = 'ROI #';
+                indices{2,1} = 'total area (cm2)';
+                indices{3,1} = 'red area (cm2)';
+                indices{4,1} = 'blue area (cm2)';
+                
+                for i=1:size(masks,1)
+                    
+                    load(strcat(PATHNAME, '\heat_map_higher_lower_masks\mask', num2str(i)));
+                    mask = inpolygon(x1, y1, region(:,1), region(:,2));
+                    new_heatmap = heat_mapp.*mask;
+                    new_heatmap(~mask)=3;
+                    new_sel_blue = (new_heatmap == 0);
+                    new_sel_red = (new_heatmap == 1);
+                    new_sel_gray = (new_heatmap == 2);
+                    new_sel_blue = sum([new_sel_blue(data2.F(:,1)) new_sel_blue(data2.F(:,2)) new_sel_blue(data2.F(:,3))],2)>1;
+                    new_sel_red = sum([new_sel_red(data2.F(:,1)) new_sel_red(data2.F(:,2)) new_sel_red(data2.F(:,3))],2)>1;
+                    new_sel_gray = sum([new_sel_gray(data2.F(:,1)) new_sel_gray(data2.F(:,2)) new_sel_gray(data2.F(:,3))],2)>1;
+                    new_area_blue = triangleArea3d(vertices(data2.F(new_sel_blue,1),:),vertices(data2.F(new_sel_blue,2),:),vertices(data2.F(new_sel_blue,3),:));
+                    new_area_red = triangleArea3d(vertices(data2.F(new_sel_red,1),:),vertices(data2.F(new_sel_red,2),:),vertices(data2.F(new_sel_red,3),:));
+                    new_area_gray = triangleArea3d(vertices(data2.F(new_sel_gray,1),:),vertices(data2.F(new_sel_gray,2),:),vertices(data2.F(new_sel_gray,3),:));
+                    new_area_total = (sum(new_area_blue)+sum(new_area_red)+sum(new_area_gray)); % mm2
+                    new_area_red_total = sum(new_area_red);% mm2
+                    new_area_blue_total = sum(new_area_blue);% mm2
+                    
+                    disp(['total area ' num2str(i) ' = ' num2str(new_area_total/100) ' cm2'])
+                    disp(['red area ' num2str(i) '= ' num2str(new_area_red_total/100) ' cm2'])
+                    disp(['blue area ' num2str(i) ' = ' num2str(new_area_blue_total/100) ' cm2'])
+                    
+                    % save in the Excel file
+                    indices{1,i+1} = i;
+                    indices{2,i+1} = num2str(new_area_total/100);
+                    indices{3,i+1} = num2str(new_area_red_total/100);
+                    indices{4,i+1} = num2str(new_area_blue_total/100);
+                    
+                    clear new_heatmap mask new_sel_blue new_sel_red new_sel_gray new_area_blue new_area_red new_area_gray new_area_total new_area_red_total new_area_blue_total region
+                    
+                    waitbar (i/size(masks,1));
+                end                
+                
+                currDir=pwd;
+                cd(strcat(PATHNAME,'\heat_map_higher_lower_masks'))
+                % save in an Excel sheet
+                xlswrite('higher_lower_areas',indices);
+                cd(currDir)
+                close(h1)
+                
+            case 'Modify all ROIs'
+                    
+                currentDir=pwd;
+                cd(strcat([MrstructPath '\..' '\heat_map_higher_lower_masks']));
+                masks=ls('mask*');
+                figure(f5)
+                for i=1:size(masks,1)
+                    load(strcat([MrstructPath '\..' '\heat_map_higher_lower_masks\mask' num2str(i)]));
+                    hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+                    clear region
+                end
+                for i=1:size(masks,1)
+                    load(strcat([MrstructPath '\..' '\heat_map_higher_lower_masks\mask' num2str(i)]));
+                    %Polygon and mask
+                    polyAAo = impoly(gca,region);
+                    wait(polyAAo);
+                    region = getPosition(polyAAo);
+                    disp('saving, pausing')
+                    save(strcat([MrstructPath '\..' '\heat_map_higher_lower_masks\mask' num2str(i)]),'region');
+                    text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
+                    clear region
+                    pause
+                end
+                cd(currentDir);
+                h1 = waitbar(0,'ROIs modified, updated calculation of higher and lower WSS areas in progress...');
+                
+                % save in Excel
+                indices{1,1} = 'ROI #';
+                indices{2,1} = 'total area (cm2)';
+                indices{3,1} = 'red area (cm2)';
+                indices{4,1} = 'blue area (cm2)';
+                
+                for i=1:size(masks,1)
+                    
+                    load(strcat(PATHNAME, '\heat_map_higher_lower_masks\mask', num2str(i)));
+                    mask = inpolygon(x1, y1, region(:,1), region(:,2));
+                    new_heatmap = heat_mapp.*mask;
+                    new_heatmap(~mask)=3;
+                    new_sel_blue = (new_heatmap == 0);
+                    new_sel_red = (new_heatmap == 1);
+                    new_sel_gray = (new_heatmap == 2);
+                    new_sel_blue = sum([new_sel_blue(data2.F(:,1)) new_sel_blue(data2.F(:,2)) new_sel_blue(data2.F(:,3))],2)>1;
+                    new_sel_red = sum([new_sel_red(data2.F(:,1)) new_sel_red(data2.F(:,2)) new_sel_red(data2.F(:,3))],2)>1;
+                    new_sel_gray = sum([new_sel_gray(data2.F(:,1)) new_sel_gray(data2.F(:,2)) new_sel_gray(data2.F(:,3))],2)>1;
+                    new_area_blue = triangleArea3d(vertices(data2.F(new_sel_blue,1),:),vertices(data2.F(new_sel_blue,2),:),vertices(data2.F(new_sel_blue,3),:));
+                    new_area_red = triangleArea3d(vertices(data2.F(new_sel_red,1),:),vertices(data2.F(new_sel_red,2),:),vertices(data2.F(new_sel_red,3),:));
+                    new_area_gray = triangleArea3d(vertices(data2.F(new_sel_gray,1),:),vertices(data2.F(new_sel_gray,2),:),vertices(data2.F(new_sel_gray,3),:));
+                    new_area_total = (sum(new_area_blue)+sum(new_area_red)+sum(new_area_gray)); % mm2
+                    new_area_red_total = sum(new_area_red);% mm2
+                    new_area_blue_total = sum(new_area_blue);% mm2
+                    
+                    disp(['total area ' num2str(i) ' = ' num2str(new_area_total/100) ' cm2'])
+                    disp(['red area ' num2str(i) '= ' num2str(new_area_red_total/100) ' cm2'])
+                    disp(['blue area ' num2str(i) ' = ' num2str(new_area_blue_total/100) ' cm2'])
+                    
+                    % save in the Excel file
+                    indices{1,i+1} = i;
+                    indices{2,i+1} = num2str(new_area_total/100);
+                    indices{3,i+1} = num2str(new_area_red_total/100);
+                    indices{4,i+1} = num2str(new_area_blue_total/100);
+                    
+                    clear new_heatmap mask new_sel_blue new_sel_red new_sel_gray new_area_blue new_area_red new_area_gray new_area_total new_area_red_total new_area_blue_total region
+                    
+                    waitbar(i / size(masks,1))
+                end
+                
+                currDir=pwd;
+                cd(strcat(MrstructPath,'\..','\heat_map_higher_lower_masks'))
+                % save in an Excel sheet
+                xlswrite('higher_lower_areas',indices);
+                saveas(f5,'ROIs','tif')
+                cd(currDir)
+                close(h1)
+                close(f5)
+
         end
     end
-    
-    currDir=pwd;
-    cd(strcat(PATHNAME,'\heat_map_higher_lower_masks\'));
-    nbROIs=size(ls('mask*.mat'),1);
-    
-    % save in Excel
-    indices{1,1} = 'ROI #';
-    indices{2,1} = 'total area (cm2)';
-    indices{3,1} = 'red area (cm2)';
-    indices{4,1} = 'blue area (cm2)';
-    
-    for i=1:nbROIs
-        load(strcat(PATHNAME, '\heat_map_higher_lower_masks\mask', num2str(i)));
-        hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
-        mask = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-        new_heatmap = heat_mapp.*mask;
-        new_heatmap(~mask)=3;
-        new_sel_blue = (new_heatmap == 0);
-        new_sel_red = (new_heatmap == 1);
-        new_sel_gray = (new_heatmap == 2);
-        new_sel_blue = sum([new_sel_blue(data2.F(:,1)) new_sel_blue(data2.F(:,2)) new_sel_blue(data2.F(:,3))],2)>1;
-        new_sel_red = sum([new_sel_red(data2.F(:,1)) new_sel_red(data2.F(:,2)) new_sel_red(data2.F(:,3))],2)>1;
-        new_sel_gray = sum([new_sel_gray(data2.F(:,1)) new_sel_gray(data2.F(:,2)) new_sel_gray(data2.F(:,3))],2)>1;
-        new_area_blue = triangleArea3d(vertices(data2.F(new_sel_blue,1),:),vertices(data2.F(new_sel_blue,2),:),vertices(data2.F(new_sel_blue,3),:));
-        new_area_red = triangleArea3d(vertices(data2.F(new_sel_red,1),:),vertices(data2.F(new_sel_red,2),:),vertices(data2.F(new_sel_red,3),:));
-        new_area_gray = triangleArea3d(vertices(data2.F(new_sel_gray,1),:),vertices(data2.F(new_sel_gray,2),:),vertices(data2.F(new_sel_gray,3),:));
-        new_area_total = (sum(new_area_blue)+sum(new_area_red)+sum(new_area_gray)); % mm2
-        new_area_red_total = sum(new_area_red);% mm2
-        new_area_blue_total = sum(new_area_blue);% mm2
-        
-        disp(['total area ' num2str(i) ' = ' num2str(new_area_total/100) ' cm2'])
-        disp(['red area ' num2str(i) '= ' num2str(new_area_red_total/100) ' cm2'])
-        disp(['blue area ' num2str(i) ' = ' num2str(new_area_blue_total/100) ' cm2'])
-        
-        % save in the Excel file
-        indices{1,i+1} = i;
-        indices{2,i+1} = num2str(new_area_total/100);
-        indices{3,i+1} = num2str(new_area_red_total/100);
-        indices{4,i+1} = num2str(new_area_blue_total/100);
-
-        clear new_heatmap mask new_sel_blue new_sel_red new_sel_gray new_area_blue new_area_red new_area_gray new_area_total new_area_red_total new_area_blue_total region
-    end
-    xlswrite('higher_lower_areas',indices);
-    cd(currDir);
 end
-
-%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask1'));
-%     atlas_mask_AAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask2'));
-%     atlas_mask_AAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask3'));
-%     atlas_mask_arch_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask4'));
-%     atlas_mask_arch_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask5'));
-%     atlas_mask_DAo_inner = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%     load(strcat(PATHNAME,'\heat_map_higher_lower_masks\mask6'));
-%     atlas_mask_DAo_outer = inpolygon(data2.x_coor_wss, data2.y_coor_wss, region(:,1), region(:,2));
-%     
-%     heat_asc1 = heat_mapp(atlas_mask_AAo_inner);
-%     [I1,J1] = find(heat_asc1 == 0);
-%     [I2,J2] = find(heat_asc1 == 1);
-%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_asc1,1) * 100;
-%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_asc1,1) * 100;
-%     
-%     disp(['Percentage higher than controls inner AAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-%     disp(['Percentage lower than controls inner AAo = ' num2str(percentage_significant_lower_than_controls) '%'])
-%     
-%     heat_asc2 = heat_mapp(atlas_mask_AAo_outer);
-%     [I1,J1] = find(heat_asc2 == 0);
-%     [I2,J2] = find(heat_asc2 == 1);
-%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_asc2,1) * 100;
-%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_asc2,1) * 100;
-%     
-%     disp(['Percentage higher than controls outer AAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-%     disp(['Percentage lower than controls outer AAo = ' num2str(percentage_significant_lower_than_controls) '%'])
-%     
-%     heat_arch1 = heat_mapp(atlas_mask_arch_inner);
-%     [I1,J1] = find(heat_arch1 == 0);
-%     [I2,J2] = find(heat_arch1 == 1);
-%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_arch1,1) * 100;
-%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_arch1,1) * 100;
-%     
-%     disp(['Percentage higher than controls inner arch = ' num2str(percentage_significant_higher_than_controls) '%'])
-%     disp(['Percentage lower than controls inner arch = ' num2str(percentage_significant_lower_than_controls) '%'])
-%     
-%     heat_arch2 = heat_mapp(atlas_mask_arch_outer);
-%     [I1,J1] = find(heat_arch2 == 0);
-%     [I2,J2] = find(heat_arch2 == 1);
-%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_arch2,1) * 100;
-%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_arch2,1) * 100;
-%     
-%     disp(['Percentage higher than controls outer arch = ' num2str(percentage_significant_higher_than_controls) '%'])
-%     disp(['Percentage lower than controls outer arch = ' num2str(percentage_significant_lower_than_controls) '%'])
-%     
-%     heat_desc1 = heat_mapp(atlas_mask_DAo_inner);
-%     [I1,J1] = find(heat_desc1 == 0);
-%     [I2,J2] = find(heat_desc1 == 1);
-%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_desc1,1) * 100;
-%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_desc1,1) * 100;
-%     
-%     disp(['Percentage higher than controls inner DAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-%     disp(['Percentage lower than controls inner DAo = ' num2str(percentage_significant_lower_than_controls) '%'])
-%     
-%     heat_desc2 = heat_mapp(atlas_mask_DAo_outer);
-%     [I1,J1] = find(heat_desc2 == 0);
-%     [I2,J2] = find(heat_desc2 == 1);
-%     percentage_significant_higher_than_controls = size(I2,1) / size(heat_desc2,1) * 100;
-%     percentage_significant_lower_than_controls = size(I1,1) / size(heat_desc2,1) * 100;
-%     
-%     disp(['Percentage higher than controls outer DAo = ' num2str(percentage_significant_higher_than_controls) '%'])
-%     disp(['Percentage lower than controls outer DAo = ' num2str(percentage_significant_lower_than_controls) '%'])
-%     
-%     if plotFlag == 1
-%         figure('Name','higher/lower: inner AAo')
-%         scatter3(data2.x_coor_wss(atlas_mask_AAo_inner),data2.y_coor_wss(atlas_mask_AAo_inner),data2.z_coor_wss(atlas_mask_AAo_inner),20,heat_asc1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-%         figure('Name','higher/lower: outer AAo')
-%         scatter3(data2.x_coor_wss(atlas_mask_AAo_outer),data2.y_coor_wss(atlas_mask_AAo_outer),data2.z_coor_wss(atlas_mask_AAo_outer),20,heat_asc2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-%         figure('Name','higher/lower: inner arch')
-%         scatter3(data2.x_coor_wss(atlas_mask_arch_inner),data2.y_coor_wss(atlas_mask_arch_inner),data2.z_coor_wss(atlas_mask_arch_inner),20,heat_arch1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-%         figure('Name','higher/lower: outer arch')
-%         scatter3(data2.x_coor_wss(atlas_mask_arch_outer),data2.y_coor_wss(atlas_mask_arch_outer),data2.z_coor_wss(atlas_mask_arch_outer),20,heat_arch2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-%         figure('Name','higher/lower: inner DAo')
-%         scatter3(data2.x_coor_wss(atlas_mask_DAo_inner),data2.y_coor_wss(atlas_mask_DAo_inner),data2.z_coor_wss(atlas_mask_DAo_inner),20,heat_desc1,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-%         figure('Name','higher/lower: outer DAo')
-%         scatter3(data2.x_coor_wss(atlas_mask_DAo_outer),data2.y_coor_wss(atlas_mask_DAo_outer),data2.z_coor_wss(atlas_mask_DAo_outer),20,heat_desc2,'filled');axis equal;colormap(color1);colorbar;caxis([0 2])
-%         xlabel('x'),ylabel('y'),zlabel('z');view([180 -90]); axis ij
-%     end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%  TRAFFIC LIGHT MAP
@@ -1980,6 +2058,13 @@ function move_slice3(hObj,event,ax) % Emilie: for manual interaction to chose ma
 	delete(sliceobj)
 	slice = round(get(hObj,'Value'));
 	s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
+end
+
+function move_slice4(hObj,event,ax) % Emilie: for manual interaction to chose magnitude slice on which RPA can be visualized
+    sliceobj = findobj(s4);
+    delete(sliceobj)
+    slice = round(get(hObj,'Value'));
+    s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]).*(size(magnitude,3)-(slice-1)),magnitude(:,:,slice),'EdgeColor','none');
 end
 
 end
