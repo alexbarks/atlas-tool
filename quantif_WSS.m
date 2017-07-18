@@ -164,7 +164,7 @@ elseif TimeFlag==1  % Averaged systolic WSS
             data2.x_value_wss_t4 = WSS_all{4}(:,1);data2.y_value_wss_t4 = WSS_all{4}(:,2);data2.z_value_wss_t4 = WSS_all{4}(:,3);
             data2.x_value_wss_t5 = WSS_all{5}(:,1);data2.y_value_wss_t5 = WSS_all{5}(:,2);data2.z_value_wss_t5 = WSS_all{5}(:,3);
             figure(h_meanVel)
-            hold on, plot(1:5,mean_velo(1:5),'-ko','LineWidth',4,...
+            hold on, plot(time-2:time+2,mean_velo(time-2:time+2),'-ko','LineWidth',4,...
             'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
         end
         data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4 + data2.x_value_wss_t5)./5;
@@ -178,7 +178,8 @@ mask2_vox = mrstruct_mask.vox;
 x = V(:,1)/mask2_vox(1);
 y = V(:,2)/mask2_vox(2);
 z = V(:,3)/mask2_vox(3);
-figure, patch('Faces',F,'Vertices',[x y z], ...
+f5=figure;
+patch('Faces',F,'Vertices',[x y z], ...
     'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
 axis equal;axis off; axis ij
 view([-180 -90])
@@ -202,19 +203,27 @@ magnitude(magnitude == 2) = 3;
 hold on
 s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
 % title({'Draw 1)proximal AAo inner, 2)proximal AAo outer, 3)distal AAo inner, 4)distal AAo outer,';'5)arch inner, 6)arch outer, 7)proximal DAo inner, 8)proximal DAo outer,';'9)distal DAo inner and 10)distal DAo outer regions';'then double-click and press space'})
-title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate and press space to move on to the next one'})
+% title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate and press space to move on to the next one'})
+title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate';'and press the ''Next'' button to move on to the next one'})
 
 uicontrol('Style','text',...
-    'Position',[10 200 120 70],...
-    'String','Please choose using the slider the magnitude slice')
+    'Units','normalized',...
+    'Position',[.01 .5 .2 .1],...
+    'String','Please choose the magnitude slice using the slider')
 uicontrol('Style','text',...
-    'Position',[10 75 120 20],...
+    'Units','normalized',...
+    'Position',[.06 .25 .1 .04],...
     'String','Slice slider')
 sl1 = uicontrol('Style', 'slider',...
     'Min',1,'Max',size(magnitude,3),'Value',size(magnitude,3)/2,...
-    'Position', [10 50 120 20],...
+    'Units','normalized',...
+    'Position', [.01 .15 .2 .05],...
     'SliderStep',[1/(size(magnitude,3)-1) 10/(size(magnitude,3)-1)],...
     'Callback', {@move_slice3,gca});
+pb1 = uicontrol('Style', 'togglebutton',...
+    'Units','normalized',...
+    'Position', [.8 .5 .15 .1],...
+    'String','Next');
 
 mkdir(strcat(MrstructPath, '..'),'regional_masks')
 
@@ -238,11 +247,12 @@ switch choice
             mask_wss = inpolygon(x,y, region(:,1), region(:,2));
             % compute WSS in the region
             wss_mask{i} = wss_m(mask_wss);
+            text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
             clear mask_wss region
-            pause
+            waitfor(pb1,'value');
         end
         
-        h1 = msgbox('ROIs drawn, WSS quantification in progress...');
+        h1 = waitbar(0,'ROIs drawn, WSS quantification in progress...');
                 
         if TimeFlag==0
             mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
@@ -279,6 +289,8 @@ switch choice
             indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
             
             clear mask_wss WSS_sorted
+            
+            waitbar(i / nbROIs)
         end
         
         currDir=pwd;
@@ -290,6 +302,7 @@ switch choice
             xls_file = 'wss_indices_avg.xls';
         end
         xlswrite(xls_file,indices);
+        saveas(f5,'ROIs','tif')
         cd(currDir)
         close(h1)
         h1 = msgbox('WSS quantification done, results are saved in the regional_masks folder');
@@ -309,7 +322,9 @@ switch choice
                 for i=1:size(masks,1)
                     load(strcat(MrstructPath,masks(i,:)));
                     hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
-                    clear region
+                    ind=find(masks(1,:)=='.');
+                    text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',masks(i,5:ind-1)),'fontweight','bold')
+                    clear region ind
                 end
                 cd(currentDir);
                 
@@ -320,9 +335,9 @@ switch choice
                 region = getPosition(polyAAo);
                 disp('saving, pausing')
                 save(strcat(MrstructPath,FileName),'region');
-                pause
+                waitfor(pb1,'value');
                 
-                h1 = msgbox('ROI changed, updated WSS quantification in progress...');
+                h1 = waitbar(0,'ROI modified, updated WSS quantification in progress...');
                 
                 mask_wss = inpolygon(x,y, region(:,1), region(:,2));
                 wss_mask = wss_m(mask_wss);
@@ -358,11 +373,15 @@ switch choice
                     xls_file = 'wss_indices_avg.xls';
                 end
                 xlswrite(xls_file,new_indices,xlRange);
+                saveas(f5,'ROIs','tif')
                 cd(currDir)
+                waitbar(1);
                 close(h1);
                 h1 = msgbox('WSS quantification in the new ROI was updated and saved in the regional_masks folder');
                 
             case 'Recompute WSS in all existing ROIs'
+                
+                h1 = waitbar(0,'ROIs loading, updated WSS quantification in progress...');
                 
                 currentDir=pwd;
                 cd(strcat([MrstructPath '..' '\regional_masks']));
@@ -411,6 +430,8 @@ switch choice
                     indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
                     
                     clear mask_wss WSS_sorted
+                    
+                    waitbar (i/size(masks,1));
                 end
                 
                 currDir=pwd;
@@ -423,6 +444,7 @@ switch choice
                 end
                 xlswrite(xls_file,indices);
                 cd(currDir)
+                close(h1)
                 h1 = msgbox('WSS indices were recalculated and saved in the regional_masks folder');
                 
             case 'Modify all ROIs'
@@ -446,11 +468,12 @@ switch choice
                     mask_wss = inpolygon(x,y, region(:,1), region(:,2));
                     % compute WSS in the region
                     wss_mask{i} = wss_m(mask_wss);
+                    text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
                     clear mask_wss region
-                    pause
+                    waitfor(pb1,'value');
                 end
                 cd(currentDir);
-                h1 = msgbox('ROI changed, updated WSS quantification in progress...');
+                h1 = waitbar(0,'ROIs modified, updated WSS quantification in progress...');
                 
                 if TimeFlag==0
                     mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
@@ -487,6 +510,8 @@ switch choice
                     indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
                     
                     clear mask_wss WSS_sorted
+                    
+                    waitbar(i / size(masks,1))
                 end
                 
                 currDir=pwd;
@@ -498,6 +523,7 @@ switch choice
                     xls_file = 'wss_indices_avg.xls';
                 end
                 xlswrite(xls_file,indices);
+                saveas(f5,'ROIs','tif')
                 cd(currDir)
                 close(h1)
                 h1 = msgbox('WSS indices were calculated and saved in the regional_masks folder');

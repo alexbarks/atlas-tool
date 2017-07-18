@@ -179,6 +179,7 @@ if plotFlag == 1
     figure('Name', 'Velocity and WSS atlas')
     subplot(2,2,1); L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(flipdim(squeeze(max(atlas_matrix,[],3)),2),'Alphadata',double(flipdim(L_figure,2)));
+    colormap jet
     axis tight;axis equal;axis ij;axis off;caxis([0 1.5]);
     title('mean velocity atlas (m/s)')
 
@@ -187,15 +188,18 @@ if plotFlag == 1
     imagesc(flipdim(squeeze(max(atlas_matrix,[],3)),2),'Alphadata',double(flipdim(L_figure,2)));
     axis tight;axis equal;axis ij;axis off;caxis([0 1.5]);
     title('std velocity atlas (m/s)')
+    colormap jet
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     
     subplot(2,2,3);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.mean_wss,'FaceColor','interp','FaceAlpha',1);
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+    colormap jet
     title('mean WSS atlas (Pa)')
     subplot(2,2,4);patch('Faces',atlas.faces,'Vertices',atlas.vertices,'EdgeColor','none', 'FaceVertexCData',atlas.std_wss,'FaceColor','interp','FaceAlpha',1);
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
+    colormap jet
     title('std WSS atlas (Pa)')
     h_cb = colorbar;
     pos_cb = get(h_cb,'Position');
@@ -485,6 +489,7 @@ if plotFlag == 1
     a = [2 20];
     [F,V,C]=quiver3Dpatch(data2.x_coor_vel,data2.y_coor_vel,data2.z_coor_vel,data2.y_value_vel,data2.x_value_vel,data2.z_value_vel,c,a);
     patch('Faces',F,'Vertices',V,'CData',C,'FaceColor','flat','EdgeColor','none','FaceAlpha',0.75);
+    colormap jet
     caxis([0 1.5]);axis equal;view([-180 90]);axis off
     title('Velocity (m/s)')
     h_cb = colorbar;
@@ -501,6 +506,7 @@ if plotFlag == 1
         ,data2.y_value_wss,data2.z_value_wss,c,a);
     patch('Faces',F2,'Vertices',V2,'CData',C2,'FaceColor','flat','EdgeColor','none','FaceAlpha',1);
     caxis([0 1.5])
+    colormap jet
     axis equal;axis off; axis ij
     view([-180 -90])  
     title('WSS (Pa)')
@@ -829,6 +835,7 @@ if plotFlag == 1
     atlas_matrix(L2) = atlas_mean_vel;
     L_figure = (squeeze(max(atlas_matrix,[],3))~=0);
     imagesc(flipdim(squeeze(max(atlas_matrix,[],3)),2),'Alphadata',double(flipdim(L_figure,2)));
+    colormap jet
     axis tight; axis equal; axis ij; axis off;caxis([0 1.5]);
     title('Velocity (m/s)');
     h_cb = colorbar;
@@ -836,6 +843,7 @@ if plotFlag == 1
     set(h_cb,'Position',[pos_cb(1)+.1 pos_cb(2) pos_cb(3) pos_cb(4)])
     subplot(1,2,2)
     patch('Faces',data2.F,'Vertices',[data2.x_coor_wss data2.y_coor_wss data2.z_coor_wss],'EdgeColor','none', 'FaceVertexCData',atlas_mean_wss,'FaceColor','interp','FaceAlpha',1);
+    colormap jet
     axis equal;axis off; axis ij;caxis([0 1.5]);view([180 -90])
     title('WSS (Pa)');
     h_cb = colorbar;
@@ -1044,7 +1052,7 @@ if calculate_area_of_higherlowerFlag == 1;
     z1 = data2.z_coor_wss;%/mask2_vox(3);
     vertices = [x1 y1 z1];
     
-    f5=figure('Name', 'Calculation of higher and lower WSS areas')
+    f5=figure('Name', 'Calculation of higher and lower WSS areas');
     patch('Faces',data2.F,'Vertices',vertices, ...
         'EdgeColor','none','FaceVertexCData',heat_mapp,'FaceColor','interp','FaceAlpha',1);
     axis equal;axis off; axis ij
@@ -1064,7 +1072,8 @@ if calculate_area_of_higherlowerFlag == 1;
 %     magnitude(magnitude == 2) = 3;
 %     hold on,
 %     s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3),magnitude(:,:,1),'EdgeColor','none');
-    title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate and press space to move on to the next one'})
+%     title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate and press space to move on to the next one'})
+    title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate';'and press the ''Next'' button to move on to the next one'})
     
 %     uicontrol('Style','text',...
 %         'Position',[10 200 120 70],...
@@ -1077,6 +1086,10 @@ if calculate_area_of_higherlowerFlag == 1;
 %         'Position', [10 50 120 20],...
 %         'SliderStep',[1/(size(magnitude,3)-1) 10/(size(magnitude,3)-1)],...
 %         'Callback', {@move_slice4,gca});
+    pb1 = uicontrol('Style', 'togglebutton',...
+        'Units','normalized',...
+        'Position', [.8 .5 .15 .1],...
+        'String','Next');
     
     mkdir(strcat(PATHNAME,'\heat_map_higher_lower_masks'));
     
@@ -1100,7 +1113,7 @@ if calculate_area_of_higherlowerFlag == 1;
                 save(strcat([PATHNAME '\heat_map_higher_lower_masks\mask' num2str(i)]),'region');
                 text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
                 clear region
-                pause
+                waitfor(pb1,'value');
             end
 
             h1 = waitbar(0,'ROIs drawn, calculation of higher and lower WSS areas in progress...');
@@ -1170,8 +1183,9 @@ if calculate_area_of_higherlowerFlag == 1;
                     for i=1:size(masks,1)
                         load(strcat(MrstructPath1,masks(i,:)));
                         hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
-                        text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
-                        clear region
+                        ind=find(masks(1,:)=='.');
+                        text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',masks(i,5:ind-1)),'fontweight','bold')
+                        clear region ind
                     end
                     cd(currentDir);
                     
@@ -1182,7 +1196,7 @@ if calculate_area_of_higherlowerFlag == 1;
                     region = getPosition(polyAAo);
                     disp('saving, pausing')
                     save(strcat(MrstructPath1,FileName),'region');
-                    pause
+                    waitfor(pb1,'value');
                     
                     h1 = waitbar(0,'ROI modified, updated calculation of higher and lower WSS areas in progress...');
                     
@@ -1310,7 +1324,7 @@ if calculate_area_of_higherlowerFlag == 1;
                     save(strcat([MrstructPath '\..' '\heat_map_higher_lower_masks\mask' num2str(i)]),'region');
                     text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
                     clear region
-                    pause
+                    waitfor(pb1,'value');
                 end
                 cd(currentDir);
                 h1 = waitbar(0,'ROIs modified, updated calculation of higher and lower WSS areas in progress...');
@@ -2033,8 +2047,8 @@ set(gca,'dataaspectRatio',aspectRatio(1:3))
     hax_h5 = copyobj(hax_f3,h);
     set(hax_h5, 'Position', posP5);
     % Display of report figure
-    posP1(1)=-0.075;
-    posP1(3)=.38;
+    posP1(1)=-0.03;
+    posP1(3)=.3;
     set(hax_h1, 'Position', posP1);
     posP2(1)=posP2(1)-.1;
     posP2(3)=.3;

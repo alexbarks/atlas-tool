@@ -22,7 +22,7 @@ function varargout = heat_maps(varargin)
 
 % Edit the above text to modify the response to help heat_maps
 
-% Last Modified by GUIDE v2.5 22-Jun-2017 10:57:45
+% Last Modified by GUIDE v2.5 18-Jul-2017 12:03:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -103,9 +103,13 @@ switch choice
         end
         cd(currDir)
         WssFraction = get(handles.WssFraction,'Value');
+        WssFraction = WssFraction{2,1};
         WssThresh = get(handles.WssThresh,'Value');
+        WssThresh = WssThresh{2,1};
         plotFlag = get(handles.checkbox_plot,'Value');
+        plotFlag = plotFlag{2,1};
         saveFlag = get(handles.checkbox_saveHist,'Value');
+        saveFlag = saveFlag{2,1};
         WSS_syst = get(handles.WSS_sysTime,'Value');
         WSS_syst_avg = get(handles.WSS_syst_avg,'Value');
         WSS_allTimes = get(handles.WSS_allTimes,'Value');
@@ -434,3 +438,33 @@ function checkbox_intracranial_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of checkbox_intracranial
+
+
+% --- Executes on button press in pushbutton5.
+function pushbutton5_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+function edit5_Callback(hObject, eventdata, handles)
+% hObject    handle to wssThreshold_value (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of wssThreshold_value as text
+%        str2double(get(hObject,'String')) returns contents of wssThreshold_value as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit5_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to wssThreshold_value (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

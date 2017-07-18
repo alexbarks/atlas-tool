@@ -115,7 +115,7 @@ elseif TimeFlag==1  % Averaged systolic WSS
 end
 
 for t = 1:size(WSS_all,2)
-    f=figure('Name',['Wss ' num2str(t)])
+    f=figure('Name',['Wss ' num2str(t)]);
     a = [4 20];
     c = [ ];
     patch('Faces',F,'Vertices',V, ...
@@ -123,6 +123,7 @@ for t = 1:size(WSS_all,2)
     hold on
     [F2,V2,C2]=quiver3Dpatch(V(:,1),V(:,2),V(:,3),WSS_all{t}(:,1),WSS_all{t}(:,2),WSS_all{t}(:,3),c,a);
     patch('Faces',F2,'Vertices',V2,'CData',C2,'FaceColor','flat','EdgeColor','none','FaceAlpha',1);
+    colormap jet 
     c2=colorbar;caxis([0 1.5])
     axis equal;axis off; axis ij
     view([-180 -90])
