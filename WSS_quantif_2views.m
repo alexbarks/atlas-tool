@@ -486,10 +486,10 @@ end
 % setappdata(handles.figure1, 'ROIcount', size(posROI,2));
 
 % Color code loaded ROIs according to colorROI fcn
-if size(posROI,2) < 6
-    warndlg('ROIs are missing, please draw all ROIs','Missing ROIs');
-    return;
-else
+% if size(posROI,2) < 6
+%     warndlg('ROIs are missing, please draw all ROIs','Missing ROIs');
+%     return;
+% else
     set(handles.text_ROI1,'Visible', 'on');
     setColor(h_roi{1,2}, 'r')
     setColor(h_roi{2,2}, 'r')
@@ -509,14 +509,14 @@ else
 %     setColor(h_roi{1,5}, 'm')
 %     setColor(h_roi{2,5}, 'm')
 %     setColor(h_roi{3,5}, 'm')
-    set(handles.text_ROI5,'Visible', 'on');
+%     set(handles.text_ROI5,'Visible', 'on');
 %     setColor(h_roi{1,6}, 'y')
 %     setColor(h_roi{2,6}, 'y')
 %     setColor(h_roi{3,6}, 'y')
-    setColor(h_roi{1,6}, 'r')
-    setColor(h_roi{2,6}, 'r')
-    setColor(h_roi{3,6}, 'r')
-    set(handles.text_ROI6,'Visible', 'on');
+%     setColor(h_roi{1,6}, 'r')
+%     setColor(h_roi{2,6}, 'r')
+%     setColor(h_roi{3,6}, 'r')
+%     set(handles.text_ROI6,'Visible', 'on');
     if size(posROI,2) == 8
         setColor(h_roi{1,7}, 'w')
         setColor(h_roi{2,7}, 'w')
@@ -561,7 +561,7 @@ else
         setColor(h_roi{3,12}, 'y')
         set(handles.text_ROI12,'Visible', 'on');
     end
-end
+% end
 
 
 % --- Executes on button press in pushbutton_save.
