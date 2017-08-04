@@ -13,8 +13,7 @@ To compute WSS via GUI interface:
 	
 To compute WSS in ROIs:
 - use heat_maps.m and click 'WSS regional quantification' which runs 'quantifWSS.m'
-	TODO: 1. add flow to same fig as ROI (low priority)
-		  2. save ROI number (and be able to load) [low priority]			
+	TODO:	  save ROI number (and be able to load) [low priority]			
 
 To compute WSS using MIP tool approach? (note that it doesn't compute WSS via the MIP rather it is only for viz)
 - created for Kenichiro to do PA's; but also useful for tissue study

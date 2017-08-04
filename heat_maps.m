@@ -317,12 +317,22 @@ function heatMaps_creation_Callback(hObject, eventdata, handles)
 
 currDir = pwd;
 % atlas_folder = '\\10.61.223.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\Data\MIMICS\BAV_tissue\Controls';
-peak_systolicFlag = get(handles.signArea_calc,'Value');
-if peak_systolicFlag == 0   % average over 5 systolic time points
-    atlas_folder = '\\10.254.136.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\PimsProjectWrapUp\7_AgeMatching\data\control_atlases\5time_averaged\all_controls\atlas.mat';
-elseif peak_systolicFlag == 1   % peak systolic time point only
+WSS_syst = get(handles.WSS_sysTime,'Value');
+WSS_syst_avg = get(handles.WSS_syst_avg,'Value');
+WSS_allTimes = get(handles.WSS_allTimes,'Value');
+% TimeFlag: 0 if only peak systole; 1 if average over 5 systolic phases; 2 if
+% all phases
+if WSS_syst == 1
+    peak_systolicFlag = 1;
     atlas_folder = '\\10.254.136.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\PimsProjectWrapUp\7_AgeMatching\data\control_atlases\peakSystolic\all_controls\atlas.mat';
+elseif WSS_syst_avg == 1
+    peak_systolicFlag = 0;
+    atlas_folder = '\\10.254.136.37\data_imaging\cv_mri\Aorta-4D_Flow\Results\Pim\PimsProjectWrapUp\7_AgeMatching\data\control_atlases\5time_averaged\all_controls\atlas.mat';
+elseif WSS_allTimes == 1
+    warndlg('Please select Only peak systole or Average over 5 systolic phases');
+    return;
 end
+% peak_systolicFlag = get(handles.signArea_calc,'Value');
 [FileName,AtlasPath,FilterIndex] = uigetfile(atlas_folder,'Select the atlas.mat file');  % donner chemin par defaut
 try
     cd(AtlasPath);

@@ -81,11 +81,14 @@ for t = 1:size(velocity,5)
     mean_velo(t) = mean(vmagn(L2));
 end
 
-h_meanVel=figure('Name','Mean velocity');
-plot(1:size(velocity,5),mean_velo,'-ko','LineWidth',4,...
-    'MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',14);
+h_meanVel=figure('Name','ROI delineation');
+pos1 = [0.1 0.7 0.25 0.25];
+subplot('Position',pos1)
+plot(1:size(velocity,5),mean_velo,'-ko','LineWidth',1,...
+    'MarkerEdgeColor','k','MarkerFaceColor','r','MarkerSize',5);
 ylabel('Mean velocity (m/s)');
 xlabel('Time frame #');
+set(h_meanVel,'Position', [480   358   900   520]);
 
 [I,time] = find(mean_velo==max(mean_velo));
 
@@ -105,8 +108,8 @@ end
 if TimeFlag==0
     % Peak systolic WSS
     figure(h_meanVel)
-    hold on, plot(time,mean_velo(time),'-ko','LineWidth',4,...
-        'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+    hold on, plot(time,mean_velo(time),'-ko','LineWidth',1,...
+        'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',5);
     if size(WSS_all,2) > 5
         WSS = WSS_all{time};
     elseif size(WSS_all,2) == 5
@@ -134,8 +137,8 @@ elseif TimeFlag==1  % Averaged systolic WSS
         data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4)./4;
         data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4)./4;
         figure(h_meanVel)
-        hold on, plot(time-1:time+2,mean_velo(time-1:time+2),'-ko','LineWidth',4,...
-            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        hold on, plot(time-1:time+2,mean_velo(time-1:time+2),'-ko','LineWidth',1,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',5);
     elseif time == 1 % first time frame is peak systole: averaging over 3 timesteps
         disp('AVERAGE OVER 3 TIME FRAMES!')
         data2.x_value_wss_t1 = WSS_all{time}(:,1);  data2.y_value_wss_t1 = WSS_all{time}(:,2);  data2.z_value_wss_t1 = WSS_all{time}(:,3);
@@ -145,8 +148,8 @@ elseif TimeFlag==1  % Averaged systolic WSS
         data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3)./3;
         data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3)./3;
         figure(h_meanVel)
-        hold on, plot(time:time+2,mean_velo(time:time+2),'-ko','LineWidth',4,...
-            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+        hold on, plot(time:time+2,mean_velo(time:time+2),'-ko','LineWidth',1,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',5);
     else % timestep > 2 is peak systole: averaging over 5 timesteps
         if size(WSS_all,2) > 5
             data2.x_value_wss_t1 = WSS_all{time-2}(:,1);data2.y_value_wss_t1 = WSS_all{time-2}(:,2);data2.z_value_wss_t1 = WSS_all{time-2}(:,3);
@@ -155,8 +158,8 @@ elseif TimeFlag==1  % Averaged systolic WSS
             data2.x_value_wss_t4 = WSS_all{time+1}(:,1);data2.y_value_wss_t4 = WSS_all{time+1}(:,2);data2.z_value_wss_t4 = WSS_all{time+1}(:,3);
             data2.x_value_wss_t5 = WSS_all{time+2}(:,1);data2.y_value_wss_t5 = WSS_all{time+2}(:,2);data2.z_value_wss_t5 = WSS_all{time+2}(:,3);
             figure(h_meanVel)
-            hold on, plot(time-2:time+2,mean_velo(time-2:time+2),'-ko','LineWidth',4,...
-                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+            hold on, plot(time-2:time+2,mean_velo(time-2:time+2),'-ko','LineWidth',1,...
+                'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',5);
         elseif size(WSS_all,2) == 5
             data2.x_value_wss_t1 = WSS_all{1}(:,1);data2.y_value_wss_t1 = WSS_all{1}(:,2);data2.z_value_wss_t1 = WSS_all{1}(:,3);
             data2.x_value_wss_t2 = WSS_all{2}(:,1);data2.y_value_wss_t2 = WSS_all{2}(:,2);data2.z_value_wss_t2 = WSS_all{2}(:,3);
@@ -164,8 +167,8 @@ elseif TimeFlag==1  % Averaged systolic WSS
             data2.x_value_wss_t4 = WSS_all{4}(:,1);data2.y_value_wss_t4 = WSS_all{4}(:,2);data2.z_value_wss_t4 = WSS_all{4}(:,3);
             data2.x_value_wss_t5 = WSS_all{5}(:,1);data2.y_value_wss_t5 = WSS_all{5}(:,2);data2.z_value_wss_t5 = WSS_all{5}(:,3);
             figure(h_meanVel)
-            hold on, plot(time-2:time+2,mean_velo(time-2:time+2),'-ko','LineWidth',4,...
-            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',14);
+            hold on, plot(time-2:time+2,mean_velo(time-2:time+2),'-ko','LineWidth',1,...
+            'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',5);
         end
         data2.x_value_wss = (data2.x_value_wss_t1 + data2.x_value_wss_t2 + data2.x_value_wss_t3 + data2.x_value_wss_t4 + data2.x_value_wss_t5)./5;
         data2.y_value_wss = (data2.y_value_wss_t1 + data2.y_value_wss_t2 + data2.y_value_wss_t3 + data2.y_value_wss_t4 + data2.y_value_wss_t5)./5;
@@ -178,7 +181,9 @@ mask2_vox = mrstruct_mask.vox;
 x = V(:,1)/mask2_vox(1);
 y = V(:,2)/mask2_vox(2);
 z = V(:,3)/mask2_vox(3);
-f5=figure;
+figure(h_meanVel);
+pos2 = [0.4 0.1 0.6 0.6];
+subplot('Position',pos2)
 patch('Faces',F,'Vertices',[x y z], ...
     'EdgeColor','none','FaceColor',[1 0 0],'FaceAlpha',1);
 axis equal;axis off; axis ij
@@ -204,25 +209,26 @@ hold on
 s4 = surf(1:size(magnitude,2),1:size(magnitude,1),ones([size(magnitude,1) size(magnitude,2)]) .* size(magnitude,3)/2,magnitude(:,:,size(magnitude,3)/2),'EdgeColor','none');
 % title({'Draw 1)proximal AAo inner, 2)proximal AAo outer, 3)distal AAo inner, 4)distal AAo outer,';'5)arch inner, 6)arch outer, 7)proximal DAo inner, 8)proximal DAo outer,';'9)distal DAo inner and 10)distal DAo outer regions';'then double-click and press space'})
 % title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate and press space to move on to the next one'})
-title({'Please keep in mind that regions of interest will be numbered in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate';'and press the ''Next'' button to move on to the next one'})
+title({'Please keep in mind that regions of interest will be numbered'; 'in the same order you draw them';'once you''re done drawing an ROI, please double-click to validate';'and press the ''Next'' button to move on to the next one'})
 
 uicontrol('Style','text',...
+    'FontSize',12,...
     'Units','normalized',...
-    'Position',[.01 .5 .2 .1],...
+    'Position',[.01 .1 .3 .2],...
     'String','Please choose the magnitude slice using the slider')
 uicontrol('Style','text',...
     'Units','normalized',...
-    'Position',[.06 .25 .1 .04],...
+    'Position',[.1 .05 .1 .04],...
     'String','Slice slider')
 sl1 = uicontrol('Style', 'slider',...
     'Min',1,'Max',size(magnitude,3),'Value',size(magnitude,3)/2,...
     'Units','normalized',...
-    'Position', [.01 .15 .2 .05],...
+    'Position', [.05 .1 .2 .05],...
     'SliderStep',[1/(size(magnitude,3)-1) 10/(size(magnitude,3)-1)],...
     'Callback', {@move_slice3,gca});
 pb1 = uicontrol('Style', 'togglebutton',...
     'Units','normalized',...
-    'Position', [.8 .5 .15 .1],...
+    'Position', [.35 .1 .15 .1],...
     'String','Next');
 
 mkdir(strcat(MrstructPath, '..'),'regional_masks')
@@ -302,7 +308,7 @@ switch choice
             xls_file = 'wss_indices_avg.xls';
         end
         xlswrite(xls_file,indices);
-        saveas(f5,'ROIs','tif')
+        saveas(h_meanVel,'ROIs','tif')
         cd(currDir)
         close(h1)
         h1 = msgbox('WSS quantification done, results are saved in the regional_masks folder');
@@ -373,7 +379,7 @@ switch choice
                     xls_file = 'wss_indices_avg.xls';
                 end
                 xlswrite(xls_file,new_indices,xlRange);
-                saveas(f5,'ROIs','tif')
+                saveas(h_meanVel,'ROIs','tif')
                 cd(currDir)
                 waitbar(1);
                 close(h1);
@@ -386,9 +392,12 @@ switch choice
                 currentDir=pwd;
                 cd(strcat([MrstructPath '..' '\regional_masks']));
                 masks=ls('mask*');
+                figure(h_meanVel);
                 for i=1:size(masks,1)
                     load(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]));
                     hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+                    ind=find(masks(1,:)=='.');
+                    text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',masks(i,5:ind-1)),'fontweight','bold')
                     mask_wss = inpolygon(x,y, region(:,1), region(:,2));
                     wss_mask{i} = wss_m(mask_wss);
                     clear region mask_wss
@@ -523,7 +532,7 @@ switch choice
                     xls_file = 'wss_indices_avg.xls';
                 end
                 xlswrite(xls_file,indices);
-                saveas(f5,'ROIs','tif')
+                saveas(h_meanVel,'ROIs','tif')
                 cd(currDir)
                 close(h1)
                 h1 = msgbox('WSS indices were calculated and saved in the regional_masks folder');
