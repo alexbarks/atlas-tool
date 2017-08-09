@@ -1,3 +1,13 @@
+
+****************************************************************************
+heatmap code installation instructions (EB 2017)
+****************************************************************************
+- Install cygwin (https://cygwin.com/install.html)
+- Download the heatmap_install folder:
+	- replace the paths to the flirt and cygwin bin locations, respectively in the atlas_tool.cfg file
+	- copy the atlas_tool.cfg file in C:\temp
+
+
 ****************************************************************************
 NOTE (AJB) -- All instructions below are from 'new workflow' circa EB & 2017
 ****************************************************************************
