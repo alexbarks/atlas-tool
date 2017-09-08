@@ -1,4 +1,8 @@
-function view_WSS_vectors(TimeFlag)
+function view_WSS_vectors(TimeFlag, intracranial)
+
+if nargin < 2
+    intracranial = 0;
+end
 
 global mrstruct_mask
 global Wss_point_cloud
@@ -116,20 +120,32 @@ end
 
 for t = 1:size(WSS_all,2)
     f=figure('Name',['Wss ' num2str(t)]);
-    a = [4 20];
-    c = [ ];
-    patch('Faces',F,'Vertices',V, ...
-        'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',1);
-    hold on
-    [F2,V2,C2]=quiver3Dpatch(V(:,1),V(:,2),V(:,3),WSS_all{t}(:,1),WSS_all{t}(:,2),WSS_all{t}(:,3),c,a);
-    patch('Faces',F2,'Vertices',V2,'CData',C2,'FaceColor','flat','EdgeColor','none','FaceAlpha',1);
-    colormap jet 
-    c2=colorbar;caxis([0 1.5])
-    axis equal;axis off; axis ij
-    view([-180 -90])
-    cameratoolbar(f)
-    cameratoolbar(f,'setmode','orbit')
-    cameratoolbar(f,'SetCoordSys','none')
+    if intracranial == 1
+        x_value_wss = WSS_all{t}(:,1);y_value_wss = WSS_all{t}(:,2);z_value_wss = WSS_all{t}(:,3);
+        wss_m = sqrt(x_value_wss.^2 + y_value_wss.^2 + z_value_wss.^2);
+        patch('Faces',F,'Vertices',V, ...
+            'EdgeColor','none','FaceVertexCData',wss_m,'FaceColor','interp','FaceAlpha',1);
+        colormap jet
+        colorbar;caxis([0 1.5]);axis equal;axis off; axis ij;view([180 -90])
+        cameratoolbar(f)
+        cameratoolbar(f,'setmode','orbit')
+        cameratoolbar(f,'SetCoordSys','none')
+    else
+        a = [4 20];
+        c = [ ];
+        patch('Faces',F,'Vertices',V, ...
+            'EdgeColor','none','FaceColor',[0.5 0.5 0.5],'FaceAlpha',1);
+        hold on
+        [F2,V2,C2]=quiver3Dpatch(V(:,1),V(:,2),V(:,3),WSS_all{t}(:,1),WSS_all{t}(:,2),WSS_all{t}(:,3),c,a);
+        patch('Faces',F2,'Vertices',V2,'CData',C2,'FaceColor','flat','EdgeColor','none','FaceAlpha',1);
+        colormap jet
+        c2=colorbar;caxis([0 1.5])
+        axis equal;axis off; axis ij
+        view([-180 -90])
+        cameratoolbar(f)
+        cameratoolbar(f,'setmode','orbit')
+        cameratoolbar(f,'SetCoordSys','none')
+    end
 end
 
 end

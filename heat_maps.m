@@ -429,6 +429,7 @@ function WSS_visu_Callback(hObject, eventdata, handles)
 WSS_syst = get(handles.WSS_sysTime,'Value');
 WSS_syst_avg = get(handles.WSS_syst_avg,'Value');
 WSS_allTimes = get(handles.WSS_allTimes,'Value');
+intracranial = get(handles.checkbox_intracranial,'Value');
 % TimeFlag: 0 if only peak systole; 1 if average over 5 systolic phases; 2 if
 % all phases
 if WSS_syst == 1
@@ -438,7 +439,7 @@ elseif WSS_syst_avg == 1
 elseif WSS_allTimes == 1
     TimeFlag = 2;
 end
-view_WSS_vectors(TimeFlag);
+view_WSS_vectors(TimeFlag,intracranial);
 
 
 % --- Executes on button press in checkbox_intracranial.
