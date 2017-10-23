@@ -93,18 +93,18 @@ set(h_meanVel,'Position', [480   358   900   520]);
 [I,time] = find(mean_velo==max(mean_velo));
 
 WSS_all = Wss_point_cloud; clear Wss_point_cloud
-if TimeFlag==2
-    choice = questdlg('Do you want to extract WSS values calculated...', ...
-        'WSS regional quantification', ...
-        'at peak systole?','while averaging up to 5 systolic timesteps?','at peak systole?');
-    % Handle response
-    switch choice
-        case 'at peak systole?'
-            TimeFlag=0;
-        case 'while averaging up to 5 systolic timesteps?'
-            TimeFlag=1;
-    end
-end
+% if TimeFlag==2
+%     choice = questdlg('Do you want to extract WSS values calculated...', ...
+%         'WSS regional quantification', ...
+%         'at peak systole?','while averaging up to 5 systolic timesteps?','at peak systole?');
+%     % Handle response
+%     switch choice
+%         case 'at peak systole?'
+%             TimeFlag=0;
+%         case 'while averaging up to 5 systolic timesteps?'
+%             TimeFlag=1;
+%     end
+% end
 if TimeFlag==0
     % Peak systolic WSS
     figure(h_meanVel)
@@ -175,6 +175,15 @@ elseif TimeFlag==1  % Averaged systolic WSS
         data2.z_value_wss = (data2.z_value_wss_t1 + data2.z_value_wss_t2 + data2.z_value_wss_t3 + data2.z_value_wss_t4 + data2.z_value_wss_t5)./5;
     end
     wss_m = sqrt(data2.x_value_wss.^2 + data2.y_value_wss.^2 + data2.z_value_wss.^2);
+elseif TimeFlag==2  % all time points
+    for j=1:size(WSS_all,2)
+        data2.x_value_wss = WSS_all{j}(:,1);data2.y_value_wss = WSS_all{j}(:,2);data2.z_value_wss = WSS_all{j}(:,3);
+        wss_m{j} = sqrt(data2.x_value_wss.^2 + data2.y_value_wss.^2 + data2.z_value_wss.^2);
+        clear data2
+    end
+    figure(h_meanVel)
+    hold on, plot(1:size(velocity,5),mean_velo,'-ko','LineWidth',1,...
+        'MarkerEdgeColor','k','MarkerFaceColor','g','MarkerSize',5);
 end
 
 mask2_vox = mrstruct_mask.vox;
@@ -252,7 +261,15 @@ switch choice
             save(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]),'region');
             mask_wss = inpolygon(x,y, region(:,1), region(:,2));
             % compute WSS in the region
-            wss_mask{i} = wss_m(mask_wss);
+            if  TimeFlag==2
+                for j=1:size(WSS_all,2)
+                    wss_m_tmp = wss_m{j};
+                    wss_mask{i,j} = wss_m_tmp(mask_wss);
+                    clear wss_m_tmp
+                end
+            else
+                wss_mask{i} = wss_m(mask_wss);
+            end
             text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
             clear mask_wss region
             waitfor(pb1,'value');
@@ -264,39 +281,66 @@ switch choice
             mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
         elseif TimeFlag==1
             mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_avg');
+        elseif TimeFlag==2
+            mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_all');
         end
         save(mat_file,'wss_mask');
         
-        % compute quantitative indices
-        indices{1,1} = '';
-        indices{2,1} = 'mean';
-        indices{3,1} = 'median';
-        indices{4,1} = 'max';
-        indices{5,1} = 'min';
-        indices{6,1} = 'std';
-        indices{7,1} = 'max5percent';
-        indices{8,1} = 'max2percent';
-        indices{9,1} = 'min5percent';
-        indices{10,1} = 'min2percent';
-        
-        for i=1:nbROIs
+        if TimeFlag == 2
+            % compute quantitative indices
+            indices{1,1} = '';
+            indices{2,1} = 'mean';
+            indices{2+size(WSS_all,2),1} = 'median';
+            indices{2+2*size(WSS_all,2),1} = 'max2percent';
             
-            mask_wss=wss_mask{i};
-            indices{1,i+1} = strcat(['region' num2str(i)]);
-            indices{2,i+1} = mean(mask_wss(~isnan(mask_wss)));
-            indices{3,i+1} = median(mask_wss(~isnan(mask_wss)));
-            indices{4,i+1} = max(mask_wss);
-            indices{5,i+1} = min(mask_wss);
-            indices{6,i+1} = std(mask_wss(~isnan(mask_wss)));
-            WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
-            indices{7,i+1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-            indices{8,i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-            indices{9,i+1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-            indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+            for i=1:size(nbROIs,1)
+                
+                indices{1,i+1} = strcat(['region' num2str(i)]);
+                for j=1:size(WSS_all,2)
+                    mask_wss=wss_mask{i,j};
+                    indices{1+j,i+1} = mean(mask_wss(~isnan(mask_wss)));
+                    indices{1+j+size(WSS_all,2),i+1} = median(mask_wss(~isnan(mask_wss)));
+                    
+                    WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                    indices{1+j+2*size(WSS_all,2),i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                    
+                    clear mask_wss WSS_sorted
+                end
+                waitbar (i/size(masks,1));
+            end
+        else
             
-            clear mask_wss WSS_sorted
+            % compute quantitative indices
+            indices{1,1} = '';
+            indices{2,1} = 'mean';
+            indices{3,1} = 'median';
+            indices{4,1} = 'max';
+            indices{5,1} = 'min';
+            indices{6,1} = 'std';
+            indices{7,1} = 'max5percent';
+            indices{8,1} = 'max2percent';
+            indices{9,1} = 'min5percent';
+            indices{10,1} = 'min2percent';
             
-            waitbar(i / nbROIs)
+            for i=1:nbROIs
+                
+                mask_wss=wss_mask{i};
+                indices{1,i+1} = strcat(['region' num2str(i)]);
+                indices{2,i+1} = mean(mask_wss(~isnan(mask_wss)));
+                indices{3,i+1} = median(mask_wss(~isnan(mask_wss)));
+                indices{4,i+1} = max(mask_wss);
+                indices{5,i+1} = min(mask_wss);
+                indices{6,i+1} = std(mask_wss(~isnan(mask_wss)));
+                WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                indices{7,i+1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
+                indices{8,i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                indices{9,i+1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
+                indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                
+                clear mask_wss WSS_sorted
+                
+                waitbar(i / nbROIs)
+            end
         end
         
         currDir=pwd;
@@ -306,6 +350,8 @@ switch choice
             xls_file = 'wss_indices_syst.xls';
         elseif TimeFlag==1
             xls_file = 'wss_indices_avg.xls';
+        elseif TimeFlag==2
+            xls_file = 'wss_indices_all.xls';
         end
         xlswrite(xls_file,indices);
         saveas(h_meanVel,'ROIs','tif')
@@ -346,24 +392,48 @@ switch choice
                 h1 = waitbar(0,'ROI modified, updated WSS quantification in progress...');
                 
                 mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                wss_mask = wss_m(mask_wss);
+                if  TimeFlag==2
+                    for j=1:size(WSS_all,2)
+                        wss_m_tmp = wss_m{j};
+                        wss_mask{j} = wss_m_tmp(mask_wss);
+                        clear wss_m_tmp
+                    end
+                else
+                    wss_mask = wss_m(mask_wss);
+                end
                 if TimeFlag==0
                     mat_file = strcat([MrstructPath 'wss_values_syst_new' FileName]);
                 elseif TimeFlag==1
                     mat_file = strcat([MrstructPath 'wss_values_avg_new' FileName]);
+                elseif TimeFlag==2
+                    mat_file = strcat([MrstructPath 'wss_values_all_new' FileName]);
                 end
                 save(mat_file,'wss_mask');
                 
-                new_indices{1,1} = mean(wss_mask(~isnan(wss_mask)));
-                new_indices{2,1} = median(wss_mask(~isnan(wss_mask)));
-                new_indices{3,1} = max(wss_mask);
-                new_indices{4,1} = min(wss_mask);
-                new_indices{5,1} = std(wss_mask(~isnan(wss_mask)));
-                WSS_sorted = sort(wss_mask(~isnan(wss_mask)));
-                new_indices{6,1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                new_indices{7,1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                new_indices{8,1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                new_indices{9,1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                if TimeFlag==2
+                    for j=1:size(WSS_all,2)
+                        
+                        mask_wss=wss_mask{j};
+                        new_indices{j,1} = mean(mask_wss(~isnan(mask_wss)));
+                        new_indices{j+size(WSS_all,2),1} = median(mask_wss(~isnan(mask_wss)));
+                        
+                        WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                        new_indices{j+2*size(WSS_all,2),1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                        
+                        clear mask_wss WSS_sorted
+                    end
+                else                
+                    new_indices{1,1} = mean(wss_mask(~isnan(wss_mask)));
+                    new_indices{2,1} = median(wss_mask(~isnan(wss_mask)));
+                    new_indices{3,1} = max(wss_mask);
+                    new_indices{4,1} = min(wss_mask);
+                    new_indices{5,1} = std(wss_mask(~isnan(wss_mask)));
+                    WSS_sorted = sort(wss_mask(~isnan(wss_mask)));
+                    new_indices{6,1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
+                    new_indices{7,1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                    new_indices{8,1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
+                    new_indices{9,1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                end
                 
                 currDir=pwd;
                 cd(MrstructPath)
@@ -377,6 +447,9 @@ switch choice
                     xls_file = 'wss_indices_syst.xls';
                 elseif TimeFlag==1
                     xls_file = 'wss_indices_avg.xls';
+                elseif TimeFlag==2
+                    xlRange = strcat([col '2:' col num2str(1+3*size(WSS_all,2))]);
+                    xls_file = 'wss_indices_all.xls';
                 end
                 xlswrite(xls_file,new_indices,xlRange);
                 saveas(h_meanVel,'ROIs','tif')
@@ -393,54 +466,100 @@ switch choice
                 cd(strcat([MrstructPath '..' '\regional_masks']));
                 masks=ls('mask*');
                 figure(h_meanVel);
-                for i=1:size(masks,1)
-                    load(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]));
-                    hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
-                    ind=find(masks(1,:)=='.');
-                    text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',masks(i,5:ind-1)),'fontweight','bold')
-                    mask_wss = inpolygon(x,y, region(:,1), region(:,2));
-                    wss_mask{i} = wss_m(mask_wss);
-                    clear region mask_wss
-                end
-                cd(currentDir);
-                
-                if TimeFlag==0
-                    mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
-                elseif TimeFlag==1
-                    mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_avg');
-                end
-                save(mat_file,'wss_mask');
-                
-                % compute quantitative indices
-                indices{1,1} = '';
-                indices{2,1} = 'mean';
-                indices{3,1} = 'median';
-                indices{4,1} = 'max';
-                indices{5,1} = 'min';
-                indices{6,1} = 'std';
-                indices{7,1} = 'max5percent';
-                indices{8,1} = 'max2percent';
-                indices{9,1} = 'min5percent';
-                indices{10,1} = 'min2percent';
-                
-                for i=1:size(masks,1)
+                if  TimeFlag==2
                     
-                    mask_wss=wss_mask{i};
-                    indices{1,i+1} = strcat(['region' num2str(i)]);
-                    indices{2,i+1} = mean(mask_wss(~isnan(mask_wss)));
-                    indices{3,i+1} = median(mask_wss(~isnan(mask_wss)));
-                    indices{4,i+1} = max(mask_wss);
-                    indices{5,i+1} = min(mask_wss);
-                    indices{6,i+1} = std(mask_wss(~isnan(mask_wss)));
-                    WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
-                    indices{7,i+1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                    indices{8,i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                    indices{9,i+1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                    indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                    for i=1:size(masks,1)
+                        load(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]));
+                        hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+                        ind=find(masks(1,:)=='.');
+                        text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',masks(i,5:ind-1)),'fontweight','bold')
+                        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
+                        for j=1:size(WSS_all,2)
+                            wss_m_tmp = wss_m{j};
+                            wss_mask{i,j} = wss_m_tmp(mask_wss);
+                            clear wss_m_tmp
+                        end
+                        clear region mask_wss
+                    end
                     
-                    clear mask_wss WSS_sorted
+                    cd(currentDir);
                     
-                    waitbar (i/size(masks,1));
+                    mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_all');
+                    save(mat_file,'wss_mask');
+                    
+                    % compute quantitative indices
+                    indices{1,1} = '';
+                    indices{2,1} = 'mean';
+                    indices{2+size(WSS_all,2),1} = 'median';
+                    indices{2+2*size(WSS_all,2),1} = 'max2percent';
+                    
+                    for i=1:size(masks,1)
+                        
+                        indices{1,i+1} = strcat(['region' num2str(i)]);
+                        for j=1:size(WSS_all,2)
+                            mask_wss=wss_mask{i,j};
+                            indices{1+j,i+1} = mean(mask_wss(~isnan(mask_wss)));
+                            indices{1+j+size(WSS_all,2),i+1} = median(mask_wss(~isnan(mask_wss)));
+                        
+                            WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                            indices{1+j+2*size(WSS_all,2),i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                                                
+                            clear mask_wss WSS_sorted
+                        end
+                        waitbar (i/size(masks,1));
+                    end
+                    
+                else
+                    
+                    for i=1:size(masks,1)
+                        load(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]));
+                        hold on, plot([region(:,1);,region(1,1)],[region(:,2);region(1,2)])
+                        ind=find(masks(1,:)=='.');
+                        text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',masks(i,5:ind-1)),'fontweight','bold')
+                        mask_wss = inpolygon(x,y, region(:,1), region(:,2));
+                        wss_mask{i} = wss_m(mask_wss);
+                        clear region mask_wss
+                    end
+                    cd(currentDir);
+                    
+                    if TimeFlag==0
+                        mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
+                    elseif TimeFlag==1
+                        mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_avg');
+                    end
+                    save(mat_file,'wss_mask');
+                    
+                    % compute quantitative indices
+                    indices{1,1} = '';
+                    indices{2,1} = 'mean';
+                    indices{3,1} = 'median';
+                    indices{4,1} = 'max';
+                    indices{5,1} = 'min';
+                    indices{6,1} = 'std';
+                    indices{7,1} = 'max5percent';
+                    indices{8,1} = 'max2percent';
+                    indices{9,1} = 'min5percent';
+                    indices{10,1} = 'min2percent';
+                    
+                    for i=1:size(masks,1)
+                        
+                        mask_wss=wss_mask{i};
+                        indices{1,i+1} = strcat(['region' num2str(i)]);
+                        indices{2,i+1} = mean(mask_wss(~isnan(mask_wss)));
+                        indices{3,i+1} = median(mask_wss(~isnan(mask_wss)));
+                        indices{4,i+1} = max(mask_wss);
+                        indices{5,i+1} = min(mask_wss);
+                        indices{6,i+1} = std(mask_wss(~isnan(mask_wss)));
+                        WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                        indices{7,i+1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
+                        indices{8,i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                        indices{9,i+1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
+                        indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                        
+                        clear mask_wss WSS_sorted
+                        
+                        waitbar (i/size(masks,1));
+                    end
                 end
                 
                 currDir=pwd;
@@ -450,6 +569,8 @@ switch choice
                     xls_file = 'wss_indices_syst.xls';
                 elseif TimeFlag==1
                     xls_file = 'wss_indices_avg.xls';
+                elseif TimeFlag==2
+                    xls_file = 'wss_indices_all.xls';
                 end
                 xlswrite(xls_file,indices);
                 cd(currDir)
@@ -476,7 +597,15 @@ switch choice
                     save(strcat([MrstructPath '..' '\regional_masks\mask' num2str(i)]),'region');
                     mask_wss = inpolygon(x,y, region(:,1), region(:,2));
                     % compute WSS in the region
-                    wss_mask{i} = wss_m(mask_wss);
+                    if  TimeFlag==2
+                        for j=1:size(WSS_all,2)
+                            wss_m_tmp = wss_m{j};
+                            wss_mask{i,j} = wss_m_tmp(mask_wss);
+                            clear wss_m_tmp
+                        end
+                    else
+                        wss_mask{i} = wss_m(mask_wss);
+                    end
                     text(sum(region(:,1))/size(region,1),sum(region(:,2))/size(region,1),strcat('ROI',num2str(i)),'fontweight','bold')
                     clear mask_wss region
                     waitfor(pb1,'value');
@@ -488,39 +617,65 @@ switch choice
                     mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_syst');
                 elseif TimeFlag==1
                     mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_avg');
+                elseif TimeFlag==2
+                    mat_file = strcat(MrstructPath,'..','\regional_masks\wss_values_all');
                 end
                 save(mat_file,'wss_mask');
                 
                 % compute quantitative indices
-                indices{1,1} = '';
-                indices{2,1} = 'mean';
-                indices{3,1} = 'median';
-                indices{4,1} = 'max';
-                indices{5,1} = 'min';
-                indices{6,1} = 'std';
-                indices{7,1} = 'max5percent';
-                indices{8,1} = 'max2percent';
-                indices{9,1} = 'min5percent';
-                indices{10,1} = 'min2percent';
+                if TimeFlag == 2
+                    indices{1,1} = '';
+                    indices{2,1} = 'mean';
+                    indices{2+size(WSS_all,2),1} = 'median';
+                    indices{2+2*size(WSS_all,2),1} = 'max2percent';
+                    
+                    for i=1:size(masks,1)
+                        
+                        indices{1,i+1} = strcat(['region' num2str(i)]);
+                        for j=1:size(WSS_all,2)
+                            mask_wss=wss_mask{i,j};
+                            indices{1+j,i+1} = mean(mask_wss(~isnan(mask_wss)));
+                            indices{1+j+size(WSS_all,2),i+1} = median(mask_wss(~isnan(mask_wss)));
+                            
+                            WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                            indices{1+j+2*size(WSS_all,2),i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                            
+                            clear mask_wss WSS_sorted
+                        end
+                        waitbar(i / size(masks,1))
+                    end
+                else
+                    
+                    indices{1,1} = '';
+                    indices{2,1} = 'mean';
+                    indices{3,1} = 'median';
+                    indices{4,1} = 'max';
+                    indices{5,1} = 'min';
+                    indices{6,1} = 'std';
+                    indices{7,1} = 'max5percent';
+                    indices{8,1} = 'max2percent';
+                    indices{9,1} = 'min5percent';
+                    indices{10,1} = 'min2percent';
                 
-                for i=1:size(masks,1)
-                    
-                    mask_wss=wss_mask{i};
-                    indices{1,i+1} = strcat(['region' num2str(i)]);
-                    indices{2,i+1} = mean(mask_wss(~isnan(mask_wss)));
-                    indices{3,i+1} = median(mask_wss(~isnan(mask_wss)));
-                    indices{4,i+1} = max(mask_wss);
-                    indices{5,i+1} = min(mask_wss);
-                    indices{6,i+1} = std(mask_wss(~isnan(mask_wss)));
-                    WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
-                    indices{7,i+1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
-                    indices{8,i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
-                    indices{9,i+1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
-                    indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
-                    
-                    clear mask_wss WSS_sorted
-                    
-                    waitbar(i / size(masks,1))
+                    for i=1:size(masks,1)
+                        
+                        mask_wss=wss_mask{i};
+                        indices{1,i+1} = strcat(['region' num2str(i)]);
+                        indices{2,i+1} = mean(mask_wss(~isnan(mask_wss)));
+                        indices{3,i+1} = median(mask_wss(~isnan(mask_wss)));
+                        indices{4,i+1} = max(mask_wss);
+                        indices{5,i+1} = min(mask_wss);
+                        indices{6,i+1} = std(mask_wss(~isnan(mask_wss)));
+                        WSS_sorted = sort(mask_wss(~isnan(mask_wss)));
+                        indices{7,i+1} = mean(WSS_sorted(end-5/100*ceil(length(WSS_sorted)):end));
+                        indices{8,i+1} = mean(WSS_sorted(end-2/100*ceil(length(WSS_sorted)):end));
+                        indices{9,i+1} = mean(WSS_sorted(1:5/100*ceil(length(WSS_sorted))));
+                        indices{10,i+1} = mean(WSS_sorted(1:2/100*ceil(length(WSS_sorted))));
+                        
+                        clear mask_wss WSS_sorted
+                        
+                        waitbar(i / size(masks,1))
+                    end
                 end
                 
                 currDir=pwd;
@@ -530,6 +685,8 @@ switch choice
                     xls_file = 'wss_indices_syst.xls';
                 elseif TimeFlag==1
                     xls_file = 'wss_indices_avg.xls';
+                elseif TimeFlag==2
+                    xls_file = 'wss_indices_all.xls';
                 end
                 xlswrite(xls_file,indices);
                 saveas(h_meanVel,'ROIs','tif')
