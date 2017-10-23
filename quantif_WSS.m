@@ -293,7 +293,7 @@ switch choice
             indices{2+size(WSS_all,2),1} = 'median';
             indices{2+2*size(WSS_all,2),1} = 'max2percent';
             
-            for i=1:size(nbROIs,1)
+            for i=1:nbROIs
                 
                 indices{1,i+1} = strcat(['region' num2str(i)]);
                 for j=1:size(WSS_all,2)
@@ -306,7 +306,7 @@ switch choice
                     
                     clear mask_wss WSS_sorted
                 end
-                waitbar (i/size(masks,1));
+                waitbar (i/size(nbROIs,1));
             end
         else
             
