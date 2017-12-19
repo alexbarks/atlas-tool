@@ -1,8 +1,8 @@
 clc, clear, close all
 
-directory1 = 'X:\cv_mri\Aorta-4D_Flow\controls' % location of all patient folders
+directory1 = '10.254.136.37\data_imaging\cv_mri\Aorta-4D_Flow\controls' % location of all patient folders
 
-[num,txt,raw] = xlsread('Z:\Aorta_Atlas\target_enrollment_atlases_20171110','Atlas Recruitment','G43:G53')    % reads the list of patient folders from spreadsheet
+[num,txt,raw] = xlsread('c:\TEMP\atlas_test\atlas_list','Sheet1','G2:G5')    % reads the list of patient folders from spreadsheet
 
 for n = 1:size(txt,1)
     path = raw(n,1);
@@ -55,10 +55,10 @@ tic
 toc
 
 % Make atlas velocity & WSS
-PATHNAME_probability_mask = 'C:\Users\Emily\Documents\MR_processing\heatmap_age-matching\group1\p_mask';
+PATHNAME_probability_mask = 'c:\TEMP\atlas_test\p_mask';
 [atlas] = make_atlas_point_cloud_scalars_affine_registration(PATHNAME,PATHNAME_probability_mask,1,1,0,1);
 % save the atlas to the directory of choice
-directory = uigetdir('C:\Users\Emily\Documents\MR_processing\heatmap_age-matching\group1\atlas');
+directory = uigetdir('c:\TEMP\atlas_test\atlas');
 disp('...saving atlas...')
 save(strcat(directory,'\atlas'),'atlas')
 disp(['saved to ' directory])
